@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} Practice Interview - Question {{ index }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Header Card with Progress Bar -->
+            <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fs-6 fw-semibold mb-1">
+                            <i class="bi bi-tag-fill me-1"></i> {{ category.name }} Interview Practice
+                        </span>
+                        <h4 class="fw-bold text-dark mb-0">Question {{ index }} of {{ total_questions }}</h4>
+                    </div>
+                    <div class="text-md-end mt-2 mt-md-0">
+                        <span class="fw-bold text-primary fs-5">{{ (index / total_questions * 100)|round|int }}%</span>
+                        <span class="text-muted small"> Completed</span>
+                    </div>
+                </div>
+
+                <!-- Bootstrap Progress Bar -->
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar"
+                         style="width: {{ (index / total_questions * 100)|round|int }}%;"
+                         aria-valuenow="{{ index }}" aria-valuemin="0" aria-valuemax="{{ total_questions }}"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="card border-0 shadow-lg rounded-4 bg-white overflow-hidden mb-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="bg-primary text-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 45px; height: 45px;">
+                            <span class="fw-bold fs-5">Q{{ index }}</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-warning bg-opacity-10 text-dark fw-semibold px-2 py-1 mb-2">Max Marks: {{ question.max_marks }}</span>
+                            <h4 class="fw-bold text-dark lh-base mb-0">{{ question.question_text }}</h4>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('interview_question') }}">
+                        <div class="mb-4">
+                            <label for="user_answer" class="form-label fw-bold text-dark mb-2">
+                                <i class="bi bi-pencil-fill me-1 text-primary"></i> Your Answer / Explanation:
+                            </label>
+                            <textarea class="form-control rounded-3 p-3 fs-6" id="user_answer" name="user_answer" rows="7"
+                                      placeholder="Type your explanation clearly. Include relevant technical terms, syntax, or concepts..." required>{{ existing_answer }}</textarea>
+                            <div class="form-text text-muted small mt-2">
+                                <i class="bi bi-lightbulb-fill text-warning me-1"></i> Tip: Use clear technical terminology and key concepts for optimal score evaluation.
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top">
+                            <div>
+                                {% if index > 1 %}
+                                    <button type="submit" name="action" value="prev" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold" formnovalidate>
+                                        <i class="bi bi-arrow-left me-1"></i> Previous Question
+                                    </button>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex gap-2 mt-2 mt-sm-0">
+                                {% if index < total_questions %}
+                                    <button type="submit" name="action" value="next" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                                        Next Question <i class="bi bi-arrow-right ms-1"></i>
+                                    </button>
+                                {% else %}
+                                    <button type="submit" name="action" value="submit" class="btn btn-success rounded-pill px-5 fw-bold shadow-sm">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Submit Practice Interview
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

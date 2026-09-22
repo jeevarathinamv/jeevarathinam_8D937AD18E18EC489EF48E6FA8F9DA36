@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Performance Result - Attempt #{{ attempt.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Result Header & Summary Score Card -->
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-gradient-nav text-white p-4 p-md-5 border-0">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill mb-2">
+                        <i class="bi bi-award-fill me-1"></i> Practice Interview Result
+                    </span>
+                    <h2 class="fw-bold mb-2">Category: {{ attempt.category.name }}</h2>
+                    <p class="mb-0 text-white-50">
+                        <i class="bi bi-person-fill me-1"></i> <strong>Student:</strong> {{ attempt.student.name }} ({{ attempt.student.register_number }})
+                        <span class="ms-3"><i class="bi bi-calendar3 me-1"></i> {{ attempt.created_at.strftime('%B %d, %Y - %I:%M %p') }}</span>
+                    </p>
+                </div>
+                <div class="col-md-5 text-md-end mt-4 mt-md-0">
+                    <div class="d-inline-block bg-white text-dark p-3 rounded-4 shadow text-center" style="min-width: 180px;">
+                        <span class="text-muted small fw-bold d-block text-uppercase">Total Score</span>
+                        <span class="display-6 fw-bold text-primary">{{ attempt.total_score }}</span>
+                        <span class="text-muted fw-semibold">/ {{ attempt.max_possible_score }}</span>
+                        <div class="mt-2">
+                            <span class="badge
+                                {% if attempt.percentage >= 80 %}bg-success
+                                {% elif attempt.percentage >= 50 %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %} fs-6 px-3 py-1 rounded-pill">
+                                {{ attempt.percentage }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4 bg-white">
+            <div class="p-3 rounded-3 bg-light border-start border-4 border-primary">
+                <h6 class="fw-bold text-dark mb-1"><i class="bi bi-chat-quote-fill text-primary me-2"></i>Overall Evaluation Feedback:</h6>
+                <p class="text-secondary mb-0">{{ attempt.feedback }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question-by-Question Detailed Breakdown -->
+    <h4 class="fw-bold text-dark mb-3"><i class="bi bi-journal-check text-primary me-2"></i>Question Breakdown & Model Answers</h4>
+
+    {% for ans in answers %}
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4 overflow-hidden">
+            <div class="card-header bg-light p-3 p-md-4 border-0 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        {{ loop.index }}
+                    </span>
+                    <h5 class="fw-bold text-dark mb-0">Question {{ loop.index }}</h5>
+                </div>
+                <div>
+                    <span class="badge
+                        {% if ans.score >= ans.max_marks * 0.8 %}badge-soft-success
+                        {% elif ans.score >= ans.max_marks * 0.5 %}badge-soft-warning
+                        {% else %}bg-danger bg-opacity-10 text-danger{% endif %} fs-6 px-3 py-1 rounded-pill">
+                        Score: {{ ans.score }} / {{ ans.max_marks }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <!-- Question Text -->
+                <p class="fw-bold text-dark fs-5 mb-3">{{ ans.question.question_text }}</p>
+
+                <div class="row g-3">
+                    <!-- Submitted Answer -->
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100 border">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-lines-fill me-1"></i> Your Submitted Answer:</h6>
+                            <p class="text-dark mb-0" style="white-space: pre-wrap;">{{ ans.user_answer if ans.user_answer else 'No answer provided.' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Feedback & Model Answer -->
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100 border">
+                            <h6 class="fw-bold text-success mb-2"><i class="bi bi-check-all me-1"></i> Evaluation Feedback:</h6>
+                            <p class="small text-secondary mb-3">{{ ans.feedback }}</p>
+
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-file-earmark-text-fill me-1 text-warning"></i> Sample / Model Answer:</h6>
+                            <p class="small text-dark mb-2" style="white-space: pre-wrap;">{{ ans.question.sample_answer }}</p>
+
+                            <span class="badge bg-secondary bg-opacity-10 text-dark small fw-normal">
+                                <strong>Keywords expected:</strong> {{ ans.question.keywords }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Footer Action Buttons -->
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        {% if is_admin_view %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-dark btn-lg rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
+            </a>
+        {% else %}
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-speedometer2 me-1"></i> Return to Dashboard
+            </a>
+            <a href="{{ url_for('start_interview', category_id=attempt.category_id) }}" class="btn btn-warning btn-lg rounded-pill px-5 fw-bold shadow-sm text-dark">
+                <i class="bi bi-arrow-repeat me-1"></i> Retake Practice Interview
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
