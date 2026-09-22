@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Registered Students - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="text-cyan fw-bold mb-1"><i class="bi bi-people me-2"></i> Drive Registrations & Student Details</h2>
+        <p class="text-light opacity-75 mb-0">View registered candidates and update application statuses (Registered, Shortlisted, Selected, Rejected).</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-cyan">
+            <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Filter by Drive -->
+<div class="card card-sky p-3 mb-4 shadow-sm">
+    <form method="GET" action="{{ url_for('admin_registrations') }}" class="row g-3 align-items-center">
+        <div class="col-md-8">
+            <label for="drive_id" class="form-label fw-bold text-navy mb-1" style="color: #0a192f;"><i class="bi bi-filter me-1"></i> Filter Registrations by Recruitment Drive:</label>
+            <select name="drive_id" id="drive_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- All Recruitment Drives --</option>
+                {% for d in drives %}
+                    <option value="{{ d.id }}" {% if selected_drive_id == d.id %}selected{% endif %}>
+                        {{ d.company_name }} - {{ d.job_role }} ({{ d.drive_date.strftime('%Y-%m-%d') }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-cyan w-100"><i class="bi bi-search me-1"></i> Filter</button>
+            {% if selected_drive_id %}
+                <a href="{{ url_for('admin_registrations') }}" class="btn btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Registrations List -->
+<div class="card card-sky p-4 shadow-lg">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold text-navy mb-0" style="color: #0a192f;">
+            {% if selected_drive %}
+                Students Registered for {{ selected_drive.company_name }} - {{ selected_drive.job_role }}
+            {% else %}
+                All Student Registrations
+            {% endif %}
+        </h4>
+        <span class="badge bg-primary px-3 py-2 fs-6">{{ registrations|length }} Candidates</span>
+    </div>
+
+    {% if registrations %}
+        <div class="table-responsive">
+            <table class="table table-custom align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Reg. Number</th>
+                        <th>Department</th>
+                        <th>Contact Email & Phone</th>
+                        <th>Applied Drive</th>
+                        <th>Reg. Date</th>
+                        <th>Current Status</th>
+                        <th>Update Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ reg.student.name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ reg.student.register_number }}</span></td>
+                            <td><small class="text-navy fw-semibold">{{ reg.student.department }}</small></td>
+                            <td>
+                                <div class="small">
+                                    <div><i class="bi bi-envelope me-1 text-primary"></i> {{ reg.student.email }}</div>
+                                    <div><i class="bi bi-telephone me-1 text-success"></i> {{ reg.student.phone_number }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark">{{ reg.drive.company_name }}</span><br>
+                                <small class="text-muted">{{ reg.drive.job_role }}</small>
+                            </td>
+                            <td><small class="text-muted">{{ reg.registration_date.strftime('%Y-%m-%d') }}</small></td>
+                            <td>
+                                {% if reg.status == 'Selected' %}
+                                    <span class="badge-status-selected"><i class="bi bi-trophy-fill me-1"></i> Selected</span>
+                                {% elif reg.status == 'Rejected' %}
+                                    <span class="badge-status-rejected"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                                {% elif reg.status == 'Shortlisted' %}
+                                    <span class="badge-status-pending"><i class="bi bi-star-fill me-1"></i> Shortlisted</span>
+                                {% else %}
+                                    <span class="badge-status-registered"><i class="bi bi-check-circle-fill me-1"></i> Registered</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form action="{{ url_for('update_registration_status', reg_id=reg.id, drive_id=selected_drive_id) }}" method="POST" class="d-flex gap-1">
+                                    <select name="status" class="form-select form-select-sm py-1" style="min-width: 120px;" required>
+                                        <option value="Registered" {% if reg.status == 'Registered' %}selected{% endif %}>Registered</option>
+                                        <option value="Shortlisted" {% if reg.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                        <option value="Selected" {% if reg.status == 'Selected' %}selected{% endif %}>Selected</option>
+                                        <option value="Rejected" {% if reg.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-cyan" title="Update Status">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-person-x fs-1 d-block mb-2"></i>
+            No student registrations found for this filter.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

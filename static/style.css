@@ -1,0 +1,202 @@
+/* Campus Recruitment Drive Registration System - Custom Styles
+   Theme: Navy Blue + Cyan + Sky Blue
+   Background: Dark Navy Blue Gradients
+   Cards: Sky Blue / Dark Translucent
+   Buttons/Icons: Cyan
+   Statuses: Selected (Green), Registered/Shortlisted (Yellow), Rejected (Red)
+*/
+
+:root {
+    --bg-navy-dark: #0a192f;
+    --bg-navy-mid: #112240;
+    --bg-navy-card: #172a45;
+    --sky-blue: #e0f2fe;
+    --sky-blue-card: #e2f1ff;
+    --cyan-accent: #00f2fe;
+    --cyan-bright: #00d2ff;
+    --cyan-dark: #0083b0;
+    --navy-text: #0a192f;
+    --navy-subtext: #4a5568;
+    --status-selected: #10b981;
+    --status-pending: #f59e0b;
+    --status-rejected: #ef4444;
+}
+
+body {
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0a192f 0%, #112240 50%, #0d1b2a 100%);
+    background-attachment: fixed;
+    color: #e6f1ff;
+    min-height: 100vh;
+}
+
+/* Navbar Styling */
+.navbar-custom {
+    background: rgba(10, 25, 47, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--cyan-bright);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: #ffffff !important;
+}
+
+.navbar-brand span {
+    color: var(--cyan-accent);
+}
+
+.nav-link {
+    color: #cbd5e1 !important;
+    font-weight: 500;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--cyan-accent) !important;
+}
+
+/* Sky Blue Modern Cards */
+.card-sky {
+    background: #f0f8ff;
+    color: var(--navy-text);
+    border: 1px solid #bae6fd;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-sky:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 210, 255, 0.25);
+}
+
+.card-sky-dark {
+    background: #172a45;
+    color: #ffffff;
+    border: 1px solid #233554;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Buttons */
+.btn-cyan {
+    background: linear-gradient(135deg, #00d2ff 0%, #0083b0 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 0.55rem 1.3rem;
+    box-shadow: 0 4px 14px rgba(0, 210, 255, 0.3);
+    transition: all 0.25s ease;
+}
+
+.btn-cyan:hover {
+    background: linear-gradient(135deg, #00e5ff 0%, #0091c2 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.5);
+}
+
+.btn-outline-cyan {
+    border: 2px solid var(--cyan-accent);
+    color: var(--cyan-accent);
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+}
+
+.btn-outline-cyan:hover {
+    background: var(--cyan-accent);
+    color: var(--navy-text);
+}
+
+/* Icons & Highlights */
+.icon-cyan {
+    color: var(--cyan-accent);
+}
+
+.text-cyan {
+    color: var(--cyan-accent) !important;
+}
+
+.bg-cyan-soft {
+    background-color: rgba(0, 210, 255, 0.15);
+}
+
+/* Status Badges */
+.badge-status-registered, .badge-status-shortlisted, .badge-status-pending {
+    background-color: #f59e0b;
+    color: #1e293b;
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 8px;
+}
+
+.badge-status-selected {
+    background-color: #10b981;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 8px;
+}
+
+.badge-status-rejected {
+    background-color: #ef4444;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 8px;
+}
+
+/* Form Styling */
+.form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    border: 1px solid #cbd5e1;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--cyan-bright);
+    box-shadow: 0 0 0 0.25rem rgba(0, 210, 255, 0.25);
+}
+
+/* Tables */
+.table-custom {
+    background: #ffffff;
+    color: #1e293b;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-custom th {
+    background: #0f172a;
+    color: var(--cyan-accent);
+    font-weight: 600;
+    border-bottom: 2px solid var(--cyan-bright);
+}
+
+/* Stat Box */
+.stat-box {
+    background: #e2f1ff;
+    color: #0f172a;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border-left: 5px solid var(--cyan-bright);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.stat-box .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0284c7;
+}
+
+/* Footer Setup Guide Banner */
+.footer-guide {
+    background: #0a192f;
+    border-top: 1px solid #1e293b;
+    color: #94a3b8;
+}

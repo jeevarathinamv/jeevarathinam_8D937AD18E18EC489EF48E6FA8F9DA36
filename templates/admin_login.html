@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Campus Recruitment System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card card-sky p-4 shadow-lg border-2" style="border-color: #00d2ff !important;">
+            <div class="text-center mb-4">
+                <div class="icon-box bg-dark text-cyan mx-auto mb-2" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #00d2ff;">
+                    <i class="bi bi-shield-lock-fill fs-2" style="color: #00d2ff;"></i>
+                </div>
+                <h3 class="fw-bold text-navy mb-1" style="color: #0a192f;">Admin Portal Login</h3>
+                <p class="text-secondary small">Training & Placement Officer Access</p>
+            </div>
+
+            <form action="{{ url_for('admin_login') }}" method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                        <i class="bi bi-person-badge me-1"></i> Admin Username
+                    </label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                        <i class="bi bi-key me-1"></i> Admin Password
+                    </label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-dark border-cyan text-cyan w-100 py-2 fs-6 fw-bold">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Log In as Administrator
+                </button>
+            </form>
+
+            <div class="alert alert-secondary mt-3 mb-0 small text-center p-2 rounded-3">
+                <i class="bi bi-info-circle me-1"></i> Default Credentials: <strong>admin</strong> / <strong>admin123</strong>
+            </div>
+
+            <div class="text-center mt-3 pt-2 border-top">
+                <a href="{{ url_for('login') }}" class="small text-decoration-none text-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Student Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
