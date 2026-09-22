@@ -6,15 +6,15 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'student_tracker_secret_key_2025_gradient_blue_purple_pink')
 
-# Admin Hardcoded Credentials
+# Admin Hardcoded/Default Credentials
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 # Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/student_course_tracker')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'student_tracker.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -32,7 +32,8 @@ class Student(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='student', lazy=True)
+    courses = db.relationship('Course', backref='student', lazy=True, cascade='all, delete-orphan')
+    certifications = db.relationship('Certification', backref='student', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,42 +41,43 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
-
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+class Course(db.Model):
+    __tablename__ = 'courses'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    course_name = db.Column(db.String(150), nullable=False)
+    course_provider = db.Column(db.String(100), nullable=False)
+    course_category = db.Column(db.String(100), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=True)
+    course_status = db.Column(db.String(20), nullable=False, default='Ongoing') # Ongoing, Completed
+    course_link = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
-        db.session.commit()
+class Certification(db.Model):
+    __tablename__ = 'certifications'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    certificate_name = db.Column(db.String(150), nullable=False)
+    course_name = db.Column(db.String(150), nullable=False)
+    issuing_organization = db.Column(db.String(100), nullable=False)
+    issue_date = db.Column(db.Date, nullable=False)
+    certificate_id = db.Column(db.String(100), nullable=True)
+    certificate_link = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Admin(db.Model):
+    __tablename__ = 'admins'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 # Auth Decorators
 def student_required(f):
@@ -92,7 +94,7 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_type' not in session or session['user_type'] != 'admin':
             flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -114,7 +116,7 @@ def register():
             flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
 
-        existing_student = Student.query.filter(
+        existing_student = db.session.query(Student).filter(
             (Student.email == email) | (Student.register_number == register_number)
         ).first()
 
@@ -137,42 +139,54 @@ def register():
 
     return render_template('register.html')
 
-# Student & Admin Login
+# Student Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        email_or_reg = request.form.get('email_or_reg', '').strip()
+        password = request.form.get('password', '')
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
+        student = db.session.query(Student).filter(
+            (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
+        ).first()
+
+        if student and student.check_password(password):
+            session['user_type'] = 'student'
+            session['user_id'] = student.id
+            session['user_name'] = student.name
+            flash(f'Welcome back, {student.name}!', 'success')
+            return redirect(url_for('student_dashboard'))
         else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
-
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
-
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
+            flash('Invalid email/register number or password.', 'danger')
+            return redirect(url_for('login'))
 
     return render_template('login.html')
+
+# Admin Login
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        # Check DB admin or default fallback credentials
+        admin = db.session.query(Admin).filter_by(username=username).first()
+        valid = False
+        if admin and admin.check_password(password):
+            valid = True
+        elif username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            valid = True
+
+        if valid:
+            session['user_type'] = 'admin'
+            session['user_name'] = 'Administrator'
+            flash('Logged in successfully as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid admin credentials.', 'danger')
+            return redirect(url_for('admin_login'))
+
+    return render_template('admin_login.html')
 
 # Logout
 @app.route('/logout')
@@ -181,209 +195,226 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
+# Student Dashboard
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
     student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student = db.session.get(Student, student_id)
+    if not student:
+        session.clear()
+        flash('Student profile not found.', 'danger')
+        return redirect(url_for('login'))
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+    courses = db.session.query(Course).filter_by(student_id=student_id).all()
+    certifications = db.session.query(Certification).filter_by(student_id=student_id).all()
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    total_courses = len(courses)
+    completed_courses = len([c for c in courses if c.course_status == 'Completed'])
+    ongoing_courses = len([c for c in courses if c.course_status == 'Ongoing'])
+    total_certifications = len(certifications)
 
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    recent_courses = sorted(courses, key=lambda x: x.created_at, reverse=True)[:3]
+    recent_certifications = sorted(certifications, key=lambda x: x.created_at, reverse=True)[:3]
 
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
+    return render_template(
+        'student_dashboard.html',
+        student=student,
+        total_courses=total_courses,
+        completed_courses=completed_courses,
+        ongoing_courses=ongoing_courses,
+        total_certifications=total_certifications,
+        recent_courses=recent_courses,
+        recent_certifications=recent_certifications
     )
-    db.session.add(booking)
-    db.session.commit()
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
+# Add Course
+@app.route('/courses/add', methods=['GET', 'POST'])
+@student_required
+def add_course():
+    if request.method == 'POST':
+        course_name = request.form.get('course_name', '').strip()
+        course_provider = request.form.get('course_provider', '').strip()
+        course_category = request.form.get('course_category', '').strip()
+        start_date_str = request.form.get('start_date', '')
+        end_date_str = request.form.get('end_date', '')
+        course_status = request.form.get('course_status', 'Ongoing').strip()
+        course_link = request.form.get('course_link', '').strip()
 
-# Admin Dashboard & Equipment Management
+        if not course_name or not course_provider or not course_category or not start_date_str:
+            flash('Course Name, Provider, Category, and Start Date are required.', 'danger')
+            return redirect(url_for('add_course'))
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else None
+        except ValueError:
+            flash('Invalid date format.', 'danger')
+            return redirect(url_for('add_course'))
+
+        course = Course(
+            student_id=session['user_id'],
+            course_name=course_name,
+            course_provider=course_provider,
+            course_category=course_category,
+            start_date=start_date,
+            end_date=end_date,
+            course_status=course_status if course_status in ['Ongoing', 'Completed'] else 'Ongoing',
+            course_link=course_link if course_link else None
+        )
+        db.session.add(course)
+        db.session.commit()
+
+        flash('Course added successfully!', 'success')
+        return redirect(url_for('courses'))
+
+    return render_template('add_course.html')
+
+# View Courses (Course Tracker)
+@app.route('/courses')
+@student_required
+def courses():
+    student_id = session.get('user_id')
+    student_courses = db.session.query(Course).filter_by(student_id=student_id).order_by(Course.created_at.desc()).all()
+    return render_template('courses.html', courses=student_courses)
+
+# Delete Course
+@app.route('/courses/delete/<int:course_id>', methods=['POST'])
+@student_required
+def delete_course(course_id):
+    student_id = session.get('user_id')
+    course = db.session.get(Course, course_id)
+    if course and course.student_id == student_id:
+        db.session.delete(course)
+        db.session.commit()
+        flash('Course record deleted successfully.', 'info')
+    else:
+        flash('Course not found or unauthorized action.', 'danger')
+    return redirect(url_for('courses'))
+
+# Add Certificate
+@app.route('/certifications/add', methods=['GET', 'POST'])
+@student_required
+def add_certificate():
+    if request.method == 'POST':
+        certificate_name = request.form.get('certificate_name', '').strip()
+        course_name = request.form.get('course_name', '').strip()
+        issuing_organization = request.form.get('issuing_organization', '').strip()
+        issue_date_str = request.form.get('issue_date', '')
+        certificate_id = request.form.get('certificate_id', '').strip()
+        certificate_link = request.form.get('certificate_link', '').strip()
+
+        if not certificate_name or not course_name or not issuing_organization or not issue_date_str:
+            flash('Certificate Name, Course Name, Organization, and Issue Date are required.', 'danger')
+            return redirect(url_for('add_certificate'))
+
+        try:
+            issue_date = datetime.strptime(issue_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid issue date format.', 'danger')
+            return redirect(url_for('add_certificate'))
+
+        certificate = Certification(
+            student_id=session['user_id'],
+            certificate_name=certificate_name,
+            course_name=course_name,
+            issuing_organization=issuing_organization,
+            issue_date=issue_date,
+            certificate_id=certificate_id if certificate_id else None,
+            certificate_link=certificate_link if certificate_link else None
+        )
+        db.session.add(certificate)
+        db.session.commit()
+
+        flash('Certificate added successfully!', 'success')
+        return redirect(url_for('certifications'))
+
+    return render_template('add_certificate.html')
+
+# View Certifications (Certification Tracker)
+@app.route('/certifications')
+@student_required
+def certifications():
+    student_id = session.get('user_id')
+    student_certs = db.session.query(Certification).filter_by(student_id=student_id).order_by(Certification.created_at.desc()).all()
+    return render_template('certifications.html', certifications=student_certs)
+
+# Delete Certificate
+@app.route('/certifications/delete/<int:cert_id>', methods=['POST'])
+@student_required
+def delete_certificate(cert_id):
+    student_id = session.get('user_id')
+    cert = db.session.get(Certification, cert_id)
+    if cert and cert.student_id == student_id:
+        db.session.delete(cert)
+        db.session.commit()
+        flash('Certification record deleted successfully.', 'info')
+    else:
+        flash('Certificate not found or unauthorized action.', 'danger')
+    return redirect(url_for('certifications'))
+
+# Admin Dashboard
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    students = db.session.query(Student).order_by(Student.created_at.desc()).all()
+    all_courses = db.session.query(Course).order_by(Course.created_at.desc()).all()
+    all_certifications = db.session.query(Certification).order_by(Certification.created_at.desc()).all()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    total_students = len(students)
+    total_courses = len(all_courses)
+    total_certifications = len(all_certifications)
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        students=students,
+        courses=all_courses,
+        certifications=all_certifications,
+        total_students=total_students,
+        total_courses=total_courses,
+        total_certifications=total_certifications
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+# Admin Delete Student
+@app.route('/admin/student/delete/<int:student_id>', methods=['POST'])
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
-
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
-    )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
+def admin_delete_student(student_id):
+    student = db.session.get(Student, student_id)
+    if student:
+        db.session.delete(student)
+        db.session.commit()
+        flash(f'Student "{student.name}" and associated records deleted.', 'info')
+    else:
+        flash('Student not found.', 'danger')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+# Admin Delete Course
+@app.route('/admin/course/delete/<int:course_id>', methods=['POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
-
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
-
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
+def admin_delete_course(course_id):
+    course = db.session.get(Course, course_id)
+    if course:
+        db.session.delete(course)
+        db.session.commit()
+        flash('Course record deleted.', 'info')
+    else:
+        flash('Course not found.', 'danger')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
+# Admin Delete Certification
+@app.route('/admin/certification/delete/<int:cert_id>', methods=['POST'])
 @admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
-@admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
+def admin_delete_certification(cert_id):
+    cert = db.session.get(Certification, cert_id)
+    if cert:
+        db.session.delete(cert)
+        db.session.commit()
+        flash('Certification record deleted.', 'info')
+    else:
+        flash('Certification not found.', 'danger')
     return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        seed_default_data()
     app.run(debug=True)
