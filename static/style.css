@@ -1,0 +1,214 @@
+/* Custom CSS Theme: Green + Teal + Yellow Theme */
+
+:root {
+  --teal-primary: #008080;
+  --teal-dark: #005f5f;
+  --teal-light: #20b2aa;
+  --teal-bg: #e6f2f2;
+  --green-satisfactory: #198754;
+  --green-light: #d1e7dd;
+  --yellow-warning: #ffc107;
+  --yellow-light: #fff3cd;
+  --orange-alert: #fd7e14;
+  --red-alert: #dc3545;
+  --red-light: #f8d7da;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #212529;
+}
+
+/* Vibrant Mesh Background Overlay for Body */
+.page-container {
+  background: linear-gradient(135deg, #1d976c 0%, #93f9b9 100%);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* Custom Navbar */
+.navbar-custom {
+  background: linear-gradient(90deg, #005f5f 0%, #008080 50%, #20b2aa 100%);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.navbar-custom .nav-link:hover {
+  color: #ffc107 !important;
+}
+
+/* Modern Rounded Cards with Shadows */
+.card-custom {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.card-custom:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+/* Teal Header Cards */
+.card-teal-header {
+  border-top: 5px solid var(--teal-primary);
+}
+
+.bg-teal {
+  background-color: var(--teal-primary) !important;
+  color: #ffffff;
+}
+
+.bg-teal-gradient {
+  background: linear-gradient(135deg, #008080 0%, #20b2aa 100%);
+  color: #ffffff;
+}
+
+.bg-green-gradient {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: #ffffff;
+}
+
+.bg-yellow-gradient {
+  background: linear-gradient(135deg, #ffe000 0%, #799f0c 100%);
+  color: #212529;
+}
+
+.bg-orange-gradient {
+  background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+  color: #ffffff;
+}
+
+/* Custom Alert Banner Cards */
+.alert-card-satisfactory {
+  background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+  border: 2px solid var(--green-satisfactory);
+  color: #0f5132;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.25);
+}
+
+.alert-card-shortage {
+  background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+  border: 2px solid var(--red-alert);
+  color: #842029;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.25);
+}
+
+.alert-card-warning {
+  background: linear-gradient(135deg, #fff3b0 0%, #ffd166 100%);
+  border: 2px solid #e0a800;
+  color: #664d03;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.25);
+}
+
+/* Buttons */
+.btn-teal {
+  background-color: var(--teal-primary);
+  border-color: var(--teal-primary);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.btn-teal:hover {
+  background-color: var(--teal-dark);
+  border-color: var(--teal-dark);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 128, 128, 0.3);
+}
+
+.btn-yellow {
+  background-color: var(--yellow-warning);
+  border-color: var(--yellow-warning);
+  color: #212529;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.btn-yellow:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+  color: #212529;
+}
+
+/* Status Badges */
+.badge-present {
+  background-color: var(--green-satisfactory);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.45em 0.8em;
+  border-radius: 20px;
+}
+
+.badge-absent {
+  background-color: var(--red-alert);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.45em 0.8em;
+  border-radius: 20px;
+}
+
+.badge-warning-custom {
+  background-color: var(--yellow-warning);
+  color: #212529;
+  font-weight: 600;
+  padding: 0.45em 0.8em;
+  border-radius: 20px;
+}
+
+/* Table Styling */
+.table-custom {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-custom thead {
+  background: var(--teal-primary);
+  color: #ffffff;
+}
+
+/* Dashboard Stat Cards */
+.stat-card {
+  border-radius: 16px;
+  padding: 1.5rem;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  opacity: 0.85;
+}
+
+/* Hero & Section Panels */
+.hero-banner {
+  background: linear-gradient(135deg, #008080 0%, #11998e 50%, #38ef7d 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer */
+footer {
+  background: #004d4d;
+  color: #ffffff;
+  padding: 1.25rem 0;
+  margin-top: auto;
+}

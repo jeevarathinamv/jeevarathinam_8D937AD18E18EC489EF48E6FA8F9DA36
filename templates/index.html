@@ -1,74 +1,71 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Student Attendance & Shortage Alert System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+<div class="row align-items-center justify-content-center my-4">
+    <div class="col-lg-10">
+        <div class="hero-banner text-center shadow-lg">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="bi bi-person-bounding-box text-warning me-2"></i>
+                Student Attendance & Shortage Alert System
+            </h1>
+            <p class="lead mb-4">
+                Track your attendance in real-time, get instant shortage alerts (< 75%), and maintain academic compliance easily.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ url_for('login') }}" class="btn btn-yellow btn-lg px-4 shadow">
+                    <i class="bi bi-person-fill-check me-2"></i> Student Login
                 </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
+                <a href="{{ url_for('register') }}" class="btn btn-teal btn-lg px-4 shadow">
+                    <i class="bi bi-person-plus-fill me-2"></i> Register Student
                 </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
+                <a href="{{ url_for('admin_login') }}" class="btn btn-outline-light btn-lg px-4 shadow">
+                    <i class="bi bi-shield-lock-fill me-2"></i> Admin Login
                 </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="row g-4 my-2">
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-4 text-center">
+            <div class="mb-3">
+                <span class="p-3 rounded-circle bg-teal text-white d-inline-block">
+                    <i class="bi bi-clipboard2-check fs-2"></i>
+                </span>
+            </div>
+            <h4 class="fw-bold text-dark">Real-Time Attendance</h4>
+            <p class="text-muted">
+                Admin updates subject-wise attendance daily with accurate dates and counts.
+            </p>
         </div>
     </div>
-
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-4 text-center">
+            <div class="mb-3">
+                <span class="p-3 rounded-circle bg-warning text-dark d-inline-block">
+                    <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+                </span>
             </div>
+            <h4 class="fw-bold text-dark">75% Shortage Alert</h4>
+            <p class="text-muted">
+                Automated calculation flags attendance below 75% with a prominent alert warning card.
+            </p>
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-4 text-center">
+            <div class="mb-3">
+                <span class="p-3 rounded-circle bg-success text-white d-inline-block">
+                    <i class="bi bi-pie-chart-fill fs-2"></i>
+                </span>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
-            </div>
+            <h4 class="fw-bold text-dark">Detailed Reports</h4>
+            <p class="text-muted">
+                Students can filter and review attendance by subject, date, and overall percentage.
+            </p>
         </div>
     </div>
 </div>
