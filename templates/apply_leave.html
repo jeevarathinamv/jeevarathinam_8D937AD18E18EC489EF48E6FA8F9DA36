@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Apply Leave - Student Leave Portal{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card card-sky p-4 p-md-5">
+                <div class="d-flex align-items-center mb-4 border-bottom border-secondary pb-3">
+                    <div class="text-info fs-1 me-3">
+                        <i class="bi bi-file-earmark-plus-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold text-cyan mb-1">Apply for Leave</h3>
+                        <p class="text-light opacity-80 small mb-0">Fill in the details below to submit your leave application</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('apply_leave') }}">
+                    <div class="mb-3">
+                        <label for="leave_type" class="form-label"><i class="bi bi-tag-fill me-1 text-info"></i> Leave Type</label>
+                        <select class="form-select" id="leave_type" name="leave_type" required>
+                            <option value="" disabled selected>Select Leave Category</option>
+                            <option value="Medical Leave">Medical Leave</option>
+                            <option value="Personal Leave">Personal Leave</option>
+                            <option value="Duty Leave (Event / Sports)">Duty Leave (Event / Sports)</option>
+                            <option value="Academic / Conference Leave">Academic / Conference Leave</option>
+                            <option value="Emergency Leave">Emergency Leave</option>
+                            <option value="Other">Other Reason</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="from_date" class="form-label"><i class="bi bi-calendar-event me-1 text-info"></i> From Date</label>
+                            <input type="date" class="form-control" id="from_date" name="from_date" value="{{ today }}" min="{{ today }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="to_date" class="form-label"><i class="bi bi-calendar-check me-1 text-info"></i> To Date</label>
+                            <input type="date" class="form-control" id="to_date" name="to_date" value="{{ today }}" min="{{ today }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="reason" class="form-label"><i class="bi bi-chat-left-text-fill me-1 text-info"></i> Reason for Leave</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="Please explain the genuine reason for taking leave..." required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary text-light px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-cyan px-4">
+                            <i class="bi bi-send-fill me-2"></i> Submit Leave Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

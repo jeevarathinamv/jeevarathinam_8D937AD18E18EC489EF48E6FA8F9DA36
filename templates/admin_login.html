@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Student Leave Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card card-sky p-4 p-md-5 border-warning border-opacity-50">
+                <div class="text-center mb-4">
+                    <div class="text-warning mb-2">
+                        <i class="bi bi-shield-lock-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold text-warning">Admin Login</h3>
+                    <p class="text-light opacity-80 small">Faculty & Administrator Portal Access</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('admin_login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label"><i class="bi bi-shield-person me-1 text-warning"></i> Admin Username / Email</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="e.g. admin" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label"><i class="bi bi-key me-1 text-warning"></i> Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="e.g. admin123" required>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-warning text-dark fw-bold btn-lg rounded-pill">
+                            <i class="bi bi-shield-check me-2"></i> Admin Sign In
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="small text-light opacity-80 mb-0">
+                            Student? <a href="{{ url_for('login') }}" class="text-cyan fw-bold">Go to Student Login</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
