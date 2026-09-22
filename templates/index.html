@@ -1,73 +1,118 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Student Mock Interview Practice Portal - Home{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="container py-4">
+    <!-- Hero Banner -->
+    <div class="hero-banner p-4 p-md-5 mb-4 shadow-sm text-center text-md-start">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-white text-primary fw-semibold px-3 py-2 rounded-pill mb-3 shadow-sm">
+                    <i class="bi bi-rocket-takeoff-fill me-1"></i> Practice & Succeed
+                </span>
+                <h1 class="display-5 fw-bold mb-3">Master Your Next Technical & HR Interview</h1>
+                <p class="lead text-white-50 mb-4">
+                    Practice domain-specific interview questions, submit your answers, and receive instant score evaluation and actionable feedback.
+                </p>
+                {% if not session.get('user_type') %}
+                    <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                        <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow text-dark">
+                            <i class="bi bi-person-plus-fill me-1"></i> Register as Student
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg fw-semibold rounded-pill px-4">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Student / Admin Login
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('student_dashboard') if session.get('user_type') == 'student' else url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow text-dark">
+                        <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+                    </a>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-center d-none d-md-block">
+                <i class="bi bi-award-fill text-warning opacity-75" style="font-size: 10rem;"></i>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
-            </div>
+    <!-- Category Highlights -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-grid-fill text-primary me-2"></i>Interview Categories</h3>
+            <span class="text-muted small">Select a domain to test your skills</span>
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+        <div class="row g-4">
+            {% for cat in categories %}
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 card-hover">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="category-icon-box me-3
+                                    {% if cat.name.lower() == 'python' %}icon-python
+                                    {% elif cat.name.lower() == 'java' %}icon-java
+                                    {% elif cat.name.lower() == 'sql' %}icon-sql
+                                    {% else %}icon-hr{% endif %}">
+                                    <i class="bi
+                                        {% if cat.name.lower() == 'python' %}bi-code-slash
+                                        {% elif cat.name.lower() == 'java' %}bi-cpu
+                                        {% elif cat.name.lower() == 'sql' %}bi-database
+                                        {% else %}bi-people-fill{% endif %}"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-dark">{{ cat.name }}</h5>
+                                    <small class="text-muted">{{ cat.questions|length }} Questions</small>
+                                </div>
+                            </div>
+                            <p class="text-secondary small mb-4 flex-grow-1">{{ cat.description }}</p>
+                            {% if session.get('user_type') == 'student' %}
+                                <a href="{{ url_for('start_interview', category_id=cat.id) }}" class="btn btn-primary btn-sm rounded-pill w-100 fw-semibold">
+                                    <i class="bi bi-play-circle-fill me-1"></i> Start Practice
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-semibold">
+                                    <i class="bi bi-lock-fill me-1"></i> Login to Start
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
-            </div>
+            {% endfor %}
         </div>
+    </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+    <!-- How It Works Section -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5 mt-5">
+        <h3 class="fw-bold text-center mb-4 text-dark"><i class="bi bi-gear-fill text-warning me-2"></i>How Mock Interview Portal Works</h3>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-4 h-100">
+                    <div class="fs-1 text-primary mb-2"><i class="bi bi-person-check-fill"></i></div>
+                    <h5 class="fw-bold mb-2">1. Register Account</h5>
+                    <p class="text-muted small mb-0">Create a student account using your name, register number, department, and email.</p>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-4 h-100">
+                    <div class="fs-1 text-warning mb-2"><i class="bi bi-list-task"></i></div>
+                    <h5 class="fw-bold mb-2">2. Pick Category</h5>
+                    <p class="text-muted small mb-0">Select Python, Java, SQL, or HR interview practice modules.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-4 h-100">
+                    <div class="fs-1 text-info mb-2"><i class="bi bi-pencil-square"></i></div>
+                    <h5 class="fw-bold mb-2">3. Answer Questions</h5>
+                    <p class="text-muted small mb-0">View questions one at a time and type in your explanations.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-4 h-100">
+                    <div class="fs-1 text-success mb-2"><i class="bi bi-bar-chart-line-fill"></i></div>
+                    <h5 class="fw-bold mb-2">4. Get Score & Feedback</h5>
+                    <p class="text-muted small mb-0">Receive instant evaluation score, model answers, and detailed feedback.</p>
+                </div>
             </div>
         </div>
     </div>

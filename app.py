@@ -1,20 +1,21 @@
 import os
-from datetime import datetime, date
+import re
+from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'student_mock_interview_secret_key_98765')
 
 # Admin Hardcoded Credentials
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 # Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/mock_interview_db')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'mock_interview.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,6 +23,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# Database Models
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
@@ -32,7 +34,7 @@ class Student(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='student', lazy=True)
+    attempts = db.relationship('InterviewAttempt', backref='student', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,41 +42,173 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+
+class Category(db.Model):
+    __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
+    name = db.Column(db.String(50), unique=True, nullable=False)
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
+    questions = db.relationship('Question', backref='category', lazy=True, cascade='all, delete-orphan')
+    attempts = db.relationship('InterviewAttempt', backref='category', lazy=True, cascade='all, delete-orphan')
 
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+
+class Question(db.Model):
+    __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    question_text = db.Column(db.Text, nullable=False)
+    sample_answer = db.Column(db.Text, nullable=False)
+    keywords = db.Column(db.Text, nullable=False)  # Comma separated keywords
+    max_marks = db.Column(db.Integer, nullable=False, default=10)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    answers = db.relationship('InterviewAnswer', backref='question', lazy=True, cascade='all, delete-orphan')
+
+
+class InterviewAttempt(db.Model):
+    __tablename__ = 'interview_attempts'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    total_score = db.Column(db.Float, nullable=False, default=0.0)
+    max_possible_score = db.Column(db.Float, nullable=False, default=0.0)
+    percentage = db.Column(db.Float, nullable=False, default=0.0)
+    feedback = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    answers = db.relationship('InterviewAnswer', backref='attempt', lazy=True, cascade='all, delete-orphan')
+
+
+class InterviewAnswer(db.Model):
+    __tablename__ = 'interview_answers'
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_id = db.Column(db.Integer, db.ForeignKey('interview_attempts.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
+    user_answer = db.Column(db.Text, nullable=True)
+    score = db.Column(db.Float, nullable=False, default=0.0)
+    max_marks = db.Column(db.Integer, nullable=False, default=10)
+    feedback = db.Column(db.Text, nullable=True)
+
+
+def evaluate_answer(user_answer, sample_answer, keywords_str, max_marks=10):
+    """
+    Evaluates student's written response against sample answer & predefined keywords.
+    Returns: (score, feedback)
+    """
+    if not user_answer or not user_answer.strip():
+        return 0.0, "No answer provided."
+
+    clean_user_ans = user_answer.strip().lower()
+
+    keywords = [kw.strip().lower() for kw in keywords_str.split(',') if kw.strip()]
+    if not keywords:
+        keywords = [kw.strip().lower() for kw in re.findall(r'\b\w+\b', sample_answer.lower()) if len(kw) > 3]
+
+    matched_keywords = [kw for kw in keywords if kw in clean_user_ans]
+    match_ratio = len(matched_keywords) / len(keywords) if keywords else 0.0
+
+    # Calculate score
+    score = round(match_ratio * max_marks, 1)
+
+    # Feedback generation
+    if score >= max_marks * 0.85:
+        feedback = f"Excellent answer! You effectively covered key concepts ({', '.join(matched_keywords)})."
+    elif score >= max_marks * 0.5:
+        feedback = f"Good effort. Mentioned key concepts: {', '.join(matched_keywords)}. Try adding more explanations."
+    elif score > 0:
+        feedback = f"Partially correct. Identified terms: {', '.join(matched_keywords)}. Please review the sample answer."
+    else:
+        feedback = "Answer needs improvement. Crucial keywords were missing. Please study the sample answer."
+
+    return min(score, float(max_marks)), feedback
+
+
 def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
+    """Seeds initial categories and sample interview questions if empty."""
+    if Category.query.count() == 0:
+        python_cat = Category(name='Python', description='Core Python concepts, data structures, OOP, and standard library questions.')
+        java_cat = Category(name='Java', description='Java fundamentals, Object-Oriented Programming, collections, and exception handling.')
+        sql_cat = Category(name='SQL', description='Relational database concepts, SQL queries, joins, indexing, and aggregations.')
+        hr_cat = Category(name='HR', description='Behavioral, situational, soft skills, and HR interview questions.')
+
+        db.session.add_all([python_cat, java_cat, sql_cat, hr_cat])
+        db.session.commit()
+
+        questions = [
+            # Python
+            Question(
+                category_id=python_cat.id,
+                question_text='What is the difference between list and tuple in Python?',
+                sample_answer='Lists are mutable while tuples are immutable. Lists use square brackets [] whereas tuples use parentheses ().',
+                keywords='mutable, immutable, brackets, parentheses, tuple, list',
+                max_marks=10
+            ),
+            Question(
+                category_id=python_cat.id,
+                question_text='Explain PEP 8 and why it is important.',
+                sample_answer='PEP 8 is Python style guide. It provides guidelines and best practices on how to format Python code for readability and consistency.',
+                keywords='style, guide, readability, formatting, guidelines, standard',
+                max_marks=10
+            ),
+            Question(
+                category_id=python_cat.id,
+                question_text='What are decorators in Python and how do they work?',
+                sample_answer='A decorator is a design pattern in Python used to extend or modify the behavior of a function or method without altering its actual code structure.',
+                keywords='function, modify, behavior, wrapper, pattern, extend',
+                max_marks=10
+            ),
+
+            # Java
+            Question(
+                category_id=java_cat.id,
+                question_text='What are the main principles of Object-Oriented Programming (OOP) in Java?',
+                sample_answer='The four main OOP principles in Java are Encapsulation, Inheritance, Polymorphism, and Abstraction.',
+                keywords='encapsulation, inheritance, polymorphism, abstraction, oop',
+                max_marks=10
+            ),
+            Question(
+                category_id=java_cat.id,
+                question_text='What is the difference between JDK, JRE, and JVM?',
+                sample_answer='JVM executes bytecode, JRE provides libraries and runtime environment, and JDK is the development kit containing debugging tools and compiler.',
+                keywords='jvm, jre, jdk, bytecode, runtime, compiler, development',
+                max_marks=10
+            ),
+
+            # SQL
+            Question(
+                category_id=sql_cat.id,
+                question_text='What is the difference between INNER JOIN and LEFT JOIN in SQL?',
+                sample_answer='INNER JOIN returns records that have matching values in both tables, while LEFT JOIN returns all records from the left table and matched records from the right table.',
+                keywords='inner, left, join, matching, records, left table, right table',
+                max_marks=10
+            ),
+            Question(
+                category_id=sql_cat.id,
+                question_text='What is a Primary Key and how does it differ from a Unique Key?',
+                sample_answer='A Primary Key uniquely identifies a record and cannot contain NULL values, whereas a Unique Key prevents duplicate values but can accept one NULL value.',
+                keywords='primary key, unique key, null, duplicate, unique, record',
+                max_marks=10
+            ),
+
+            # HR
+            Question(
+                category_id=hr_cat.id,
+                question_text='Tell me about yourself and your professional goals.',
+                sample_answer='I am a dedicated student passionate about technology and software development. My goal is to build a successful career by continuously learning and solving real-world problems.',
+                keywords='passion, learning, goals, technology, development, dedicated, problem',
+                max_marks=10
+            ),
+            Question(
+                category_id=hr_cat.id,
+                question_text='How do you handle pressure or tight deadlines?',
+                sample_answer='I prioritize tasks, break down complex requirements into smaller milestones, maintain clear communication, and remain focused on delivery.',
+                keywords='prioritize, focus, deadline, communication, milestone, pressure, task',
+                max_marks=10
+            )
         ]
-        db.session.add_all(items)
+        db.session.add_all(questions)
         db.session.commit()
 
 # Auth Decorators
@@ -96,9 +230,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --- Routes ---
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    categories = Category.query.all()
+    return render_template('index.html', categories=categories)
 
 # Student Registration
 @app.route('/register', methods=['GET', 'POST'])
@@ -119,7 +256,7 @@ def register():
         ).first()
 
         if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
+            flash('A student with this Email or Register Number already exists.', 'danger')
             return redirect(url_for('register'))
 
         student = Student(
@@ -132,7 +269,7 @@ def register():
         db.session.add(student)
         db.session.commit()
 
-        flash('Registration successful! Please log in.', 'success')
+        flash('Registration successful! Please log in to start practicing.', 'success')
         return redirect(url_for('login'))
 
     return render_template('register.html')
@@ -169,7 +306,7 @@ def login():
                 flash(f'Welcome back, {student.name}!', 'success')
                 return redirect(url_for('student_dashboard'))
             else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
+                flash('Invalid login credentials. Please try again.', 'danger')
                 return redirect(url_for('login'))
 
     return render_template('login.html')
@@ -178,209 +315,322 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('You have been logged out.', 'info')
+    flash('You have been logged out successfully.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
+# Student Dashboard
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
     student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student = db.session.get(Student, student_id)
+    categories = Category.query.all()
+    attempts = InterviewAttempt.query.filter_by(student_id=student_id).order_by(InterviewAttempt.created_at.desc()).all()
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
-
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
+    return render_template(
+        'student_dashboard.html',
+        student=student,
+        categories=categories,
+        attempts=attempts
     )
-    db.session.add(booking)
+
+# Practice Interview: Start Session
+@app.route('/student/interview/start/<int:category_id>')
+@student_required
+def start_interview(category_id):
+    category = Category.query.get_or_404(category_id)
+    questions = Question.query.filter_by(category_id=category_id).all()
+
+    if not questions:
+        flash(f'No interview questions available yet for category "{category.name}".', 'warning')
+        return redirect(url_for('student_dashboard'))
+
+    # Store interview state in session
+    session['interview_category_id'] = category.id
+    session['interview_category_name'] = category.name
+    session['interview_q_ids'] = [q.id for q in questions]
+    session['interview_index'] = 0
+    session['interview_answers'] = {}
+
+    return redirect(url_for('interview_question'))
+
+# Practice Interview: Single Question Page
+@app.route('/student/interview/question', methods=['GET', 'POST'])
+@student_required
+def interview_question():
+    q_ids = session.get('interview_q_ids', [])
+    index = session.get('interview_index', 0)
+    category_id = session.get('interview_category_id')
+
+    if not q_ids or index >= len(q_ids) or not category_id:
+        flash('No active interview session found.', 'warning')
+        return redirect(url_for('student_dashboard'))
+
+    current_q_id = q_ids[index]
+    question = db.session.get(Question, current_q_id)
+    category = db.session.get(Category, category_id)
+
+    if request.method == 'POST':
+        user_answer = request.form.get('user_answer', '').strip()
+        action = request.form.get('action', 'next')
+
+        # Store user answer for current question
+        answers_dict = session.get('interview_answers', {})
+        answers_dict[str(current_q_id)] = user_answer
+        session['interview_answers'] = answers_dict
+
+        if action == 'prev' and index > 0:
+            session['interview_index'] = index - 1
+            return redirect(url_for('interview_question'))
+        elif action == 'submit' or (action == 'next' and index == len(q_ids) - 1):
+            return redirect(url_for('submit_interview'))
+        else:
+            session['interview_index'] = index + 1
+            return redirect(url_for('interview_question'))
+
+    # Retrieve existing answer if user navigated back/forth
+    existing_answer = session.get('interview_answers', {}).get(str(current_q_id), '')
+
+    return render_template(
+        'interview_question.html',
+        question=question,
+        category=category,
+        index=index + 1,
+        total_questions=len(q_ids),
+        existing_answer=existing_answer
+    )
+
+# Practice Interview: Final Submission & Evaluation
+@app.route('/student/interview/submit', methods=['GET', 'POST'])
+@student_required
+def submit_interview():
+    student_id = session.get('user_id')
+    category_id = session.get('interview_category_id')
+    q_ids = session.get('interview_q_ids', [])
+    saved_answers = session.get('interview_answers', {})
+
+    if not category_id or not q_ids:
+        flash('Invalid or expired interview session.', 'warning')
+        return redirect(url_for('student_dashboard'))
+
+    questions = Question.query.filter(Question.id.in_(q_ids)).all()
+
+    total_score = 0.0
+    max_possible_score = 0.0
+    answer_objects = []
+
+    for q in questions:
+        user_ans = saved_answers.get(str(q.id), '')
+        score, feedback = evaluate_answer(
+            user_answer=user_ans,
+            sample_answer=q.sample_answer,
+            keywords_str=q.keywords,
+            max_marks=q.max_marks
+        )
+        total_score += score
+        max_possible_score += q.max_marks
+
+        answer_objects.append({
+            'question_id': q.id,
+            'user_answer': user_ans,
+            'score': score,
+            'max_marks': q.max_marks,
+            'feedback': feedback
+        })
+
+    percentage = round((total_score / max_possible_score * 100), 1) if max_possible_score > 0 else 0.0
+
+    # Generate overall attempt feedback
+    if percentage >= 85:
+        overall_feedback = "Outstanding performance! You have a solid grasp of key concepts in this category."
+    elif percentage >= 65:
+        overall_feedback = "Good attempt! You demonstrated good knowledge, but review sample answers for details."
+    elif percentage >= 40:
+        overall_feedback = "Fair attempt. Focus on practicing key terminology and sample answers."
+    else:
+        overall_feedback = "Needs improvement. Review course material and try this practice interview again."
+
+    attempt = InterviewAttempt(
+        student_id=student_id,
+        category_id=category_id,
+        total_score=total_score,
+        max_possible_score=max_possible_score,
+        percentage=percentage,
+        feedback=overall_feedback
+    )
+    db.session.add(attempt)
+    db.session.flush()  # Obtain attempt.id
+
+    for ans_data in answer_objects:
+        ans_record = InterviewAnswer(
+            attempt_id=attempt.id,
+            question_id=ans_data['question_id'],
+            user_answer=ans_data['user_answer'],
+            score=ans_data['score'],
+            max_marks=ans_data['max_marks'],
+            feedback=ans_data['feedback']
+        )
+        db.session.add(ans_record)
+
     db.session.commit()
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
+    # Clear practice session variables
+    session.pop('interview_category_id', None)
+    session.pop('interview_category_name', None)
+    session.pop('interview_q_ids', None)
+    session.pop('interview_index', None)
+    session.pop('interview_answers', None)
 
-# Admin Dashboard & Equipment Management
+    flash('Mock interview completed! Here are your detailed results.', 'success')
+    return redirect(url_for('view_interview_result', attempt_id=attempt.id))
+
+# Interview Result Page
+@app.route('/student/interview/result/<int:attempt_id>')
+@student_required
+def view_interview_result(attempt_id):
+    attempt = InterviewAttempt.query.get_or_404(attempt_id)
+    student_id = session.get('user_id')
+
+    # Security check: Ensure student can only view their own attempts
+    if attempt.student_id != student_id and session.get('user_type') != 'admin':
+        flash('Unauthorized to view this interview result.', 'danger')
+        return redirect(url_for('student_dashboard'))
+
+    answers = InterviewAnswer.query.filter_by(attempt_id=attempt.id).all()
+
+    return render_template(
+        'interview_result.html',
+        attempt=attempt,
+        answers=answers
+    )
+
+# Admin Dashboard
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    categories = Category.query.all()
+    questions = Question.query.order_by(Question.created_at.desc()).all()
+    students = Student.query.order_by(Student.created_at.desc()).all()
+    attempts = InterviewAttempt.query.order_by(InterviewAttempt.created_at.desc()).all()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    total_categories = len(categories)
+    total_questions = len(questions)
+    total_students = len(students)
+    total_attempts = len(attempts)
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        categories=categories,
+        questions=questions,
+        students=students,
+        attempts=attempts,
+        total_categories=total_categories,
+        total_questions=total_questions,
+        total_students=total_students,
+        total_attempts=total_attempts
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+# Admin: Add Category
+@app.route('/admin/category/add', methods=['POST'])
 @admin_required
-def add_equipment():
+def add_category():
     name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
     description = request.form.get('description', '').strip()
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
+    if not name:
+        flash('Category name is required.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
+    if Category.query.filter_by(name=name).first():
+        flash(f'Category "{name}" already exists.', 'warning')
+        return redirect(url_for('admin_dashboard'))
+
+    category = Category(name=name, description=description)
+    db.session.add(category)
+    db.session.commit()
+    flash(f'Category "{name}" created successfully.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+# Admin: Delete Category
+@app.route('/admin/category/delete/<int:category_id>', methods=['POST'])
+@admin_required
+def delete_category(category_id):
+    category = Category.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash('Category deleted successfully.', 'info')
+    return redirect(url_for('admin_dashboard'))
+
+# Admin: Add Question
+@app.route('/admin/question/add', methods=['POST'])
+@admin_required
+def add_question():
+    category_id = request.form.get('category_id', type=int)
+    question_text = request.form.get('question_text', '').strip()
+    sample_answer = request.form.get('sample_answer', '').strip()
+    keywords = request.form.get('keywords', '').strip()
+    max_marks = request.form.get('max_marks', type=int, default=10)
+
+    if not category_id or not question_text or not sample_answer or not keywords:
+        flash('All question details are required.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    question = Question(
+        category_id=category_id,
+        question_text=question_text,
+        sample_answer=sample_answer,
+        keywords=keywords,
+        max_marks=max_marks
     )
-    db.session.add(equipment)
+    db.session.add(question)
     db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
+    flash('Question added successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+# Admin: Edit Question
+@app.route('/admin/question/edit/<int:question_id>', methods=['POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
+def edit_question(question_id):
+    question = Question.query.get_or_404(question_id)
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
+    category_id = request.form.get('category_id', type=int)
+    question_text = request.form.get('question_text', '').strip()
+    sample_answer = request.form.get('sample_answer', '').strip()
+    keywords = request.form.get('keywords', '').strip()
+    max_marks = request.form.get('max_marks', type=int)
+
+    if category_id:
+        question.category_id = category_id
+    if question_text:
+        question.question_text = question_text
+    if sample_answer:
+        question.sample_answer = sample_answer
+    if keywords:
+        question.keywords = keywords
+    if max_marks and max_marks > 0:
+        question.max_marks = max_marks
 
     db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
+    flash('Question updated successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
+# Admin: Delete Question
+@app.route('/admin/question/delete/<int:question_id>', methods=['POST'])
 @admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
+def delete_question(question_id):
+    question = Question.query.get_or_404(question_id)
+    db.session.delete(question)
     db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
+    flash('Question deleted successfully.', 'info')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
+# Admin: View specific attempt result
+@app.route('/admin/attempt/view/<int:attempt_id>')
 @admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+def admin_view_attempt(attempt_id):
+    attempt = InterviewAttempt.query.get_or_404(attempt_id)
+    answers = InterviewAnswer.query.filter_by(attempt_id=attempt.id).all()
+    return render_template('interview_result.html', attempt=attempt, answers=answers, is_admin_view=True)
 
 if __name__ == '__main__':
     with app.app_context():
