@@ -1,8 +1,16 @@
--- College Sports Equipment Booking System
+-- Student Portfolio Website Generator
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `student_portfolio`;
+USE `student_portfolio`;
+
+-- Table structure for admins
+CREATE TABLE IF NOT EXISTS `admins` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password_hash` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Table structure for students
 CREATE TABLE IF NOT EXISTS `students` (
@@ -15,37 +23,70 @@ CREATE TABLE IF NOT EXISTS `students` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table structure for profiles
+CREATE TABLE IF NOT EXISTS `profiles` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+    `student_id` INT UNIQUE NOT NULL,
+    `profile_photo` VARCHAR(255) DEFAULT 'default_avatar.png',
+    `about_me` TEXT,
+    `career_objective` TEXT,
+    `hobbies` TEXT,
+    `phone` VARCHAR(20),
+    `address` TEXT,
+    `linkedin_url` VARCHAR(255),
+    `github_url` VARCHAR(255),
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
 );
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
+-- Table structure for education
+CREATE TABLE IF NOT EXISTS `education` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
+    `degree` VARCHAR(100) NOT NULL,
+    `institution` VARCHAR(150) NOT NULL,
+    `year_of_passing` VARCHAR(20) NOT NULL,
+    `score` VARCHAR(50) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
 );
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Table structure for skills
+CREATE TABLE IF NOT EXISTS `skills` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `student_id` INT NOT NULL,
+    `skill_name` VARCHAR(100) NOT NULL,
+    `proficiency` VARCHAR(50) DEFAULT 'Intermediate',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
+);
+
+-- Table structure for projects
+CREATE TABLE IF NOT EXISTS `projects` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `student_id` INT NOT NULL,
+    `title` VARCHAR(150) NOT NULL,
+    `description` TEXT NOT NULL,
+    `technologies_used` VARCHAR(255) NOT NULL,
+    `project_link` VARCHAR(255),
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
+);
+
+-- Table structure for certifications
+CREATE TABLE IF NOT EXISTS `certifications` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `student_id` INT NOT NULL,
+    `certificate_title` VARCHAR(150) NOT NULL,
+    `issuing_organization` VARCHAR(150) NOT NULL,
+    `issue_date` VARCHAR(50),
+    `certificate_link` VARCHAR(255),
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
+);
+
+-- Seed Default Admin User (username: admin, password: adminpassword)
+-- Password hash generated using pbkdf2:sha256
+INSERT INTO `admins` (`username`, `password_hash`)
+SELECT 'admin', 'scrypt:32768:8:1$Kq1Z14c6Xm9c1vRk$d5b5eb00cf08bd165eb3d154ee4263539fb0426be048b64b18c64bbdd49e17db17c8008a0e882aef4a5e3df17f919d7d42cf7b0cefb0213aa672534571d7d079'
+WHERE NOT EXISTS (SELECT 1 FROM `admins` WHERE `username` = 'admin');

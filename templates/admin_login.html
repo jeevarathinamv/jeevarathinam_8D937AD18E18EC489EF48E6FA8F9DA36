@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Student Portfolio Generator{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-sky p-4 shadow-lg border-0">
+            <div class="text-center mb-4">
+                <div class="text-cyan fs-1 mb-2"><i class="bi bi-shield-lock-fill"></i></div>
+                <h3 class="fw-bold text-dark">Administrator Login</h3>
+                <p class="text-muted small">Enter admin credentials to manage students & portfolios</p>
+            </div>
+
+            <form action="{{ url_for('admin_login') }}" method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold">
+                        <i class="bi bi-person-fill me-1"></i> Admin Username
+                    </label>
+                    <input type="text" class="form-control form-control-custom" id="username" name="username" placeholder="e.g. admin" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-semibold">
+                        <i class="bi bi-key-fill me-1"></i> Password
+                    </label>
+                    <input type="password" class="form-control form-control-custom" id="password" name="password" placeholder="Enter Admin Password" required>
+                </div>
+
+                <button type="submit" class="btn btn-cyan w-100 py-2 fs-6">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Admin Login
+                </button>
+            </form>
+
+            <hr class="my-4 text-muted">
+
+            <div class="text-center">
+                <a href="{{ url_for('login') }}" class="text-sky fw-bold text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Student Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

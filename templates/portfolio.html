@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.name }} - Student Portfolio{% endblock %}
+
+{% block content %}
+<!-- Portfolio Section Nav -->
+<nav class="portfolio-nav mb-4 shadow-sm">
+    <div class="nav nav-pills justify-content-center gap-2" id="portfolio-tabs" role="tablist">
+        <a class="nav-link active" href="#home-section"><i class="bi bi-house-door me-1"></i> Home</a>
+        <a class="nav-link" href="#about-section"><i class="bi bi-person me-1"></i> About</a>
+        <a class="nav-link" href="#skills-section"><i class="bi bi-tools me-1"></i> Skills</a>
+        <a class="nav-link" href="#education-section"><i class="bi bi-mortarboard me-1"></i> Education</a>
+        <a class="nav-link" href="#projects-section"><i class="bi bi-code-slash me-1"></i> Projects</a>
+        <a class="nav-link" href="#certifications-section"><i class="bi bi-award me-1"></i> Certifications</a>
+        <a class="nav-link" href="#contact-section"><i class="bi bi-envelope me-1"></i> Contact</a>
+    </div>
+</nav>
+
+<!-- 1. Home / Hero Section -->
+<section id="home-section" class="portfolio-hero mb-5 text-center text-lg-start">
+    <div class="row align-items-center">
+        <div class="col-lg-4 text-center mb-4 mb-lg-0">
+            <img src="{{ url_for('static', filename='uploads/' + (student.profile.profile_photo if student.profile and student.profile.profile_photo else 'default_avatar.png')) }}"
+                 alt="{{ student.name }}"
+                 class="profile-img-lg shadow-lg"
+                 onerror="this.src='https://via.placeholder.com/140?text=Student'">
+        </div>
+        <div class="col-lg-8">
+            <span class="badge badge-cyan fs-6 mb-2"><i class="bi bi-mortarboard-fill me-1"></i> {{ student.department }}</span>
+            <h1 class="display-4 fw-extrabold text-white mb-2">{{ student.name }}</h1>
+            <p class="text-cyan fw-bold fs-5 mb-3">Register No: {{ student.register_number }}</p>
+            <p class="lead text-light mb-4">
+                {{ student.profile.career_objective if student.profile and student.profile.career_objective else 'Passionate student seeking opportunities to apply technical skills and build innovative solutions.' }}
+            </p>
+
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+                <a href="#contact-section" class="btn btn-cyan btn-lg">
+                    <i class="bi bi-envelope-fill me-1"></i> Get In Touch
+                </a>
+                {% if student.profile and student.profile.github_url %}
+                <a href="{{ student.profile.github_url }}" target="_blank" class="btn btn-outline-cyan btn-lg">
+                    <i class="bi bi-github me-1"></i> GitHub
+                </a>
+                {% endif %}
+                {% if student.profile and student.profile.linkedin_url %}
+                <a href="{{ student.profile.linkedin_url }}" target="_blank" class="btn btn-outline-cyan btn-lg">
+                    <i class="bi bi-linkedin me-1"></i> LinkedIn
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2. About Section -->
+<section id="about-section" class="mb-5">
+    <h3 class="section-title"><i class="bi bi-person-lines-fill text-cyan me-2"></i> About Me</h3>
+    <div class="card card-sky p-4 shadow-lg border-0">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-8">
+                <h5 class="fw-bold text-dark mb-3">Personal Overview</h5>
+                <p class="text-muted fs-6 mb-3">
+                    {{ student.profile.about_me if student.profile and student.profile.about_me else 'Welcome to my portfolio! I am currently pursuing ' + student.department + '. I enjoy solving problems, learning modern technologies, and collaborating on real-world projects.' }}
+                </p>
+
+                {% if student.profile and student.profile.hobbies %}
+                <div class="mt-3">
+                    <h6 class="fw-bold text-dark"><i class="bi bi-heart-fill text-danger me-1"></i> Hobbies & Interests:</h6>
+                    <p class="text-muted small mb-0">{{ student.profile.hobbies }}</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-4 border-start-lg">
+                <div class="p-3 bg-white rounded-3 shadow-sm">
+                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2"><i class="bi bi-info-circle text-cyan me-1"></i> Quick Info</h6>
+                    <p class="small mb-2"><strong>Name:</strong> {{ student.name }}</p>
+                    <p class="small mb-2"><strong>Department:</strong> {{ student.department }}</p>
+                    <p class="small mb-2"><strong>Reg No:</strong> {{ student.register_number }}</p>
+                    <p class="small mb-0"><strong>Location:</strong> {{ student.profile.address if student.profile and student.profile.address else 'Not specified' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. Skills Section -->
+<section id="skills-section" class="mb-5">
+    <h3 class="section-title"><i class="bi bi-cpu-fill text-cyan me-2"></i> Technical Skills</h3>
+    {% if student.skills %}
+        <div class="row g-3">
+            {% for skill in student.skills %}
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-sky p-3 h-100 text-center">
+                    <div class="text-cyan fs-2 mb-1"><i class="bi bi-check-circle-fill"></i></div>
+                    <h5 class="fw-bold text-dark mb-1">{{ skill.skill_name }}</h5>
+                    <div>
+                        <span class="badge badge-cyan small"><i class="bi bi-star-fill text-warning me-1"></i> {{ skill.proficiency }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card card-sky p-4 text-center">
+            <p class="text-muted mb-0">No skills added yet.</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- 4. Education Section -->
+<section id="education-section" class="mb-5">
+    <h3 class="section-title"><i class="bi bi-mortarboard-fill text-cyan me-2"></i> Education</h3>
+    {% if student.education %}
+        <div class="row g-4">
+            {% for edu in student.education %}
+            <div class="col-md-6">
+                <div class="card card-sky p-4 h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-book-half text-cyan fs-3 me-3"></i>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-0">{{ edu.degree }}</h5>
+                            <p class="text-muted small mb-0">{{ edu.institution }}</p>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="badge badge-sky"><i class="bi bi-calendar3 me-1"></i> Year: {{ edu.year_of_passing }}</span>
+                        <span class="badge badge-cyan"><i class="bi bi-award me-1"></i> Score: {{ edu.score }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card card-sky p-4 text-center">
+            <p class="text-muted mb-0">No education details added yet.</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- 5. Projects Section -->
+<section id="projects-section" class="mb-5">
+    <h3 class="section-title"><i class="bi bi-code-square text-cyan me-2"></i> Featured Projects</h3>
+    {% if student.projects %}
+        <div class="row g-4">
+            {% for proj in student.projects %}
+            <div class="col-md-6">
+                <div class="card card-sky p-4 h-100 d-flex flex-column">
+                    <h5 class="fw-bold text-dark mb-2"><i class="bi bi-folder-check text-cyan me-2"></i> {{ proj.title }}</h5>
+                    <p class="text-muted small mb-3 flex-grow-1">{{ proj.description }}</p>
+                    <div class="mb-3">
+                        <span class="small fw-bold text-dark d-block mb-1">Tech Stack:</span>
+                        {% for tech in proj.technologies_used.split(',') %}
+                            <span class="badge badge-cyan small me-1 mb-1">{{ tech.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    {% if proj.project_link %}
+                    <div>
+                        <a href="{{ proj.project_link }}" target="_blank" class="btn btn-cyan btn-sm w-100">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> View Project
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card card-sky p-4 text-center">
+            <p class="text-muted mb-0">No projects added yet.</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- 6. Certifications Section -->
+<section id="certifications-section" class="mb-5">
+    <h3 class="section-title"><i class="bi bi-patch-check-fill text-cyan me-2"></i> Certifications</h3>
+    {% if student.certifications %}
+        <div class="row g-4">
+            {% for cert in student.certifications %}
+            <div class="col-md-6">
+                <div class="card card-sky p-4 h-100 d-flex flex-column">
+                    <h5 class="fw-bold text-dark mb-2"><i class="bi bi-award text-cyan me-2"></i> {{ cert.certificate_title }}</h5>
+                    <p class="text-muted small mb-1"><strong>Issuer:</strong> {{ cert.issuing_organization }}</p>
+                    {% if cert.issue_date %}
+                    <p class="text-muted small mb-3"><strong>Issued:</strong> {{ cert.issue_date }}</p>
+                    {% endif %}
+                    {% if cert.certificate_link %}
+                    <div class="mt-auto">
+                        <a href="{{ cert.certificate_link }}" target="_blank" class="btn btn-outline-cyan btn-sm w-100">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Verify Certificate
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card card-sky p-4 text-center">
+            <p class="text-muted mb-0">No certifications added yet.</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- 7. Contact Section -->
+<section id="contact-section" class="mb-5">
+    <h3 class="section-title"><i class="bi bi-envelope-at-fill text-cyan me-2"></i> Contact Me</h3>
+    <div class="card card-sky p-4 text-center shadow-lg">
+        <h4 class="fw-bold text-dark mb-3">Let's Connect & Collaborate!</h4>
+        <p class="text-muted max-w-600 mx-auto mb-4">Feel free to reach out to me for project collaborations, internship opportunities, or general queries.</p>
+
+        <div class="row g-3 justify-content-center">
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 shadow-sm">
+                    <i class="bi bi-envelope-fill text-cyan fs-2 mb-2 d-block"></i>
+                    <h6 class="fw-bold text-dark mb-1">Email</h6>
+                    <a href="mailto:{{ student.email }}" class="text-sky fw-semibold text-decoration-none small">{{ student.email }}</a>
+                </div>
+            </div>
+            {% if student.profile and student.profile.phone %}
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 shadow-sm">
+                    <i class="bi bi-telephone-fill text-cyan fs-2 mb-2 d-block"></i>
+                    <h6 class="fw-bold text-dark mb-1">Phone</h6>
+                    <p class="text-dark fw-semibold mb-0 small">{{ student.profile.phone }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if student.profile and student.profile.address %}
+            <div class="col-md-4">
+                <div class="p-3 bg-white rounded-3 shadow-sm">
+                    <i class="bi bi-geo-alt-fill text-cyan fs-2 mb-2 d-block"></i>
+                    <h6 class="fw-bold text-dark mb-1">Location</h6>
+                    <p class="text-dark fw-semibold mb-0 small">{{ student.profile.address }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
