@@ -1,26 +1,47 @@
 import os
-from datetime import datetime, date
+from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'student_portfolio_secret_key_98765')
 
-# Admin Hardcoded Credentials
+# Upload configuration
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Admin Default Credentials
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
-# Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+# Database configuration: MySQL URI for XAMPP, fallback/option for SQLite
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/student_portfolio')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'student_portfolio.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# Models
+class Admin(db.Model):
+    __tablename__ = 'admins'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class Student(db.Model):
     __tablename__ = 'students'
@@ -32,7 +53,11 @@ class Student(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='student', lazy=True)
+    profile = db.relationship('Profile', backref='student', uselist=False, cascade="all, delete-orphan")
+    education = db.relationship('Education', backref='student', cascade="all, delete-orphan", lazy=True)
+    skills = db.relationship('Skill', backref='student', cascade="all, delete-orphan", lazy=True)
+    projects = db.relationship('Project', backref='student', cascade="all, delete-orphan", lazy=True)
+    certifications = db.relationship('Certification', backref='student', cascade="all, delete-orphan", lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,48 +65,73 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+class Profile(db.Model):
+    __tablename__ = 'profiles'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), unique=True, nullable=False)
+    profile_photo = db.Column(db.String(255), default='default_avatar.png')
+    about_me = db.Column(db.Text, nullable=True)
+    career_objective = db.Column(db.Text, nullable=True)
+    hobbies = db.Column(db.Text, nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
+    address = db.Column(db.Text, nullable=True)
+    linkedin_url = db.Column(db.String(255), nullable=True)
+    github_url = db.Column(db.String(255), nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
-
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+class Education(db.Model):
+    __tablename__ = 'education'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    degree = db.Column(db.String(100), nullable=False)
+    institution = db.Column(db.String(150), nullable=False)
+    year_of_passing = db.Column(db.String(20), nullable=False)
+    score = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
+class Skill(db.Model):
+    __tablename__ = 'skills'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    skill_name = db.Column(db.String(100), nullable=False)
+    proficiency = db.Column(db.String(50), default='Intermediate')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Project(db.Model):
+    __tablename__ = 'projects'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    technologies_used = db.Column(db.String(255), nullable=False)
+    project_link = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Certification(db.Model):
+    __tablename__ = 'certifications'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    certificate_title = db.Column(db.String(150), nullable=False)
+    issuing_organization = db.Column(db.String(150), nullable=False)
+    issue_date = db.Column(db.String(50), nullable=True)
+    certificate_link = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def seed_admin():
+    if Admin.query.filter_by(username=ADMIN_USERNAME).first() is None:
+        admin = Admin(username=ADMIN_USERNAME)
+        admin.set_password(ADMIN_PASSWORD)
+        db.session.add(admin)
         db.session.commit()
 
 # Auth Decorators
 def student_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'student':
+        if session.get('user_type') != 'student':
             flash('Please log in as a student to access this page.', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
@@ -90,12 +140,13 @@ def student_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'admin':
+        if session.get('user_type') != 'admin':
             flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
+# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -130,6 +181,11 @@ def register():
         )
         student.set_password(password)
         db.session.add(student)
+        db.session.flush()
+
+        # Create empty profile for student
+        profile = Profile(student_id=student.id)
+        db.session.add(profile)
         db.session.commit()
 
         flash('Registration successful! Please log in.', 'success')
@@ -137,42 +193,53 @@ def register():
 
     return render_template('register.html')
 
-# Student & Admin Login
+# Student Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        email_or_reg = request.form.get('email_or_reg', '').strip()
+        password = request.form.get('password', '')
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
+        student = Student.query.filter(
+            (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
+        ).first()
+
+        if student and student.check_password(password):
+            session['user_type'] = 'student'
+            session['user_id'] = student.id
+            session['user_name'] = student.name
+            flash(f'Welcome back, {student.name}!', 'success')
+            return redirect(url_for('dashboard'))
         else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
-
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
-
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
+            flash('Invalid login credentials. Please try again.', 'danger')
+            return redirect(url_for('login'))
 
     return render_template('login.html')
+
+# Admin Login
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        admin = Admin.query.filter_by(username=username).first()
+        if admin and admin.check_password(password):
+            session['user_type'] = 'admin'
+            session['admin_id'] = admin.id
+            session['user_name'] = admin.username
+            flash('Admin login successful!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        elif username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['user_type'] = 'admin'
+            session['user_name'] = ADMIN_USERNAME
+            flash('Admin login successful!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid admin credentials.', 'danger')
+            return redirect(url_for('admin_login'))
+
+    return render_template('admin_login.html')
 
 # Logout
 @app.route('/logout')
@@ -181,209 +248,308 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
-@app.route('/student/dashboard')
+# Student Dashboard
+@app.route('/dashboard')
 @student_required
-def student_dashboard():
+def dashboard():
     student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student = Student.query.get_or_404(student_id)
+    return render_template('dashboard.html', student=student)
 
-@app.route('/student/book', methods=['POST'])
+# Student Profile
+@app.route('/profile', methods=['GET', 'POST'])
 @student_required
-def book_equipment():
+def profile():
     student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+    student = Student.query.get_or_404(student_id)
+    prof = student.profile
+    if not prof:
+        prof = Profile(student_id=student.id)
+        db.session.add(prof)
+        db.session.commit()
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    if request.method == 'POST':
+        student.name = request.form.get('name', student.name).strip()
+        student.department = request.form.get('department', student.department).strip()
+        prof.about_me = request.form.get('about_me', '').strip()
+        prof.career_objective = request.form.get('career_objective', '').strip()
+        prof.hobbies = request.form.get('hobbies', '').strip()
+        prof.phone = request.form.get('phone', '').strip()
+        prof.address = request.form.get('address', '').strip()
+        prof.linkedin_url = request.form.get('linkedin_url', '').strip()
+        prof.github_url = request.form.get('github_url', '').strip()
 
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
+        # Handle Profile Photo Upload
+        if 'profile_photo' in request.files:
+            file = request.files['profile_photo']
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = f"user_{student.id}_{secure_filename(file.filename)}"
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                prof.profile_photo = filename
 
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
+        db.session.commit()
+        session['user_name'] = student.name
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('profile'))
 
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    return render_template('profile.html', student=student, profile=prof)
 
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
+# Education Management
+@app.route('/education')
+@student_required
+def education():
+    student_id = session.get('user_id')
+    education_list = Education.query.filter_by(student_id=student_id).all()
+    return render_template('education.html', education_list=education_list)
 
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
+@app.route('/education/add', methods=['POST'])
+@student_required
+def add_education():
+    student_id = session.get('user_id')
+    degree = request.form.get('degree', '').strip()
+    institution = request.form.get('institution', '').strip()
+    year_of_passing = request.form.get('year_of_passing', '').strip()
+    score = request.form.get('score', '').strip()
 
-    booking = Booking(
+    if not degree or not institution or not year_of_passing or not score:
+        flash('All fields are required.', 'danger')
+        return redirect(url_for('education'))
+
+    item = Education(
         student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
+        degree=degree,
+        institution=institution,
+        year_of_passing=year_of_passing,
+        score=score
     )
-    db.session.add(booking)
+    db.session.add(item)
     db.session.commit()
+    flash('Education details added successfully!', 'success')
+    return redirect(url_for('education'))
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
+@app.route('/education/edit/<int:id>', methods=['POST'])
+@student_required
+def edit_education(id):
+    student_id = session.get('user_id')
+    item = Education.query.filter_by(id=id, student_id=student_id).first_or_404()
 
-# Admin Dashboard & Equipment Management
+    item.degree = request.form.get('degree', item.degree).strip()
+    item.institution = request.form.get('institution', item.institution).strip()
+    item.year_of_passing = request.form.get('year_of_passing', item.year_of_passing).strip()
+    item.score = request.form.get('score', item.score).strip()
+
+    db.session.commit()
+    flash('Education record updated!', 'success')
+    return redirect(url_for('education'))
+
+@app.route('/education/delete/<int:id>', methods=['POST'])
+@student_required
+def delete_education(id):
+    student_id = session.get('user_id')
+    item = Education.query.filter_by(id=id, student_id=student_id).first_or_404()
+    db.session.delete(item)
+    db.session.commit()
+    flash('Education record deleted.', 'info')
+    return redirect(url_for('education'))
+
+# Skills Management
+@app.route('/skills')
+@student_required
+def skills():
+    student_id = session.get('user_id')
+    skills_list = Skill.query.filter_by(student_id=student_id).all()
+    return render_template('skills.html', skills_list=skills_list)
+
+@app.route('/skills/add', methods=['POST'])
+@student_required
+def add_skill():
+    student_id = session.get('user_id')
+    skill_name = request.form.get('skill_name', '').strip()
+    proficiency = request.form.get('proficiency', 'Intermediate').strip()
+
+    if not skill_name:
+        flash('Skill name is required.', 'danger')
+        return redirect(url_for('skills'))
+
+    item = Skill(student_id=student_id, skill_name=skill_name, proficiency=proficiency)
+    db.session.add(item)
+    db.session.commit()
+    flash('Skill added successfully!', 'success')
+    return redirect(url_for('skills'))
+
+@app.route('/skills/edit/<int:id>', methods=['POST'])
+@student_required
+def edit_skill(id):
+    student_id = session.get('user_id')
+    item = Skill.query.filter_by(id=id, student_id=student_id).first_or_404()
+
+    item.skill_name = request.form.get('skill_name', item.skill_name).strip()
+    item.proficiency = request.form.get('proficiency', item.proficiency).strip()
+
+    db.session.commit()
+    flash('Skill updated successfully!', 'success')
+    return redirect(url_for('skills'))
+
+@app.route('/skills/delete/<int:id>', methods=['POST'])
+@student_required
+def delete_skill(id):
+    student_id = session.get('user_id')
+    item = Skill.query.filter_by(id=id, student_id=student_id).first_or_404()
+    db.session.delete(item)
+    db.session.commit()
+    flash('Skill deleted.', 'info')
+    return redirect(url_for('skills'))
+
+# Projects Management
+@app.route('/projects')
+@student_required
+def projects():
+    student_id = session.get('user_id')
+    projects_list = Project.query.filter_by(student_id=student_id).all()
+    return render_template('projects.html', projects_list=projects_list)
+
+@app.route('/projects/add', methods=['POST'])
+@student_required
+def add_project():
+    student_id = session.get('user_id')
+    title = request.form.get('title', '').strip()
+    description = request.form.get('description', '').strip()
+    technologies_used = request.form.get('technologies_used', '').strip()
+    project_link = request.form.get('project_link', '').strip()
+
+    if not title or not description or not technologies_used:
+        flash('Title, description, and technologies are required.', 'danger')
+        return redirect(url_for('projects'))
+
+    item = Project(
+        student_id=student_id,
+        title=title,
+        description=description,
+        technologies_used=technologies_used,
+        project_link=project_link
+    )
+    db.session.add(item)
+    db.session.commit()
+    flash('Project added successfully!', 'success')
+    return redirect(url_for('projects'))
+
+@app.route('/projects/edit/<int:id>', methods=['POST'])
+@student_required
+def edit_project(id):
+    student_id = session.get('user_id')
+    item = Project.query.filter_by(id=id, student_id=student_id).first_or_404()
+
+    item.title = request.form.get('title', item.title).strip()
+    item.description = request.form.get('description', item.description).strip()
+    item.technologies_used = request.form.get('technologies_used', item.technologies_used).strip()
+    item.project_link = request.form.get('project_link', item.project_link).strip()
+
+    db.session.commit()
+    flash('Project updated successfully!', 'success')
+    return redirect(url_for('projects'))
+
+@app.route('/projects/delete/<int:id>', methods=['POST'])
+@student_required
+def delete_project(id):
+    student_id = session.get('user_id')
+    item = Project.query.filter_by(id=id, student_id=student_id).first_or_404()
+    db.session.delete(item)
+    db.session.commit()
+    flash('Project deleted.', 'info')
+    return redirect(url_for('projects'))
+
+# Certifications Management
+@app.route('/certifications')
+@student_required
+def certifications():
+    student_id = session.get('user_id')
+    certifications_list = Certification.query.filter_by(student_id=student_id).all()
+    return render_template('certifications.html', certifications_list=certifications_list)
+
+@app.route('/certifications/add', methods=['POST'])
+@student_required
+def add_certification():
+    student_id = session.get('user_id')
+    certificate_title = request.form.get('certificate_title', '').strip()
+    issuing_organization = request.form.get('issuing_organization', '').strip()
+    issue_date = request.form.get('issue_date', '').strip()
+    certificate_link = request.form.get('certificate_link', '').strip()
+
+    if not certificate_title or not issuing_organization:
+        flash('Title and Issuing Organization are required.', 'danger')
+        return redirect(url_for('certifications'))
+
+    item = Certification(
+        student_id=student_id,
+        certificate_title=certificate_title,
+        issuing_organization=issuing_organization,
+        issue_date=issue_date,
+        certificate_link=certificate_link
+    )
+    db.session.add(item)
+    db.session.commit()
+    flash('Certification added successfully!', 'success')
+    return redirect(url_for('certifications'))
+
+@app.route('/certifications/edit/<int:id>', methods=['POST'])
+@student_required
+def edit_certification(id):
+    student_id = session.get('user_id')
+    item = Certification.query.filter_by(id=id, student_id=student_id).first_or_404()
+
+    item.certificate_title = request.form.get('certificate_title', item.certificate_title).strip()
+    item.issuing_organization = request.form.get('issuing_organization', item.issuing_organization).strip()
+    item.issue_date = request.form.get('issue_date', item.issue_date).strip()
+    item.certificate_link = request.form.get('certificate_link', item.certificate_link).strip()
+
+    db.session.commit()
+    flash('Certification updated successfully!', 'success')
+    return redirect(url_for('certifications'))
+
+@app.route('/certifications/delete/<int:id>', methods=['POST'])
+@student_required
+def delete_certification(id):
+    student_id = session.get('user_id')
+    item = Certification.query.filter_by(id=id, student_id=student_id).first_or_404()
+    db.session.delete(item)
+    db.session.commit()
+    flash('Certification deleted.', 'info')
+    return redirect(url_for('certifications'))
+
+# Portfolio Generator View
+@app.route('/portfolio')
+@app.route('/portfolio/<int:student_id>')
+def portfolio(student_id=None):
+    if student_id is None:
+        student_id = session.get('user_id')
+        if not student_id:
+            flash('Please log in or select a portfolio to view.', 'info')
+            return redirect(url_for('login'))
+
+    student = Student.query.get_or_404(student_id)
+    return render_template('portfolio.html', student=student)
+
+# Admin Dashboard
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    students = Student.query.order_by(Student.created_at.desc()).all()
+    total_students = len(students)
+    total_projects = Project.query.count()
+    total_skills = Skill.query.count()
+    return render_template('admin_dashboard.html', students=students, total_students=total_students, total_projects=total_projects, total_skills=total_skills)
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
-
-    return render_template(
-        'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
-    )
-
-@app.route('/admin/equipment/add', methods=['POST'])
+@app.route('/admin/student/delete/<int:student_id>', methods=['POST'])
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
-
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
-    )
-    db.session.add(equipment)
+def admin_delete_student(student_id):
+    student = Student.query.get_or_404(student_id)
+    db.session.delete(student)
     db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
-@admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
-
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
-
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
-@admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
-@admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
+    flash(f'Student "{student.name}" and all associated data deleted.', 'info')
     return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        seed_default_data()
+        seed_admin()
     app.run(debug=True)

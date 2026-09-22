@@ -1,8 +1,7 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Profile, Education, Skill, Project, Certification, Admin
 
-class SportsBookingTestCase(unittest.TestCase):
+class StudentPortfolioTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,11 +10,6 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
-            db.session.commit()
 
     def tearDown(self):
         with app.app_context():
@@ -25,92 +19,126 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'name': 'Jane Student',
+            'register_number': 'REG202401',
+            'department': 'Computer Science & Engineering',
+            'email': 'jane@student.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'jane@student.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'Welcome back, Jane Student!', response.data)
 
-    def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
-        }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
-
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_profile_management(self):
+        # Register and login
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
+            'name': 'Jane Student',
+            'register_number': 'REG202401',
+            'department': 'Computer Science & Engineering',
+            'email': 'jane@student.edu',
+            'password': 'password123'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
+            'email_or_reg': 'jane@student.edu',
+            'password': 'password123'
+        })
+
+        # Update profile
+        response = self.client.post('/profile', data={
+            'name': 'Jane Student Updated',
+            'department': 'Computer Science & Engineering',
+            'about_me': 'Passionate Python and Web Developer.',
+            'career_objective': 'To obtain a Software Engineer role.',
+            'hobbies': 'Coding, Reading',
+            'phone': '9876543210',
+            'address': 'Chennai, India',
+            'linkedin_url': 'https://linkedin.com/in/janestudent',
+            'github_url': 'https://github.com/janestudent'
+        }, follow_redirects=True)
+        self.assertIn(b'Profile updated successfully!', response.data)
+
+    def test_crud_education_skills_projects_certifications(self):
+        # Register and login
+        self.client.post('/register', data={
+            'name': 'Alex Coder',
+            'register_number': 'REG202402',
+            'department': 'Information Technology',
+            'email': 'alex@coder.edu',
+            'password': 'password123'
+        })
+        self.client.post('/login', data={
+            'email_or_reg': 'alex@coder.edu',
+            'password': 'password123'
+        })
+
+        # Add Education
+        res_edu = self.client.post('/education/add', data={
+            'degree': 'B.Tech IT',
+            'institution': 'ABC Institute',
+            'year_of_passing': '2025',
+            'score': '9.0 CGPA'
+        }, follow_redirects=True)
+        self.assertIn(b'Education details added successfully!', res_edu.data)
+
+        # Add Skill
+        res_skill = self.client.post('/skills/add', data={
+            'skill_name': 'Python',
+            'proficiency': 'Advanced'
+        }, follow_redirects=True)
+        self.assertIn(b'Skill added successfully!', res_skill.data)
+
+        # Add Project
+        res_proj = self.client.post('/projects/add', data={
+            'title': 'Portfolio Generator',
+            'description': 'A Flask based portfolio generator',
+            'technologies_used': 'Python, Flask, Bootstrap, MySQL',
+            'project_link': 'https://github.com/alex/portfolio'
+        }, follow_redirects=True)
+        self.assertIn(b'Project added successfully!', res_proj.data)
+
+        # Add Certification
+        res_cert = self.client.post('/certifications/add', data={
+            'certificate_title': 'Python Developer Certificate',
+            'issuing_organization': 'Coursera',
+            'issue_date': 'May 2024',
+            'certificate_link': 'https://coursera.org/verify/1234'
+        }, follow_redirects=True)
+        self.assertIn(b'Certification added successfully!', res_cert.data)
+
+        # View Generated Portfolio Page
+        res_port = self.client.get('/portfolio')
+        self.assertIn(b'Alex Coder', res_port.data)
+        self.assertIn(b'B.Tech IT', res_port.data)
+        self.assertIn(b'Python', res_port.data)
+        self.assertIn(b'Portfolio Generator', res_port.data)
+        self.assertIn(b'Python Developer Certificate', res_port.data)
+
+    def test_admin_workflow(self):
+        # Register student
+        self.client.post('/register', data={
+            'name': 'Student One',
+            'register_number': 'REG001',
+            'department': 'Mechanical',
+            'email': 'student1@test.com',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
-
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
-
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+        # Admin login
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
-        })
+        }, follow_redirects=True)
+        self.assertIn(b'Admin login successful!', response.data)
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
-
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+        # Check Admin Dashboard
+        res_dash = self.client.get('/admin/dashboard')
+        self.assertIn(b'Student One', res_dash.data)
+        self.assertIn(b'REG001', res_dash.data)
 
 if __name__ == '__main__':
     unittest.main()

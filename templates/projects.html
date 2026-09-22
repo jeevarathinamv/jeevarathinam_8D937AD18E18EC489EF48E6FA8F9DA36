@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Projects - Student Portfolio Generator{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-2">
+    <div class="col-lg-10">
+        <div class="card card-sky p-4 shadow-lg border-0">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h3 class="fw-bold text-dark mb-0"><i class="bi bi-folder-symlink text-cyan me-2"></i> Manage Projects</h3>
+                <div>
+                    <button type="button" class="btn btn-cyan btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+                        <i class="bi bi-plus-circle me-1"></i> Add Project
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+                </div>
+            </div>
+
+            <!-- List of Projects -->
+            {% if projects_list %}
+                <div class="row g-4">
+                    {% for proj in projects_list %}
+                    <div class="col-md-6">
+                        <div class="card bg-white border-0 shadow-sm p-3 rounded-3 h-100 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-code-square text-cyan me-1"></i> {{ proj.title }}</h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li>
+                                            <button class="dropdown-item text-primary" data-bs-toggle="modal" data-bs-target="#editProjectModal{{ proj.id }}">
+                                                <i class="bi bi-pencil me-2"></i> Edit
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <form action="{{ url_for('delete_project', id=proj.id) }}" method="POST" onsubmit="return confirm('Delete project {{ proj.title }}?');">
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="bi bi-trash me-2"></i> Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <p class="text-muted small mb-3 flex-grow-1">{{ proj.description }}</p>
+
+                            <div class="mb-3">
+                                <span class="small fw-bold text-dark d-block mb-1"><i class="bi bi-cpu me-1"></i> Technologies:</span>
+                                {% for tech in proj.technologies_used.split(',') %}
+                                    <span class="badge badge-sky small me-1 mb-1">{{ tech.strip() }}</span>
+                                {% endfor %}
+                            </div>
+
+                            {% if proj.project_link %}
+                            <div>
+                                <a href="{{ proj.project_link }}" target="_blank" class="btn btn-outline-cyan btn-sm w-100">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> View Project Link
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Edit Project Modal -->
+                    <div class="modal fade" id="editProjectModal{{ proj.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content modal-content-custom">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square text-cyan me-1"></i> Edit Project</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="{{ url_for('edit_project', id=proj.id) }}" method="POST">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Project Title</label>
+                                            <input type="text" class="form-control form-control-custom" name="title" value="{{ proj.title }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Project Description</label>
+                                            <textarea class="form-control form-control-custom" name="description" rows="3" required>{{ proj.description }}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Technologies Used (Comma separated)</label>
+                                            <input type="text" class="form-control form-control-custom" name="technologies_used" value="{{ proj.technologies_used }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Project / GitHub Link (Optional)</label>
+                                            <input type="url" class="form-control form-control-custom" name="project_link" value="{{ proj.project_link or '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-cyan">Save Changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-folder-x text-muted display-1 mb-3"></i>
+                    <h5 class="text-dark fw-bold">No Projects Added Yet</h5>
+                    <p class="text-muted small">Click the "Add Project" button to showcase your academic or personal projects.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Project Modal -->
+<div class="modal fade" id="addProjectModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle-fill text-cyan me-1"></i> Add Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_project') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Project Title</label>
+                        <input type="text" class="form-control form-control-custom" name="title" placeholder="e.g. Student Portfolio Website Generator" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Project Description</label>
+                        <textarea class="form-control form-control-custom" name="description" rows="3" placeholder="Brief explanation of what the project does and key features..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Technologies Used (Comma separated)</label>
+                        <input type="text" class="form-control form-control-custom" name="technologies_used" placeholder="e.g. Python, Flask, HTML, Bootstrap, MySQL" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Project / GitHub Link (Optional)</label>
+                        <input type="url" class="form-control form-control-custom" name="project_link" placeholder="https://github.com/username/project">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-cyan"><i class="bi bi-check-lg me-1"></i> Add Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

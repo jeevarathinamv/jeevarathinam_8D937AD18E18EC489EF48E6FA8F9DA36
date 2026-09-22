@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Student Portfolio Generator{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-white mb-1"><i class="bi bi-speedometer2 text-cyan me-2"></i> Student Dashboard</h2>
+        <p class="text-light opacity-75">Welcome back, <span class="text-cyan fw-bold">{{ student.name }}</span>! Manage your portfolio content below.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('portfolio') }}" target="_blank" class="btn btn-cyan btn-lg">
+            <i class="bi bi-rocket-takeoff-fill me-2"></i> View Live Portfolio
+        </a>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="row g-4 mb-4">
+    <!-- Student Overview -->
+    <div class="col-md-4">
+        <div class="card card-sky p-3 h-100">
+            <div class="d-flex align-items-center mb-3">
+                <img src="{{ url_for('static', filename='uploads/' + (student.profile.profile_photo if student.profile and student.profile.profile_photo else 'default_avatar.png')) }}"
+                     alt="Profile Photo"
+                     class="profile-img-sm me-3"
+                     onerror="this.src='https://via.placeholder.com/60?text=User'">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">{{ student.name }}</h5>
+                    <span class="badge badge-sky small">{{ student.register_number }}</span>
+                </div>
+            </div>
+            <p class="small text-muted mb-1"><i class="bi bi-building me-1"></i> <strong>Department:</strong> {{ student.department }}</p>
+            <p class="small text-muted mb-3"><i class="bi bi-envelope me-1"></i> <strong>Email:</strong> {{ student.email }}</p>
+            <a href="{{ url_for('profile') }}" class="btn btn-sm btn-outline-cyan w-100">
+                <i class="bi bi-pencil-square me-1"></i> Edit Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="col-md-8">
+        <div class="row g-3 h-100">
+            <div class="col-sm-6">
+                <div class="card card-sky p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <div class="text-cyan fs-2"><i class="bi bi-mortarboard-fill"></i></div>
+                    <h3 class="fw-bold text-dark mb-0">{{ student.education|length }}</h3>
+                    <p class="text-muted small mb-0">Education Qualifications</p>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card card-sky p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <div class="text-cyan fs-2"><i class="bi bi-tools"></i></div>
+                    <h3 class="fw-bold text-dark mb-0">{{ student.skills|length }}</h3>
+                    <p class="text-muted small mb-0">Technical Skills</p>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card card-sky p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <div class="text-cyan fs-2"><i class="bi bi-code-square"></i></div>
+                    <h3 class="fw-bold text-dark mb-0">{{ student.projects|length }}</h3>
+                    <p class="text-muted small mb-0">Projects Showcase</p>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card card-sky p-3 text-center h-100 d-flex flex-column justify-content-center">
+                    <div class="text-cyan fs-2"><i class="bi bi-award-fill"></i></div>
+                    <h3 class="fw-bold text-dark mb-0">{{ student.certifications|length }}</h3>
+                    <p class="text-muted small mb-0">Certifications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Modules Grid -->
+<h4 class="fw-bold text-white mb-3"><i class="bi bi-grid-fill text-cyan me-2"></i> Manage Portfolio Sections</h4>
+
+<div class="row g-4">
+    <!-- Module 1: Profile -->
+    <div class="col-md-4">
+        <div class="card card-sky p-4 h-100 text-center">
+            <div class="text-cyan fs-1 mb-2"><i class="bi bi-person-bounding-box"></i></div>
+            <h5 class="fw-bold text-dark">Profile & Bio</h5>
+            <p class="text-muted small">Update your profile photo, about me, objective, hobbies & contact links.</p>
+            <a href="{{ url_for('profile') }}" class="btn btn-cyan mt-auto">
+                <i class="bi bi-gear-fill me-1"></i> Manage Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 2: Education -->
+    <div class="col-md-4">
+        <div class="card card-sky p-4 h-100 text-center">
+            <div class="text-cyan fs-1 mb-2"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <h5 class="fw-bold text-dark">Education</h5>
+            <p class="text-muted small">Add or update school, college, degrees, passing year, and marks/CGPA.</p>
+            <a href="{{ url_for('education') }}" class="btn btn-cyan mt-auto">
+                <i class="bi bi-gear-fill me-1"></i> Manage Education
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 3: Skills -->
+    <div class="col-md-4">
+        <div class="card card-sky p-4 h-100 text-center">
+            <div class="text-cyan fs-1 mb-2"><i class="bi bi-cpu-fill"></i></div>
+            <h5 class="fw-bold text-dark">Skills</h5>
+            <p class="text-muted small">Add tech skills like Python, HTML, CSS, JS, Bootstrap, MySQL & proficiency.</p>
+            <a href="{{ url_for('skills') }}" class="btn btn-cyan mt-auto">
+                <i class="bi bi-gear-fill me-1"></i> Manage Skills
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 4: Projects -->
+    <div class="col-md-6">
+        <div class="card card-sky p-4 h-100 text-center">
+            <div class="text-cyan fs-1 mb-2"><i class="bi bi-folder-symlink-fill"></i></div>
+            <h5 class="fw-bold text-dark">Projects</h5>
+            <p class="text-muted small">Showcase your projects with titles, descriptions, tech stacks, and live demo links.</p>
+            <a href="{{ url_for('projects') }}" class="btn btn-cyan mt-auto">
+                <i class="bi bi-gear-fill me-1"></i> Manage Projects
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 5: Certifications -->
+    <div class="col-md-6">
+        <div class="card card-sky p-4 h-100 text-center">
+            <div class="text-cyan fs-1 mb-2"><i class="bi bi-patch-check-fill"></i></div>
+            <h5 class="fw-bold text-dark">Certifications</h5>
+            <p class="text-muted small">List course completion certificates, issuing organizations, and verifiable links.</p>
+            <a href="{{ url_for('certifications') }}" class="btn btn-cyan mt-auto">
+                <i class="bi bi-gear-fill me-1"></i> Manage Certifications
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
