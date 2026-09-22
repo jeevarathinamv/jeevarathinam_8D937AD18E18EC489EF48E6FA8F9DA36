@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Alumni Registration - Alumni Mentorship Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-7">
+        <div class="card card-custom shadow-lg">
+            <div class="card-header-gradient text-center py-4">
+                <h3 class="fw-bold mb-1"><i class="bi bi-briefcase-fill me-2"></i>Alumni Registration</h3>
+                <p class="small mb-0 opacity-90">Join as a mentor to guide and empower students</p>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('alumni_register') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold text-dark"><i class="bi bi-person me-1 text-primary"></i> Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="department" class="form-label fw-semibold text-dark"><i class="bi bi-building me-1 text-pink"></i> Department</label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="" disabled selected>Select Department</option>
+                                <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Electronics & Communication">Electronics & Communication</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="Civil Engineering">Civil Engineering</option>
+                                <option value="Electrical Engineering">Electrical Engineering</option>
+                                <option value="Management Studies (MBA)">Management Studies (MBA)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="graduation_year" class="form-label fw-semibold text-dark"><i class="bi bi-calendar-check me-1 text-purple"></i> Graduation Year</label>
+                            <input type="number" class="form-control" id="graduation_year" name="graduation_year" placeholder="e.g. 2021" min="1980" max="2025" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="experience" class="form-label fw-semibold text-dark"><i class="bi bi-clock-history me-1 text-info"></i> Experience</label>
+                            <select class="form-select" id="experience" name="experience" required>
+                                <option value="1-2 Years">1-2 Years</option>
+                                <option value="3-5 Years">3-5 Years</option>
+                                <option value="5-8 Years">5-8 Years</option>
+                                <option value="8+ Years">8+ Years</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="job_role" class="form-label fw-semibold text-dark"><i class="bi bi-person-workspace me-1 text-primary"></i> Job Role / Designation</label>
+                            <input type="text" class="form-control" id="job_role" name="job_role" placeholder="e.g. Software Engineer" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="company" class="form-label fw-semibold text-dark"><i class="bi bi-building-fill-gear me-1 text-pink"></i> Company / Organization</label>
+                            <input type="text" class="form-control" id="company" name="company" placeholder="e.g. Google, Microsoft, TCS" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="email" class="form-label fw-semibold text-dark"><i class="bi bi-envelope me-1 text-primary"></i> Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="alumni@company.com" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="password" class="form-label fw-semibold text-dark"><i class="bi bi-lock me-1 text-purple"></i> Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient-secondary w-100 py-2 fs-5 fw-bold mt-4 mb-3">
+                        <i class="bi bi-check-circle-fill me-2"></i>Register Alumni Account
+                    </button>
+
+                    <div class="text-center pt-2 border-top">
+                        <p class="mb-0 text-muted">Already registered as an Alumni?
+                            <a href="{{ url_for('alumni_login') }}" class="fw-bold text-pink text-decoration-none">Login Here</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

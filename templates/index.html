@@ -1,75 +1,156 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Alumni Mentorship & Career Guidance Portal{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+<!-- Hero Banner -->
+<div class="hero-card mb-5">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-light text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                <i class="bi bi-stars text-primary me-1"></i> Connect • Learn • Excel
+            </span>
+            <h1 class="hero-title mb-3">Empowering Your Career with Alumni Mentorship</h1>
+            <p class="lead mb-4 text-light opacity-90">
+                Bridge the gap between campus and industry. Seek 1-on-1 career guidance, interview preparation, resume reviews, and skill advice directly from experienced university alumni.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{{ url_for('find_mentor') }}" class="btn btn-gradient-primary btn-lg">
+                    <i class="bi bi-search me-2"></i>Find Alumni Mentor
                 </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
+                <a href="{{ url_for('student_register') }}" class="btn btn-gradient-secondary btn-lg">
+                    <i class="bi bi-mortarboard-fill me-2"></i>Student Register
                 </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
+                <a href="{{ url_for('alumni_register') }}" class="btn btn-gradient-pink btn-lg">
+                    <i class="bi bi-briefcase-fill me-2"></i>Alumni Register
                 </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+            <div class="p-4 rounded-4 bg-white bg-opacity-10 backdrop-blur shadow-lg border border-white border-opacity-25">
+                <i class="bi bi-people-fill display-1 text-info mb-3 d-block"></i>
+                <h4 class="fw-bold mb-1">Direct Network</h4>
+                <p class="small text-light opacity-75 mb-0">Learn directly from professionals working in top global organizations.</p>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<!-- Quick Statistics -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3 col-6">
+        <div class="stat-card stat-blue text-center">
+            <i class="bi bi-award-fill fs-1 mb-2 d-block"></i>
+            <h2 class="fw-bold mb-1">{{ alumni_count }}</h2>
+            <p class="mb-0 fw-semibold">Alumni Mentors</p>
         </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card stat-purple text-center">
+            <i class="bi bi-mortarboard-fill fs-1 mb-2 d-block"></i>
+            <h2 class="fw-bold mb-1">{{ student_count }}</h2>
+            <p class="mb-0 fw-semibold">Active Students</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card stat-pink text-center">
+            <i class="bi bi-chat-quote-fill fs-1 mb-2 d-block"></i>
+            <h2 class="fw-bold mb-1">{{ mentorship_count }}</h2>
+            <p class="mb-0 fw-semibold">Mentorship Requests</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card stat-teal text-center">
+            <i class="bi bi-journal-text fs-1 mb-2 d-block"></i>
+            <h2 class="fw-bold mb-1">{{ guidance_count }}</h2>
+            <p class="mb-0 fw-semibold">Career Guidance Posts</p>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Alumni -->
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-light mb-1"><i class="bi bi-star-fill text-warning me-2"></i>Featured Alumni Mentors</h3>
+            <p class="text-light opacity-75 mb-0">Connect with accomplished graduates across departments and top companies.</p>
+        </div>
+        <a href="{{ url_for('find_mentor') }}" class="btn btn-outline-light rounded-pill px-4">View All Mentors <i class="bi bi-arrow-right"></i></a>
     </div>
 
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+        {% if recent_alumni %}
+            {% for alumni in recent_alumni %}
+                <div class="col-md-4">
+                    <div class="card card-custom h-100">
+                        <div class="card-header-gradient d-flex align-items-center justify-content-between">
+                            <span class="fw-bold"><i class="bi bi-person-circle me-2"></i>{{ alumni.name }}</span>
+                            <span class="badge bg-light text-dark rounded-pill">{{ alumni.graduation_year }}</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-primary mb-1">{{ alumni.job_role }}</h5>
+                            <p class="text-muted fw-semibold mb-3"><i class="bi bi-building me-1 text-purple"></i>{{ alumni.company }}</p>
+                            <div class="bg-light p-3 rounded-3 mb-3">
+                                <p class="small text-secondary mb-1"><strong>Department:</strong> {{ alumni.department }}</p>
+                                <p class="small text-secondary mb-0"><strong>Experience:</strong> {{ alumni.experience }}</p>
+                            </div>
+                            {% if session.get('user_type') == 'student' %}
+                                <a href="{{ url_for('mentorship_request', alumni_id=alumni.id) }}" class="btn btn-gradient-primary w-100">
+                                    <i class="bi bi-chat-left-dots-fill me-1"></i>Request Mentorship
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('find_mentor') }}" class="btn btn-gradient-secondary w-100">
+                                    <i class="bi bi-eye-fill me-1"></i>View Profile
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-4 bg-white bg-opacity-10 rounded-4">
+                <p class="text-light opacity-75 mb-0">No alumni registered yet.</p>
             </div>
-        </div>
+        {% endif %}
+    </div>
+</div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
-            </div>
+<!-- Latest Career Guidance Posts -->
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-light mb-1"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Latest Career Advice & Tips</h3>
+            <p class="text-light opacity-75 mb-0">Actionable advice on interview preparation, resume creation, and core skills.</p>
         </div>
+        <a href="{{ url_for('career_guidance') }}" class="btn btn-outline-light rounded-pill px-4">Browse Guidance <i class="bi bi-arrow-right"></i></a>
+    </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+    <div class="row g-4">
+        {% if recent_guidance %}
+            {% for guidance in recent_guidance %}
+                <div class="col-md-4">
+                    <div class="card card-custom h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge badge-category mb-2">{{ guidance.category }}</span>
+                            </div>
+                            <h5 class="card-title fw-bold text-dark mb-2">{{ guidance.title }}</h5>
+                            <p class="card-text text-secondary small flex-grow-1">
+                                {{ guidance.content[:150] }}{% if guidance.content|length > 150 %}...{% endif %}
+                            </p>
+                            <div class="border-top pt-3 mt-2 d-flex align-items-center justify-content-between">
+                                <small class="text-purple fw-semibold"><i class="bi bi-person-fill"></i> {{ guidance.alumni.name }}</small>
+                                <small class="text-muted"><i class="bi bi-building"></i> {{ guidance.alumni.company }}</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-4 bg-white bg-opacity-10 rounded-4">
+                <p class="text-light opacity-75 mb-0">No career guidance posts available yet.</p>
             </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
