@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Application Follow-up - {{ application.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Application Header -->
+    <div class="navy-card p-4 rounded-4 shadow mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-cyan text-dark fw-bold mb-2">Application #{{ application.id }}</span>
+                <h3 class="fw-bold text-white mb-1">{{ application.role }} @ {{ application.company_name }}</h3>
+                <p class="text-cyan mb-0 small">
+                    <i class="bi bi-geo-alt me-1"></i> {{ application.location }} &bull;
+                    Applied on: {{ application.application_date.strftime('%Y-%m-%d') }}
+                </p>
+            </div>
+            <div>
+                <span class="fs-6 me-2 text-white opacity-75">Current Status:</span>
+                {% if application.status == 'Selected' %}
+                    <span class="badge badge-status badge-selected fs-6"><i class="bi bi-check-circle-fill"></i> Selected</span>
+                {% elif application.status == 'Applied' %}
+                    <span class="badge badge-status badge-applied fs-6"><i class="bi bi-hourglass-split"></i> Applied</span>
+                {% elif application.status == 'Shortlisted' %}
+                    <span class="badge badge-status badge-shortlisted fs-6"><i class="bi bi-bookmark-star-fill"></i> Shortlisted</span>
+                {% elif application.status == 'Interview Scheduled' %}
+                    <span class="badge badge-status badge-interview fs-6"><i class="bi bi-calendar-event"></i> Interview Scheduled</span>
+                {% elif application.status == 'Rejected' %}
+                    <span class="badge badge-status badge-rejected fs-6"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                {% else %}
+                    <span class="badge badge-status bg-secondary fs-6">{{ application.status }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Follow-up Form -->
+        <div class="col-lg-5">
+            <div class="card sky-card p-4 border-0 shadow">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-plus-circle-fill text-cyan me-2"></i> Record New Follow-up
+                </h5>
+
+                <form action="{{ url_for('followup', app_id=application.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="followup_date" class="form-label fw-semibold text-dark">Follow-up Date <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-calendar-event text-cyan"></i></span>
+                            <input type="date" class="form-control" id="followup_date" name="followup_date" value="{{ today }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label fw-semibold text-dark">Follow-up Note / Email Response <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="e.g. Sent polite follow-up email to HR; received response that interviews start next week." required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="updated_status" class="form-label fw-semibold text-dark">Update Application Status</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-flag text-cyan"></i></span>
+                            <select class="form-select" id="updated_status" name="updated_status">
+                                <option value="Applied" {% if application.status == 'Applied' %}selected{% endif %}>Applied (Waiting)</option>
+                                <option value="Shortlisted" {% if application.status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                <option value="Interview Scheduled" {% if application.status == 'Interview Scheduled' %}selected{% endif %}>Interview Scheduled</option>
+                                <option value="Selected" {% if application.status == 'Selected' %}selected{% endif %}>Selected / Offer</option>
+                                <option value="Rejected" {% if application.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyan w-100 py-2.5 rounded-pill mb-2">
+                        <i class="bi bi-save-fill me-1"></i> Save Follow-up & Update Status
+                    </button>
+
+                    <a href="{{ url_for('applications') }}" class="btn btn-outline-secondary w-100 py-2 rounded-pill">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Tracker
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Follow-up History Timeline -->
+        <div class="col-lg-7">
+            <div class="card sky-card p-4 border-0 shadow">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-history text-cyan me-2"></i> Follow-up History
+                </h5>
+
+                {% if application.followups %}
+                    <div class="timeline position-relative ps-3 border-start border-cyan border-2">
+                        {% for f in application.followups %}
+                            <div class="timeline-item mb-4 position-relative ps-3">
+                                <div class="p-3 bg-white rounded-3 shadow-sm border border-light">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-bold text-cyan">
+                                            <i class="bi bi-calendar-check me-1"></i> {{ f.followup_date.strftime('%Y-%m-%d') }}
+                                        </span>
+                                        {% if f.updated_status %}
+                                            <span class="badge bg-secondary text-white small">{{ f.updated_status }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-0 text-dark small" style="white-space: pre-line;">{{ f.notes }}</p>
+                                    <div class="text-end mt-1">
+                                        <span class="text-muted text-opacity-75 fs-7">{{ f.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-clock fs-1 text-cyan mb-2"></i>
+                        <p class="text-secondary fw-medium">No follow-ups recorded yet for this application.</p>
+                        <p class="small text-muted">Use the form on the left to add your first follow-up note.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

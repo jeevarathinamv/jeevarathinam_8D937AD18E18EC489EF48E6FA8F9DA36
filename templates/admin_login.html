@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Internship Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card sky-card p-4 p-md-5 border-0 shadow-lg">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 bg-info bg-opacity-10 text-cyan rounded-circle mb-3">
+                        <i class="bi bi-shield-lock-fill fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">Admin Login</h3>
+                    <p class="text-secondary small">Administrator Control Panel Access</p>
+                </div>
+
+                <form action="{{ url_for('admin_login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold text-dark">Username <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-person-fill text-cyan"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Admin username" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold text-dark">Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-key-fill text-cyan"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Admin password" required>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info py-2 small mb-4">
+                        <i class="bi bi-info-circle me-1"></i> Default Admin Credentials: <strong>admin</strong> / <strong>admin123</strong>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyan w-100 py-2.5 rounded-pill mb-3">
+                        <i class="bi bi-shield-check me-2"></i> Login as Admin
+                    </button>
+
+                    <div class="text-center">
+                        <a href="{{ url_for('login') }}" class="text-secondary small text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Student Login
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

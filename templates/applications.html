@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Application Tracker - Internship Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 navy-card p-4 rounded-4 shadow">
+        <div>
+            <h2 class="fw-bold text-white mb-1">
+                <i class="bi bi-list-task text-cyan me-2"></i> Application Tracker
+            </h2>
+            <p class="text-cyan mb-0 small">
+                Monitor all your submitted internship applications and status updates
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('add_application') }}" class="btn btn-cyan rounded-pill px-4">
+                <i class="bi bi-plus-circle-fill me-2"></i> Add Application
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Filters -->
+    <div class="card sky-card p-3 mb-4 border-0 shadow-sm">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="fw-bold text-dark me-2"><i class="bi bi-funnel-fill text-cyan me-1"></i> Filter Status:</span>
+            <a href="{{ url_for('applications') }}" class="btn btn-sm rounded-pill {% if not current_filter %}btn-cyan{% else %}btn-outline-secondary{% endif %}">
+                All
+            </a>
+            <a href="{{ url_for('applications', status='Applied') }}" class="btn btn-sm rounded-pill {% if current_filter == 'Applied' %}btn-warning text-dark fw-bold{% else %}btn-outline-warning text-dark{% endif %}">
+                Applied
+            </a>
+            <a href="{{ url_for('applications', status='Shortlisted') }}" class="btn btn-sm rounded-pill {% if current_filter == 'Shortlisted' %}btn-primary fw-bold{% else %}btn-outline-primary{% endif %}">
+                Shortlisted
+            </a>
+            <a href="{{ url_for('applications', status='Interview Scheduled') }}" class="btn btn-sm rounded-pill {% if current_filter == 'Interview Scheduled' %}btn-info text-white fw-bold{% else %}btn-outline-info{% endif %}">
+                Interview Scheduled
+            </a>
+            <a href="{{ url_for('applications', status='Selected') }}" class="btn btn-sm rounded-pill {% if current_filter == 'Selected' %}btn-success fw-bold{% else %}btn-outline-success{% endif %}">
+                Selected
+            </a>
+            <a href="{{ url_for('applications', status='Rejected') }}" class="btn btn-sm rounded-pill {% if current_filter == 'Rejected' %}btn-danger fw-bold{% else %}btn-outline-danger{% endif %}">
+                Rejected
+            </a>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="card sky-card p-4 border-0 shadow">
+        {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Company</th>
+                            <th>Role</th>
+                            <th>Application Date</th>
+                            <th>Status</th>
+                            <th>Interview Date</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td class="fw-bold text-dark">{{ app.company_name }}</td>
+                                <td>{{ app.role }}</td>
+                                <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if app.status == 'Selected' %}
+                                        <span class="badge badge-status badge-selected"><i class="bi bi-check-circle-fill"></i> Selected</span>
+                                    {% elif app.status == 'Applied' %}
+                                        <span class="badge badge-status badge-applied"><i class="bi bi-hourglass-split"></i> Applied</span>
+                                    {% elif app.status == 'Shortlisted' %}
+                                        <span class="badge badge-status badge-shortlisted"><i class="bi bi-bookmark-star-fill"></i> Shortlisted</span>
+                                    {% elif app.status == 'Interview Scheduled' %}
+                                        <span class="badge badge-status badge-interview"><i class="bi bi-calendar-event"></i> Interview Scheduled</span>
+                                    {% elif app.status == 'Rejected' %}
+                                        <span class="badge badge-status badge-rejected"><i class="bi bi-x-circle-fill"></i> Rejected</span>
+                                    {% else %}
+                                        <span class="badge badge-status bg-secondary">{{ app.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if app.interview_date %}
+                                        <span class="badge bg-cyan text-white"><i class="bi bi-calendar-check me-1"></i> {{ app.interview_date.strftime('%Y-%m-%d') }}</span>
+                                    {% else %}
+                                        <span class="text-muted small">Not set</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if app.notes %}
+                                        <span class="small text-secondary d-inline-block text-truncate max-w-200" title="{{ app.notes }}">{{ app.notes }}</span>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('followup', app_id=app.id) }}" class="btn btn-sky btn-sm rounded-pill px-2.5 me-1" title="Manage Follow-up">
+                                        <i class="bi bi-arrow-repeat me-1"></i> Follow-up
+                                    </a>
+                                    <a href="{{ url_for('application_details', app_id=app.id) }}" class="btn btn-outline-cyan btn-sm rounded-pill px-2.5" title="View Full Details">
+                                        <i class="bi bi-eye-fill me-1"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search fs-1 text-cyan mb-2"></i>
+                <p class="text-secondary fw-medium">No applications found matching the filter.</p>
+                <a href="{{ url_for('add_application') }}" class="btn btn-cyan rounded-pill px-4">
+                    <i class="bi bi-plus-circle me-1"></i> Add Application
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

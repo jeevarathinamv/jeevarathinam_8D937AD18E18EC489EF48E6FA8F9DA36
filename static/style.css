@@ -1,0 +1,219 @@
+/* Custom CSS for Internship Application & Follow-up Tracker */
+/* Color Palette: Navy Blue + Cyan + Sky Blue + Status Colors */
+
+:root {
+    --navy-dark: #0a192f;
+    --navy-mid: #0f2b48;
+    --navy-deep: #1e3a8a;
+    --cyan-primary: #06b6d4;
+    --cyan-hover: #0891b2;
+    --cyan-light: #22d3ee;
+    --sky-blue-card: #f0f9ff;
+    --sky-blue-border: #bae6fd;
+    --sky-blue-text: #0284c7;
+
+    /* Status Colors */
+    --color-applied: #f59e0b;       /* Yellow */
+    --color-shortlisted: #8b5cf6;   /* Purple */
+    --color-interview: #0284c7;     /* Sky Blue / Cyan Deep */
+    --color-selected: #10b981;      /* Green */
+    --color-rejected: #ef4444;      /* Red */
+}
+
+body {
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e2e8f0;
+    background: linear-gradient(135deg, #0a192f 0%, #0f2b48 50%, #1e3a8a 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* Navbar Styling */
+.navbar-custom {
+    background: rgba(10, 25, 47, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--cyan-primary);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #ffffff !important;
+}
+
+.text-cyan {
+    color: var(--cyan-light) !important;
+}
+
+.bg-cyan {
+    background-color: var(--cyan-primary) !important;
+    color: #ffffff !important;
+}
+
+/* Custom Buttons */
+.btn-cyan {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.btn-cyan:hover {
+    background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(6, 182, 212, 0.45);
+}
+
+.btn-outline-cyan {
+    border: 2px solid var(--cyan-primary);
+    color: var(--cyan-light);
+    font-weight: 600;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-outline-cyan:hover {
+    background-color: var(--cyan-primary);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.btn-sky {
+    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-sky:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+}
+
+/* Sky Blue Section Containers & Cards */
+.bg-sky-card {
+    background: var(--sky-blue-card) !important;
+    color: #0f172a !important;
+    border: 1px solid var(--sky-blue-border);
+    border-radius: 1rem;
+}
+
+.card {
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+.sky-card {
+    background: #f0f9ff;
+    color: #0f2942;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid #bae6fd;
+}
+
+.navy-card {
+    background: rgba(15, 43, 72, 0.85);
+    color: #f8fafc;
+    border-radius: 1rem;
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    backdrop-filter: blur(8px);
+}
+
+/* Status Badges */
+.badge-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.45em 0.85em;
+    border-radius: 50rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.badge-applied {
+    background-color: var(--color-applied) !important;
+    color: #1e1e1e !important;
+}
+
+.badge-shortlisted {
+    background-color: var(--color-shortlisted) !important;
+    color: #ffffff !important;
+}
+
+.badge-interview {
+    background-color: var(--color-interview) !important;
+    color: #ffffff !important;
+}
+
+.badge-selected {
+    background-color: var(--color-selected) !important;
+    color: #ffffff !important;
+}
+
+.badge-rejected {
+    background-color: var(--color-rejected) !important;
+    color: #ffffff !important;
+}
+
+/* Dashboard Statistics Cards */
+.stat-card {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform 0.2s;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+/* Table Styling */
+.table-custom {
+    color: #0f172a;
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.table-custom thead {
+    background-color: #0a192f;
+    color: #38bdf8;
+}
+
+/* Hero Section */
+.hero-banner {
+    background: linear-gradient(135deg, rgba(10, 25, 47, 0.9) 0%, rgba(30, 58, 138, 0.85) 100%),
+                url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 3.5rem 1.5rem;
+}
+
+/* Instruction Step Card */
+.instruction-card {
+    background-color: #ffffff;
+    color: #0f172a;
+    border-left: 5px solid var(--cyan-primary);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border-radius: 0.6rem;
+    padding: 0.65rem 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--cyan-primary);
+    box-shadow: 0 0 0 0.25rem rgba(6, 182, 212, 0.25);
+}

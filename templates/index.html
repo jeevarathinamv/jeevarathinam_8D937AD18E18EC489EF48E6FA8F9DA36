@@ -1,73 +1,173 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Internship Application & Follow-up Tracker{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+<div class="container">
+    <!-- Hero Banner -->
+    <div class="hero-banner text-center text-white mb-5 shadow-lg">
+        <div class="py-3">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="bi bi-rocket-takeoff-fill text-cyan me-2"></i> Track Your Career Journey
+            </h1>
+            <p class="lead max-w-700 mx-auto opacity-90 mb-4 fs-5 text-light">
+                Organize your internship applications, record follow-ups, keep notes, and stay updated on interview schedules in one central dashboard.
+            </p>
+
+            <div class="d-flex justify-content-center flex-wrap gap-3 mt-4">
+                {% if session.get('user_type') == 'student' %}
+                    <a href="{{ url_for('student_dashboard') }}" class="btn btn-cyan btn-lg rounded-pill px-4">
+                        <i class="bi bi-grid-fill me-2"></i> Student Dashboard
+                    </a>
+                    <a href="{{ url_for('add_application') }}" class="btn btn-sky btn-lg rounded-pill px-4">
+                        <i class="bi bi-plus-circle me-2"></i> Add New Application
+                    </a>
+                {% elif session.get('user_type') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-cyan btn-lg rounded-pill px-4">
+                        <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-cyan btn-lg rounded-pill px-4">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-cyan btn-lg rounded-pill px-4">
+                        <i class="bi bi-person-plus-fill me-2"></i> Student Register
+                    </a>
+                    <a href="{{ url_for('admin_login') }}" class="btn btn-sky btn-lg rounded-pill px-4">
+                        <i class="bi bi-shield-lock me-2"></i> Admin Login
+                    </a>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
+    <!-- Feature Cards -->
+    <div class="row g-4 mb-5">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+            <div class="card sky-card h-100 p-4 border-0 card-hover">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-circle me-3">
+                        <i class="bi bi-journal-plus fs-2 text-cyan"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">Easy Application Logging</h5>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+                <p class="text-secondary small mb-0">
+                    Log company details, internship role, location, application date, application links, and personal notes effortlesly.
+                </p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="card sky-card h-100 p-4 border-0 card-hover">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-info bg-opacity-10 text-info rounded-circle me-3">
+                        <i class="bi bi-clock-history fs-2 text-cyan"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">Follow-up Tracker</h5>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+                <p class="text-secondary small mb-0">
+                    Record follow-up dates, notes, and status changes (Applied, Shortlisted, Interview Scheduled, Selected, Rejected).
+                </p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="card sky-card h-100 p-4 border-0 card-hover">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-3 bg-success bg-opacity-10 text-success rounded-circle me-3">
+                        <i class="bi bi-shield-check fs-2 text-cyan"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">Admin Verification</h5>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+                <p class="text-secondary small mb-0">
+                    Admins can view student applications, schedule interview dates, update application status, and add official remarks.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Instructions Section -->
+    <div class="card sky-card p-4 p-md-5 border-0 shadow-lg mb-5">
+        <div class="text-center mb-4">
+            <span class="badge bg-cyan px-3 py-2 rounded-pill fs-6 mb-2">Project Setup Guide</span>
+            <h3 class="fw-bold text-dark">Simple Steps to Setup & Run the Project</h3>
+            <p class="text-secondary">Follow these easy steps to setup XAMPP MySQL, VS Code, and launch the Flask portal.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Step 1: XAMPP MySQL Setup -->
+            <div class="col-md-6 col-lg-4">
+                <div class="instruction-card h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary rounded-circle me-2 fs-6">1</span>
+                        <h6 class="fw-bold mb-0 text-dark">XAMPP MySQL Setup</h6>
+                    </div>
+                    <ul class="small text-secondary mb-0 ps-3">
+                        <li>Open <strong>XAMPP Control Panel</strong>.</li>
+                        <li>Start <strong>Apache</strong> and <strong>MySQL</strong> modules.</li>
+                        <li>Open browser and go to: <code>http://localhost/phpmyadmin</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 2: Database Import -->
+            <div class="col-md-6 col-lg-4">
+                <div class="instruction-card h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary rounded-circle me-2 fs-6">2</span>
+                        <h6 class="fw-bold mb-0 text-dark">Database Import</h6>
+                    </div>
+                    <ul class="small text-secondary mb-0 ps-3">
+                        <li>Click <strong>Databases</strong> tab in phpMyAdmin.</li>
+                        <li>Create database named: <code>internship_tracker</code></li>
+                        <li>Click <strong>Import</strong> tab and select <code>database.sql</code> file.</li>
+                        <li>Click <strong>Go</strong> to execute table creation.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 3: VS Code Setup -->
+            <div class="col-md-6 col-lg-4">
+                <div class="instruction-card h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary rounded-circle me-2 fs-6">3</span>
+                        <h6 class="fw-bold mb-0 text-dark">VS Code Setup</h6>
+                    </div>
+                    <ul class="small text-secondary mb-0 ps-3">
+                        <li>Launch <strong>Visual Studio Code</strong>.</li>
+                        <li>Select <strong>File &gt; Open Folder</strong> and choose project directory.</li>
+                        <li>Open Integrated Terminal: <code>Ctrl + ~</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 4: Python Package Installation -->
+            <div class="col-md-6 col-lg-6">
+                <div class="instruction-card h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary rounded-circle me-2 fs-6">4</span>
+                        <h6 class="fw-bold mb-0 text-dark">Python Package Installation</h6>
+                    </div>
+                    <p class="small text-secondary mb-2">Run the following command in terminal to install required libraries:</p>
+                    <div class="bg-dark text-cyan p-2 rounded font-monospace small">
+                        pip install -r requirements.txt
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Running the Flask Project -->
+            <div class="col-md-12 col-lg-6">
+                <div class="instruction-card h-100">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary rounded-circle me-2 fs-6">5</span>
+                        <h6 class="fw-bold mb-0 text-dark">Running the Flask Project</h6>
+                    </div>
+                    <p class="small text-secondary mb-2">Start the Flask application server:</p>
+                    <div class="bg-dark text-cyan p-2 rounded font-monospace small mb-2">
+                        python app.py
+                    </div>
+                    <p class="small text-secondary mb-0">Open your web browser and visit: <code>http://127.0.0.1:5000</code></p>
+                </div>
             </div>
         </div>
     </div>

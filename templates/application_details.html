@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Application Details - {{ application.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Card -->
+            <div class="navy-card p-4 rounded-4 shadow mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <span class="badge bg-cyan text-dark fw-bold mb-2">Application ID #{{ application.id }}</span>
+                        <h2 class="fw-bold text-white mb-1">{{ application.role }}</h2>
+                        <h4 class="text-cyan mb-2">{{ application.company_name }}</h4>
+                        <p class="text-white-50 mb-0 small">
+                            <i class="bi bi-geo-alt-fill text-cyan me-1"></i> {{ application.location }} &bull;
+                            Applied on: <strong>{{ application.application_date.strftime('%Y-%m-%d') }}</strong>
+                        </p>
+                    </div>
+
+                    <div class="text-md-end">
+                        <div class="mb-2">
+                            {% if application.status == 'Selected' %}
+                                <span class="badge badge-status badge-selected fs-5"><i class="bi bi-check-circle-fill me-1"></i> Selected</span>
+                            {% elif application.status == 'Applied' %}
+                                <span class="badge badge-status badge-applied fs-5"><i class="bi bi-hourglass-split me-1"></i> Applied</span>
+                            {% elif application.status == 'Shortlisted' %}
+                                <span class="badge badge-status badge-shortlisted fs-5"><i class="bi bi-bookmark-star-fill me-1"></i> Shortlisted</span>
+                            {% elif application.status == 'Interview Scheduled' %}
+                                <span class="badge badge-status badge-interview fs-5"><i class="bi bi-calendar-event me-1"></i> Interview Scheduled</span>
+                            {% elif application.status == 'Rejected' %}
+                                <span class="badge badge-status badge-rejected fs-5"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                            {% else %}
+                                <span class="badge badge-status bg-secondary fs-5">{{ application.status }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if session.get('user_type') == 'student' %}
+                            <a href="{{ url_for('followup', app_id=application.id) }}" class="btn btn-cyan btn-sm rounded-pill px-3">
+                                <i class="bi bi-arrow-repeat me-1"></i> Manage Follow-up
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Details Overview -->
+                <div class="col-md-6">
+                    <div class="card sky-card p-4 border-0 shadow h-100">
+                        <h5 class="fw-bold text-dark mb-3 border-bottom border-info border-opacity-25 pb-2">
+                            <i class="bi bi-info-circle-fill text-cyan me-2"></i> Information Overview
+                        </h5>
+
+                        <ul class="list-group list-group-flush bg-transparent">
+                            <li class="list-group-item bg-transparent px-0 py-2.5">
+                                <span class="text-secondary small fw-semibold d-block">Student Name:</span>
+                                <span class="fw-bold text-dark">{{ application.student.name }}</span>
+                            </li>
+                            <li class="list-group-item bg-transparent px-0 py-2.5">
+                                <span class="text-secondary small fw-semibold d-block">Register Number & Dept:</span>
+                                <span class="fw-semibold text-dark">{{ application.student.register_number }} ({{ application.student.department }})</span>
+                            </li>
+                            <li class="list-group-item bg-transparent px-0 py-2.5">
+                                <span class="text-secondary small fw-semibold d-block">Application Link / Portal:</span>
+                                {% if application.application_link %}
+                                    <a href="{{ application.application_link }}" target="_blank" class="text-cyan fw-semibold text-break">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> {{ application.application_link }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">Not provided</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item bg-transparent px-0 py-2.5">
+                                <span class="text-secondary small fw-semibold d-block">Interview Date:</span>
+                                {% if application.interview_date %}
+                                    <span class="badge bg-cyan text-white p-2 fs-6">
+                                        <i class="bi bi-calendar-check me-1"></i> {{ application.interview_date.strftime('%Y-%m-%d') }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small">Not scheduled yet</span>
+                                {% endif %}
+                            </li>
+                            <li class="list-group-item bg-transparent px-0 py-2.5">
+                                <span class="text-secondary small fw-semibold d-block">Student Notes:</span>
+                                <p class="mb-0 text-dark small" style="white-space: pre-line;">
+                                    {{ application.notes if application.notes else 'No notes added.' }}
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Column: Admin Remarks & Follow-up Summary -->
+                <div class="col-md-6">
+                    <!-- Admin Remarks Card -->
+                    <div class="card sky-card p-4 border-0 shadow mb-4">
+                        <h5 class="fw-bold text-dark mb-3 border-bottom border-info border-opacity-25 pb-2">
+                            <i class="bi bi-shield-check text-cyan me-2"></i> Admin Remarks
+                        </h5>
+                        {% if application.admin_remarks %}
+                            <div class="p-3 bg-white rounded-3 border-start border-cyan border-4 text-dark small">
+                                <p class="mb-0 fw-medium" style="white-space: pre-line;">{{ application.admin_remarks }}</p>
+                            </div>
+                        {% else %}
+                            <p class="text-secondary small mb-0">No admin remarks provided yet.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Latest Follow-ups Card -->
+                    <div class="card sky-card p-4 border-0 shadow">
+                        <h5 class="fw-bold text-dark mb-3 border-bottom border-info border-opacity-25 pb-2">
+                            <i class="bi bi-clock-history text-cyan me-2"></i> Follow-up History
+                        </h5>
+
+                        {% if application.followups %}
+                            <div class="timeline position-relative ps-2">
+                                {% for f in application.followups %}
+                                    <div class="mb-3 pb-2 border-bottom border-light">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold text-cyan small">
+                                                <i class="bi bi-calendar-event me-1"></i> {{ f.followup_date.strftime('%Y-%m-%d') }}
+                                            </span>
+                                            {% if f.updated_status %}
+                                                <span class="badge bg-secondary text-white fs-7">{{ f.updated_status }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="mb-0 text-dark small">{{ f.notes }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-secondary small mb-0">No follow-ups recorded yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="mt-4 text-center">
+                {% if session.get('user_type') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-cyan rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('applications') }}" class="btn btn-cyan rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Application Tracker
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
