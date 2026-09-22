@@ -1,73 +1,147 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Student Leave Request & Approval System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+<div class="container my-3">
+    <!-- Hero Banner -->
+    <div class="hero-section text-center text-white mb-5 shadow-lg position-relative overflow-hidden">
+        <div class="py-4 px-3">
+            <span class="badge bg-info text-dark px-3 py-2 rounded-pill fw-bold mb-3 text-uppercase tracking-wider">
+                <i class="bi bi-stars me-1"></i> College Portal
+            </span>
+            <h1 class="display-4 fw-bold mb-3 text-cyan">Student Leave Request & Approval System</h1>
+            <p class="lead text-light max-w-700 mx-auto opacity-90 mb-4">
+                An intuitive, digital leave application management system for college students and faculty administrators.
+            </p>
+
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                {% if session.get('user_type') == 'student' %}
+                    <a href="{{ url_for('student_dashboard') }}" class="btn btn-cyan btn-lg">
+                        <i class="bi bi-speedometer2 me-2"></i> Student Dashboard
+                    </a>
+                    <a href="{{ url_for('apply_leave') }}" class="btn btn-outline-cyan btn-lg">
+                        <i class="bi bi-file-earmark-plus-fill me-2"></i> Apply Leave
+                    </a>
+                {% elif session.get('user_type') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg text-dark fw-bold rounded-pill">
+                        <i class="bi bi-shield-lock-fill me-2"></i> Admin Control Panel
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-cyan btn-lg">
+                        <i class="bi bi-person-check-fill me-2"></i> Student Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-cyan btn-lg">
+                        <i class="bi bi-person-plus-fill me-2"></i> Student Register
+                    </a>
+                    <a href="{{ url_for('admin_login') }}" class="btn btn-warning btn-lg text-dark fw-bold rounded-pill">
+                        <i class="bi bi-shield-lock-fill me-2"></i> Admin Login
+                    </a>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
+    <!-- Modules / Features Section -->
+    <div class="row g-4 mb-5">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+            <div class="card card-sky h-100 p-4 text-center">
+                <div class="text-info mb-3">
+                    <i class="bi bi-person-add fs-1"></i>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+                <h4 class="fw-bold text-info">Student Registration</h4>
+                <p class="text-light opacity-80 small mb-0">
+                    Students register with Name, Register Number, Department, Email, and Password to gain instant portal access.
+                </p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="card card-sky h-100 p-4 text-center">
+                <div class="text-info mb-3">
+                    <i class="bi bi-file-earmark-text-fill fs-1"></i>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+                <h4 class="fw-bold text-info">Apply Leave Online</h4>
+                <p class="text-light opacity-80 small mb-0">
+                    Select leave type (Medical, Duty, Personal), dates, and state the reason with immediate submission.
+                </p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="card card-sky h-100 p-4 text-center">
+                <div class="text-info mb-3">
+                    <i class="bi bi-shield-check fs-1"></i>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+                <h4 class="fw-bold text-info">Admin Approval & Reply</h4>
+                <p class="text-light opacity-80 small mb-0">
+                    Administrators review student details, approve or reject requests, and attach official remarks or replies.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Setup & Installation Guide -->
+    <div class="card card-sky p-4 p-md-5 mb-4">
+        <div class="d-flex align-items-center mb-4">
+            <i class="bi bi-gear-wide-connected text-info fs-2 me-3"></i>
+            <div>
+                <h3 class="fw-bold text-cyan mb-1">Project Setup & Execution Guide</h3>
+                <p class="text-white-50 mb-0">Step-by-step instructions for running this system with XAMPP, VS Code, Python Flask & MySQL</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Step 1 -->
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.7); border-left: 4px solid #00f2fe;">
+                    <h5 class="fw-bold text-info"><i class="bi bi-server me-2"></i> 1. XAMPP MySQL Setup</h5>
+                    <ol class="small text-light mb-0 ps-3">
+                        <li>Download and install <strong>XAMPP</strong> server.</li>
+                        <li>Open XAMPP Control Panel and start <strong>Apache</strong> and <strong>MySQL</strong>.</li>
+                        <li>Open browser and go to <code class="text-cyan">http://localhost/phpmyadmin</code>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.7); border-left: 4px solid #38bdf8;">
+                    <h5 class="fw-bold text-info"><i class="bi bi-database-add me-2"></i> 2. Database Import</h5>
+                    <ol class="small text-light mb-0 ps-3">
+                        <li>In phpMyAdmin, create a database named <code class="text-cyan">student_leave</code>.</li>
+                        <li>Click on the <strong>Import</strong> tab.</li>
+                        <li>Choose the <code class="text-cyan">database.sql</code> file from project folder and click <strong>Go</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.7); border-left: 4px solid #ffc107;">
+                    <h5 class="fw-bold text-info"><i class="bi bi-code-slash me-2"></i> 3. VS Code & Python Setup</h5>
+                    <ol class="small text-light mb-0 ps-3">
+                        <li>Open VS Code and navigate to <strong>File &gt; Open Folder</strong> &gt; project directory.</li>
+                        <li>Open VS Code integrated terminal (<code class="text-cyan">Ctrl + `</code>).</li>
+                        <li>Ensure Python 3 is installed on your system.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.7); border-left: 4px solid #22c55e;">
+                    <h5 class="fw-bold text-info"><i class="bi bi-terminal me-2"></i> 4. Installation & Running</h5>
+                    <ol class="small text-light mb-0 ps-3">
+                        <li>Install required dependencies:
+                            <br><code class="bg-dark text-warning px-2 py-1 rounded d-inline-block mt-1">pip install -r requirements.txt</code>
+                        </li>
+                        <li>Start the application:
+                            <br><code class="bg-dark text-warning px-2 py-1 rounded d-inline-block mt-1">python app.py</code>
+                        </li>
+                        <li>Open browser at <code class="text-cyan">http://127.0.0.1:5000/</code></li>
+                    </ol>
+                </div>
             </div>
         </div>
     </div>

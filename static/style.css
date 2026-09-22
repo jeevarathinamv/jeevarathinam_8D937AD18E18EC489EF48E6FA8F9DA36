@@ -1,0 +1,192 @@
+/* Custom Styles for Student Leave Request & Approval System */
+/* Theme Colors: Navy Blue, Cyan, Sky Blue, Yellow (Pending), Green (Approved), Red (Rejected) */
+
+:root {
+    --navy-dark: #0a192f;
+    --navy-mid: #1e293b;
+    --navy-light: #334155;
+    --navy-gradient: linear-gradient(135deg, #0a192f 0%, #1e3c72 50%, #2a5298 100%);
+    --navy-card-bg: #1e293b;
+
+    --cyan-accent: #00f2fe;
+    --cyan-bright: #06b6d4;
+    --cyan-hover: #0891b2;
+    --cyan-gradient: linear-gradient(135deg, #00d2ff 0%, #00f2fe 100%);
+
+    --sky-blue: #38bdf8;
+    --sky-blue-light: #e0f2fe;
+    --sky-blue-bg: #0f172a;
+    --sky-blue-card: #132238;
+
+    --status-pending: #ffc107;
+    --status-approved: #198754;
+    --status-rejected: #dc3545;
+}
+
+body {
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    background: var(--navy-dark);
+    background-image: radial-gradient(at 10% 20%, #1e3c72 0px, transparent 50%),
+                      radial-gradient(at 90% 80%, #0f172a 0px, transparent 50%),
+                      radial-gradient(at 50% 50%, #0a192f 0px, transparent 100%);
+    background-attachment: fixed;
+    color: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Glassmorphism & Sky Blue Rounded Cards */
+.card-sky {
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 18px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    color: #f8fafc;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card-sky:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 242, 254, 0.5);
+    box-shadow: 0 15px 30px -5px rgba(0, 242, 254, 0.2);
+}
+
+.card-dashboard {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border-radius: 16px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Buttons */
+.btn-cyan {
+    background: var(--cyan-gradient);
+    color: #031b2e;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+}
+
+.btn-cyan:hover {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+    transform: translateY(-2px);
+}
+
+.btn-outline-cyan {
+    border: 2px solid var(--cyan-accent);
+    color: var(--cyan-accent);
+    border-radius: 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-cyan:hover {
+    background: var(--cyan-accent);
+    color: #031b2e;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+}
+
+/* Navigation Bar */
+.navbar-navy {
+    background: rgba(10, 25, 47, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid rgba(0, 242, 254, 0.3);
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    color: var(--cyan-accent) !important;
+}
+
+.nav-link {
+    color: #cbd5e1 !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--cyan-accent) !important;
+}
+
+/* Status Badges */
+.badge-pending {
+    background-color: var(--status-pending) !important;
+    color: #1a202c !important;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+.badge-approved {
+    background-color: var(--status-approved) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+.badge-rejected {
+    background-color: var(--status-rejected) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #0f172a;
+    border-color: var(--cyan-accent);
+    color: #ffffff;
+    box-shadow: 0 0 0 0.25rem rgba(0, 242, 254, 0.25);
+}
+
+.form-label {
+    color: #bae6fd;
+    font-weight: 500;
+}
+
+/* Tables */
+.table-custom {
+    color: #f8fafc;
+    border-color: #334155;
+}
+
+.table-custom th {
+    background-color: #0f172a;
+    color: var(--sky-blue);
+    font-weight: 600;
+    border-bottom: 2px solid var(--cyan-bright);
+}
+
+.table-custom td {
+    background-color: rgba(30, 41, 59, 0.6);
+    vertical-align: middle;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, rgba(10, 25, 47, 0.9), rgba(30, 60, 114, 0.9));
+    border-radius: 24px;
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    padding: 40px 20px;
+}
+
+/* Footer */
+footer {
+    background: rgba(10, 25, 47, 0.98);
+    border-top: 1px solid rgba(56, 189, 248, 0.2);
+}

@@ -1,291 +1,200 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard - College Sports Hub{% endblock %}
+{% block title %}Admin Dashboard - Student Leave Portal{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm bg-gradient-primary text-white rounded-4 p-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                    <div>
-                        <h2 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill text-warning me-2"></i> Admin Management Portal</h2>
-                        <p class="mb-0 text-white-50">Manage equipment stock, review student booking requests, and mark returns.</p>
-                    </div>
-                    <div class="mt-3 mt-md-0">
-                        <button class="btn btn-warning fw-bold text-dark rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addEquipmentModal">
-                            <i class="bi bi-plus-circle-fill me-1"></i> Add New Equipment
-                        </button>
-                    </div>
-                </div>
+<div class="container py-2">
+    <!-- Admin Header Welcome Card -->
+    <div class="card card-sky p-4 mb-4 border-warning border-opacity-40">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div>
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2 fw-semibold">
+                    <i class="bi bi-shield-check me-1"></i> Admin Control Panel
+                </span>
+                <h2 class="fw-bold text-warning mb-1">Faculty Leave Management</h2>
+                <p class="text-light opacity-80 mb-0 small">
+                    Review, approve, or reject student leave requests and communicate decision remarks.
+                </p>
+            </div>
+            <div>
+                <span class="text-info fw-bold bg-dark px-3 py-2 rounded-pill border border-info border-opacity-25">
+                    <i class="bi bi-person-fill-lock me-1"></i> Logged in as: {{ session.get('user_name', 'Admin') }}
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Stats Counter Cards -->
+    <!-- Overview Counters -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
-                <div class="text-primary fs-3 fw-bold">{{ total_equipments }}</div>
-                <div class="text-muted small fw-semibold">Total Equipment Types</div>
+        <!-- Total Requests -->
+        <div class="col-6 col-md-3">
+            <div class="card card-dashboard p-3 text-center border-info h-100">
+                <div class="text-info mb-1 fs-2">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-0">{{ total_requests }}</h3>
+                <span class="text-info small fw-semibold">Total Requests</span>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
-                <div class="text-warning fs-3 fw-bold">{{ pending_count }}</div>
-                <div class="text-muted small fw-semibold">Pending Requests</div>
+
+        <!-- Pending Requests -->
+        <div class="col-6 col-md-3">
+            <div class="card card-dashboard p-3 text-center border-warning h-100">
+                <div class="text-warning mb-1 fs-2">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <h3 class="fw-bold text-warning mb-0">{{ pending_requests }}</h3>
+                <span class="text-warning small fw-semibold">Pending Requests</span>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
-                <div class="text-info fs-3 fw-bold">{{ approved_count }}</div>
-                <div class="text-muted small fw-semibold">Active Approved Bookings</div>
+
+        <!-- Approved Requests -->
+        <div class="col-6 col-md-3">
+            <div class="card card-dashboard p-3 text-center border-success h-100">
+                <div class="text-success mb-1 fs-2">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h3 class="fw-bold text-success mb-0">{{ approved_requests }}</h3>
+                <span class="text-success small fw-semibold">Approved Requests</span>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
-                <div class="text-success fs-3 fw-bold">{{ total_bookings }}</div>
-                <div class="text-muted small fw-semibold">Total Requests Handled</div>
+
+        <!-- Rejected Requests -->
+        <div class="col-6 col-md-3">
+            <div class="card card-dashboard p-3 text-center border-danger h-100">
+                <div class="text-danger mb-1 fs-2">
+                    <i class="bi bi-x-circle-fill"></i>
+                </div>
+                <h3 class="fw-bold text-danger mb-0">{{ rejected_requests }}</h3>
+                <span class="text-danger small fw-semibold">Rejected Requests</span>
             </div>
         </div>
     </div>
 
-    <!-- Management Tabs -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 pt-3 px-4">
-                    <ul class="nav nav-tabs card-header-tabs fw-semibold" id="adminTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active py-2 text-primary" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests-pane" type="button" role="tab">
-                                <i class="bi bi-list-check me-1"></i> Booking Requests
-                                {% if pending_count > 0 %}
-                                    <span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>
-                                {% endif %}
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link py-2 text-primary" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory-pane" type="button" role="tab">
-                                <i class="bi bi-box-seam me-1"></i> Equipment Inventory
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+    <!-- All Leave Requests Management Table -->
+    <div class="card card-sky p-4">
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-secondary pb-3">
+            <h4 class="fw-bold text-cyan mb-0">
+                <i class="bi bi-list-check me-2"></i> All Student Leave Applications
+            </h4>
+            <span class="text-light opacity-75 small">Total Records: <strong>{{ leave_requests|length }}</strong></span>
+        </div>
 
-                <div class="card-body p-0">
-                    <div class="tab-content" id="adminTabsContent">
+        {% if leave_requests %}
+            <div class="table-responsive">
+                <table class="table table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Student Details</th>
+                            <th>Leave Info</th>
+                            <th>Dates</th>
+                            <th style="min-width: 200px;">Reason</th>
+                            <th>Status</th>
+                            <th>Admin Reply</th>
+                            <th text-end>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in leave_requests %}
+                            <tr>
+                                <td class="fw-bold text-info">#{{ req.id }}</td>
+                                <td>
+                                    <div class="fw-bold text-light">{{ req.student.name }}</div>
+                                    <div class="small text-cyan"><i class="bi bi-card-text me-1"></i>{{ req.student.register_number }}</div>
+                                    <div class="small text-white-50"><i class="bi bi-building me-1"></i>{{ req.student.department }}</div>
+                                    <div class="small text-white-50"><i class="bi bi-envelope me-1"></i>{{ req.student.email }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-dark fw-bold px-3 py-1 rounded-pill">{{ req.leave_type }}</span>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-light">From: {{ req.from_date.strftime('%d %b %Y') }}</div>
+                                    <div class="small fw-semibold text-light">To: {{ req.to_date.strftime('%d %b %Y') }}</div>
+                                </td>
+                                <td>
+                                    <div class="small text-light bg-dark p-2 rounded border border-secondary border-opacity-50">
+                                        {{ req.reason }}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if req.status == 'Pending' %}
+                                        <span class="badge badge-pending"><i class="bi bi-clock me-1"></i> Pending</span>
+                                    {% elif req.status == 'Approved' %}
+                                        <span class="badge badge-approved"><i class="bi bi-check-lg me-1"></i> Approved</span>
+                                    {% elif req.status == 'Rejected' %}
+                                        <span class="badge badge-rejected"><i class="bi bi-x-lg me-1"></i> Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.admin_reply %}
+                                        <div class="small text-cyan p-2 bg-dark rounded border border-info border-opacity-25">
+                                            <i class="bi bi-chat-left-text me-1"></i> {{ req.admin_reply }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-white-50 small"><em>No reply added</em></span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <!-- Action Modal Trigger Button -->
+                                    <button type="button" class="btn btn-cyan btn-sm" data-bs-toggle="modal" data-bs-target="#actionModal{{ req.id }}">
+                                        <i class="bi bi-pencil-square me-1"></i> Review / Update
+                                    </button>
 
-                        <!-- TAB 1: Booking Requests Management -->
-                        <div class="tab-pane fade show active" id="requests-pane" role="tabpanel">
-                            {% if bookings %}
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th class="ps-4">Req #</th>
-                                                <th>Student Name</th>
-                                                <th>Reg No. & Dept</th>
-                                                <th>Equipment Name</th>
-                                                <th>Booking Date</th>
-                                                <th>Qty</th>
-                                                <th>Status</th>
-                                                <th class="pe-4 text-end">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for b in bookings %}
-                                                <tr>
-                                                    <td class="ps-4 fw-bold">#{{ b.id }}</td>
-                                                    <td class="fw-semibold">{{ b.student.name }}</td>
-                                                    <td class="small">
-                                                        <div class="fw-semibold text-dark">{{ b.student.register_number }}</div>
-                                                        <div class="text-muted">{{ b.student.department }}</div>
-                                                    </td>
-                                                    <td class="fw-semibold text-primary">{{ b.equipment.name }}</td>
-                                                    <td><i class="bi bi-calendar-event text-muted me-1"></i>{{ b.booking_date.strftime('%Y-%m-%d') }}</td>
-                                                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1">{{ b.quantity }}</span></td>
-                                                    <td>
-                                                        {% if b.status == 'Pending' %}
-                                                            <span class="badge badge-pending px-3 py-1 rounded-pill">Pending</span>
-                                                        {% elif b.status == 'Approved' %}
-                                                            <span class="badge badge-approved px-3 py-1 rounded-pill">Approved</span>
-                                                        {% elif b.status == 'Rejected' %}
-                                                            <span class="badge badge-rejected px-3 py-1 rounded-pill">Rejected</span>
-                                                        {% elif b.status == 'Returned' %}
-                                                            <span class="badge badge-returned px-3 py-1 rounded-pill">Returned</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="pe-4 text-end">
-                                                        {% if b.status == 'Pending' %}
-                                                            <form action="{{ url_for('approve_booking', booking_id=b.id) }}" method="POST" class="d-inline">
-                                                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 me-1">
-                                                                    <i class="bi bi-check-circle me-1"></i> Approve
-                                                                </button>
-                                                            </form>
-                                                            <form action="{{ url_for('reject_booking', booking_id=b.id) }}" method="POST" class="d-inline">
-                                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                                                    <i class="bi bi-x-circle me-1"></i> Reject
-                                                                </button>
-                                                            </form>
-                                                        {% elif b.status == 'Approved' %}
-                                                            <form action="{{ url_for('return_booking', booking_id=b.id) }}" method="POST" class="d-inline">
-                                                                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3">
-                                                                    <i class="bi bi-arrow-return-left me-1"></i> Mark Returned
-                                                                </button>
-                                                            </form>
-                                                        {% else %}
-                                                            <span class="text-muted small">No action needed</span>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <div class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                    <p class="mb-0">No equipment booking requests found.</p>
-                                </div>
-                            {% endif %}
-                        </div>
+                                    <!-- Action Modal -->
+                                    <div class="modal fade" id="actionModal{{ req.id }}" tabindex="-1" aria-labelledby="actionModalLabel{{ req.id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content card-sky text-light border-info">
+                                                <div class="modal-header border-secondary">
+                                                    <h5 class="modal-title text-cyan fw-bold" id="actionModalLabel{{ req.id }}">
+                                                        <i class="bi bi-sliders me-2"></i> Review Leave Request #{{ req.id }}
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form method="POST" action="{{ url_for('update_leave_status', request_id=req.id) }}">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3 bg-dark p-3 rounded">
+                                                            <p class="mb-1"><strong>Student:</strong> {{ req.student.name }} ({{ req.student.register_number }})</p>
+                                                            <p class="mb-1"><strong>Type:</strong> {{ req.leave_type }}</p>
+                                                            <p class="mb-1"><strong>Dates:</strong> {{ req.from_date.strftime('%d %b %Y') }} to {{ req.to_date.strftime('%d %b %Y') }}</p>
+                                                            <p class="mb-0"><strong>Reason:</strong> {{ req.reason }}</p>
+                                                        </div>
 
-                        <!-- TAB 2: Equipment Inventory Management -->
-                        <div class="tab-pane fade" id="inventory-pane" role="tabpanel">
-                            {% if equipments %}
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th class="ps-4">ID</th>
-                                                <th>Equipment Name</th>
-                                                <th>Category</th>
-                                                <th>Available / Total</th>
-                                                <th>Description</th>
-                                                <th class="pe-4 text-end">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for eq in equipments %}
-                                                <tr>
-                                                    <td class="ps-4 fw-bold">#{{ eq.id }}</td>
-                                                    <td class="fw-semibold text-dark">{{ eq.name }}</td>
-                                                    <td><span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1">{{ eq.category }}</span></td>
-                                                    <td>
-                                                        <span class="fw-bold {% if eq.available_quantity > 0 %}text-success{% else %}text-danger{% endif %}">
-                                                            {{ eq.available_quantity }}
-                                                        </span>
-                                                        / {{ eq.total_quantity }}
-                                                    </td>
-                                                    <td class="small text-muted">{{ eq.description or '-' }}</td>
-                                                    <td class="pe-4 text-end">
-                                                        <button class="btn btn-outline-primary btn-sm rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#editEquipmentModal{{ eq.id }}">
-                                                            <i class="bi bi-pencil-square"></i> Edit
-                                                        </button>
-                                                        <form action="{{ url_for('delete_equipment', equipment_id=eq.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this equipment?');">
-                                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </td>
-                                                </tr>
+                                                        <div class="mb-3">
+                                                            <label class="form-label text-cyan"><i class="bi bi-check2-circle me-1"></i> Leave Status</label>
+                                                            <select name="status" class="form-select" required>
+                                                                <option value="Pending" {% if req.status == 'Pending' %}selected{% endif %}>Pending (Yellow)</option>
+                                                                <option value="Approved" {% if req.status == 'Approved' %}selected{% endif %}>Approved (Green)</option>
+                                                                <option value="Rejected" {% if req.status == 'Rejected' %}selected{% endif %}>Rejected (Red)</option>
+                                                            </select>
+                                                        </div>
 
-                                                <!-- Edit Equipment Modal -->
-                                                <div class="modal fade" id="editEquipmentModal{{ eq.id }}" tabindex="-1" aria-hidden="true">
-                                                    <div class="modal-dialog modal-dialog-centered">
-                                                        <div class="modal-content border-0 shadow rounded-4">
-                                                            <div class="modal-header bg-primary text-white rounded-top-4">
-                                                                <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i> Edit Equipment #{{ eq.id }}</h5>
-                                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <form action="{{ url_for('update_equipment', equipment_id=eq.id) }}" method="POST">
-                                                                <div class="modal-body p-4">
-                                                                    <div class="mb-3">
-                                                                        <label class="form-label fw-semibold">Equipment Name</label>
-                                                                        <input type="text" class="form-control" name="name" value="{{ eq.name }}" required>
-                                                                    </div>
-                                                                    <div class="mb-3">
-                                                                        <label class="form-label fw-semibold">Category</label>
-                                                                        <input type="text" class="form-control" name="category" value="{{ eq.category }}" required>
-                                                                    </div>
-                                                                    <div class="row g-2 mb-3">
-                                                                        <div class="col-6">
-                                                                            <label class="form-label fw-semibold">Total Quantity</label>
-                                                                            <input type="number" class="form-control" name="total_quantity" value="{{ eq.total_quantity }}" min="1" required>
-                                                                        </div>
-                                                                        <div class="col-6">
-                                                                            <label class="form-label fw-semibold">Available Quantity</label>
-                                                                            <input type="number" class="form-control" name="available_quantity" value="{{ eq.available_quantity }}" min="0" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="mb-3">
-                                                                        <label class="form-label fw-semibold">Description</label>
-                                                                        <textarea class="form-control" name="description" rows="2">{{ eq.description or '' }}</textarea>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer bg-light rounded-bottom-4">
-                                                                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                                                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Update Equipment</button>
-                                                                </div>
-                                                            </form>
+                                                        <div class="mb-3">
+                                                            <label class="form-label text-cyan"><i class="bi bi-chat-dots me-1"></i> Admin Reply / Remarks</label>
+                                                            <textarea name="admin_reply" class="form-control" rows="3" placeholder="Add optional remarks or response for the student...">{{ req.admin_reply or '' }}</textarea>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <div class="text-center py-5 text-muted">
-                                    <p>No equipment currently registered.</p>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                    </div>
-                </div>
+                                                    <div class="modal-footer border-secondary">
+                                                        <button type="button" class="btn btn-outline-secondary text-light" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-cyan">Save Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Add New Equipment -->
-<div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-4">
-            <div class="modal-header bg-gradient-primary text-white rounded-top-4">
-                <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2 text-warning"></i> Add New Sports Equipment</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-white-50 mb-2 d-block"></i>
+                <h5 class="text-light">No Leave Applications Received</h5>
+                <p class="text-white-50 small">When students apply for leave, their applications will appear here for review.</p>
             </div>
-            <form action="{{ url_for('add_equipment') }}" method="POST">
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="eq_name" class="form-label fw-semibold">Equipment Name</label>
-                        <input type="text" class="form-control" id="eq_name" name="name" placeholder="e.g. Football" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="eq_category" class="form-label fw-semibold">Category</label>
-                        <input type="text" class="form-control" id="eq_category" name="category" placeholder="e.g. Football, Cricket, Athletics" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="eq_quantity" class="form-label fw-semibold">Total Quantity</label>
-                        <input type="number" class="form-control" id="eq_quantity" name="total_quantity" min="1" value="10" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="eq_desc" class="form-label fw-semibold">Description (Optional)</label>
-                        <textarea class="form-control" id="eq_desc" name="description" rows="2" placeholder="Item specs, brand, or condition details..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light rounded-bottom-4">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning fw-bold text-dark rounded-pill px-4">Add Equipment</button>
-                </div>
-            </form>
-        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

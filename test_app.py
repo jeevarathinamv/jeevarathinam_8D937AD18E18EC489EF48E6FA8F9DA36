@@ -1,8 +1,8 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from datetime import date, timedelta
+from app import app, db, Student, Admin, LeaveRequest
 
-class SportsBookingTestCase(unittest.TestCase):
+class StudentLeaveTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,11 +11,6 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
-            db.session.commit()
 
     def tearDown(self):
         with app.app_context():
@@ -26,8 +21,8 @@ class SportsBookingTestCase(unittest.TestCase):
         # Register student
         response = self.client.post('/register', data={
             'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
+            'register_number': 'REG2025001',
+            'department': 'Computer Applications (MCA/BCA)',
             'email': 'alex@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
@@ -35,82 +30,71 @@ class SportsBookingTestCase(unittest.TestCase):
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
             'email_or_reg': 'alex@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Welcome back, Alex Johnson!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
+    def test_leave_application_and_approval_workflow(self):
         # Register and login student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
+            'name': 'Sam Green',
+            'register_number': 'REG2025002',
+            'department': 'Information Technology',
             'email': 'sam@college.edu',
             'password': 'pass'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
             'email_or_reg': 'sam@college.edu',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        # Apply for leave
+        today = date.today()
+        from_date = today.isoformat()
+        to_date = (today + timedelta(days=2)).isoformat()
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
+        response = self.client.post('/student/apply-leave', data={
+            'leave_type': 'Medical Leave',
+            'from_date': from_date,
+            'to_date': to_date,
+            'reason': 'Fever and viral infection doctor advised 3 days rest.'
         }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        self.assertIn(b'Leave request submitted successfully', response.data)
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # Check Leave History
+        response = self.client.get('/student/leave-history')
+        self.assertIn(b'Medical Leave', response.data)
+        self.assertIn(b'Pending', response.data)
 
-        # Admin login and approval
+        # Admin login and approve leave with reply
         self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+        self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        response = self.client.get('/admin/dashboard')
+        self.assertIn(b'Sam Green', response.data)
+
+        # Approve Leave Request #1
+        response = self.client.post('/admin/leave/action/1', data={
+            'status': 'Approved',
+            'admin_reply': 'Approved. Take rest and submit medical certificate upon return.'
+        }, follow_redirects=True)
+        self.assertIn(b'updated to Approved', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
-
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            req = db.session.get(LeaveRequest, 1)
+            self.assertEqual(req.status, 'Approved')
+            self.assertEqual(req.admin_reply, 'Approved. Take rest and submit medical certificate upon return.')
 
 if __name__ == '__main__':
     unittest.main()
