@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Send Partner Request - Student Study Partner Finder{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-lg border-0 overflow-hidden rounded-4">
+                <div class="card-header bg-gradient-theme text-white text-center py-4">
+                    <div class="icon-circle icon-purple mb-2 mx-auto">
+                        <i class="bi bi-send-fill"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Send Study Partner Request</h3>
+                    <p class="small text-white-50 mb-0">Invite a fellow student to study together</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form action="{{ url_for('send_request') }}" method="POST">
+                        {% if target_student %}
+                            <input type="hidden" name="receiver_id" value="{{ target_student.id }}">
+                            <div class="alert bg-gradient-pink-purple text-white border-0 rounded-4 p-3 mb-4 shadow-sm">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle icon-blue me-3" style="width: 45px; height: 45px; font-size: 1.1rem;">
+                                        <i class="bi bi-person-check-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold mb-0 text-white">{{ target_student.name }}</h5>
+                                        <p class="small mb-0 opacity-90"><i class="bi bi-building me-1"></i> {{ target_student.department }} ({{ target_student.register_number }})</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="mb-4">
+                                <label for="receiver_id" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-person-fill text-purple me-1"></i> Select Study Partner
+                                </label>
+                                <select class="form-select" id="receiver_id" name="receiver_id" required>
+                                    <option value="" selected disabled>-- Select a Student --</option>
+                                    {% for stud in available_students %}
+                                        <option value="{{ stud.id }}">{{ stud.name }} ({{ stud.department }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            <label for="message" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-chat-text-fill text-pink me-1"></i> Message / Common Subjects
+                            </label>
+                            <textarea class="form-control" id="message" name="message" rows="4" placeholder="e.g. Hi! Would love to study Python Data Structures and Web Development together for our upcoming exams."></textarea>
+                            <div class="form-text">Add a friendly message specifying the subjects or topics you'd like to collaborate on.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('find_partner') }}" class="btn btn-outline-secondary rounded-pill px-4">Back to Search</a>
+                            <button type="submit" class="btn btn-gradient rounded-pill px-4 shadow">
+                                <i class="bi bi-send-fill me-1"></i> Send Partner Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

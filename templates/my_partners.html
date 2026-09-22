@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}My Study Partners - Student Study Partner Finder{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Banner -->
+    <div class="card bg-gradient-theme text-white border-0 shadow-lg p-4 mb-4 rounded-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2"><i class="bi bi-person-hearts me-2"></i> My Study Partners & Requests</h2>
+                <p class="mb-0 opacity-90">Manage accepted partners, view incoming requests, and track your sent invitations.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('find_partner') }}" class="btn btn-light rounded-pill px-4 text-purple fw-semibold shadow-sm">
+                    <i class="bi bi-search me-1"></i> Find More Partners
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills nav-fill gap-2 mb-4 p-2 bg-white rounded-4 shadow-sm" id="partnerTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-semibold rounded-pill py-2" id="accepted-tab" data-bs-toggle="tab" data-bs-target="#accepted" type="button" role="tab">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> Accepted Partners ({{ accepted_partners|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold rounded-pill py-2" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">
+                <i class="bi bi-inbox-fill text-purple me-1"></i> Received Requests ({{ received_requests|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-semibold rounded-pill py-2" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
+                <i class="bi bi-send-fill text-pink me-1"></i> Sent Requests ({{ sent_requests|length }})
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="partnerTabsContent">
+        <!-- 1. ACCEPTED PARTNERS TAB -->
+        <div class="tab-pane fade show active" id="accepted" role="tabpanel">
+            {% if accepted_partners %}
+                <div class="row g-4">
+                    {% for item in accepted_partners %}
+                        {% set partner = item.partner %}
+                        {% set p_profile = item.profile %}
+                        {% set req = item.request %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 card-hover shadow border-0 overflow-hidden rounded-4">
+                                <div class="card-header bg-gradient-pink-purple text-white py-3 px-4 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-circle icon-blue me-3" style="width: 45px; height: 45px; font-size: 1.1rem;">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-0 text-white">{{ partner.name }}</h5>
+                                            <small class="text-white-50"><i class="bi bi-building me-1"></i> {{ partner.department }}</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-accepted px-3 py-2 rounded-pill">
+                                        <i class="bi bi-check-lg me-1"></i> Connected
+                                    </span>
+                                </div>
+
+                                <div class="card-body p-4">
+                                    <p class="mb-2"><strong><i class="bi bi-envelope-fill text-purple me-1"></i> Email:</strong> <a href="mailto:{{ partner.email }}" class="text-purple fw-semibold">{{ partner.email }}</a></p>
+                                    <p class="mb-2"><strong><i class="bi bi-book-fill text-blue me-1"></i> Common Subjects:</strong><br>
+                                        <span class="text-dark">{{ p_profile.subjects if p_profile and p_profile.subjects else 'General Study Topics' }}</span>
+                                    </p>
+                                    <p class="mb-2"><strong><i class="bi bi-clock-fill text-pink me-1"></i> Preferred Time:</strong>
+                                        <span class="badge bg-purple text-white rounded-pill px-2 py-1">{{ p_profile.preferred_study_time if p_profile else 'Flexible' }}</span>
+                                    </p>
+                                    <p class="mb-2"><strong><i class="bi bi-laptop text-purple me-1"></i> Study Mode:</strong>
+                                        <span class="badge bg-pink text-white rounded-pill px-2 py-1">{{ p_profile.study_mode if p_profile else 'Hybrid' }}</span>
+                                    </p>
+                                    {% if req.message %}
+                                        <p class="mb-0 bg-light p-3 rounded-3 text-muted small mt-2">
+                                            <i class="bi bi-chat-left-quote-fill me-1 text-purple"></i> "{{ req.message }}"
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card shadow border-0 text-center py-5 rounded-4">
+                    <i class="bi bi-people text-purple fs-1 mb-2"></i>
+                    <h5 class="fw-bold text-dark mb-1">No Accepted Partners Yet</h5>
+                    <p class="text-muted mb-3">Find study partners and send requests to build your study circle.</p>
+                    <div>
+                        <a href="{{ url_for('find_partner') }}" class="btn btn-gradient rounded-pill px-4">
+                            <i class="bi bi-search me-1"></i> Search Partners
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 2. RECEIVED REQUESTS TAB -->
+        <div class="tab-pane fade" id="received" role="tabpanel">
+            {% if received_requests %}
+                <div class="row g-4">
+                    {% for req in received_requests %}
+                        {% set sender = req.sender %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 card-hover shadow border-0 overflow-hidden rounded-4">
+                                <div class="card-header bg-gradient-blue-purple text-white py-3 px-4 d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold mb-0">{{ sender.name }}</h5>
+                                    {% if req.status == 'Pending' %}
+                                        <span class="badge badge-pending px-3 py-2 rounded-pill"><i class="bi bi-clock me-1"></i> Pending</span>
+                                    {% elif req.status == 'Accepted' %}
+                                        <span class="badge badge-accepted px-3 py-2 rounded-pill"><i class="bi bi-check-lg me-1"></i> Accepted</span>
+                                    {% else %}
+                                        <span class="badge badge-rejected px-3 py-2 rounded-pill"><i class="bi bi-x-lg me-1"></i> Rejected</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="card-body p-4 d-flex flex-column">
+                                    <p class="mb-1 text-muted"><strong>Department:</strong> {{ sender.department }}</p>
+                                    <p class="mb-2 text-muted"><strong>Register No:</strong> {{ sender.register_number }}</p>
+
+                                    {% if sender.profile %}
+                                        <p class="mb-2"><strong>Subjects:</strong> {{ sender.profile.subjects or 'Not listed' }}</p>
+                                        <p class="mb-2"><strong>Time & Mode:</strong> {{ sender.profile.preferred_study_time }} ({{ sender.profile.study_mode }})</p>
+                                    {% endif %}
+
+                                    {% if req.message %}
+                                        <div class="bg-light p-3 rounded-3 text-dark small mb-3">
+                                            <strong>Message:</strong> "{{ req.message }}"
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="mt-auto pt-3 border-top">
+                                        {% if req.status == 'Pending' %}
+                                            <div class="d-flex gap-2">
+                                                <form action="{{ url_for('accept_request', request_id=req.id) }}" method="POST" class="flex-grow-1">
+                                                    <button type="submit" class="btn btn-success btn-sm rounded-pill w-100 fw-semibold">
+                                                        <i class="bi bi-check-circle-fill me-1"></i> Accept
+                                                    </button>
+                                                </form>
+                                                <form action="{{ url_for('reject_request', request_id=req.id) }}" method="POST" class="flex-grow-1">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill w-100 fw-semibold">
+                                                        <i class="bi bi-x-circle-fill me-1"></i> Reject
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% else %}
+                                            <p class="text-center text-muted mb-0 small">Action completed ({{ req.status }}).</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card shadow border-0 text-center py-5 rounded-4">
+                    <i class="bi bg-inbox text-blue fs-1 mb-2"></i>
+                    <h5 class="fw-bold text-dark mb-1">No Received Requests</h5>
+                    <p class="text-muted mb-0">Incoming study requests from other students will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 3. SENT REQUESTS TAB -->
+        <div class="tab-pane fade" id="sent" role="tabpanel">
+            {% if sent_requests %}
+                <div class="row g-4">
+                    {% for req in sent_requests %}
+                        {% set receiver = req.receiver %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 card-hover shadow border-0 overflow-hidden rounded-4">
+                                <div class="card-header bg-gradient-pink-purple text-white py-3 px-4 d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold mb-0">{{ receiver.name }}</h5>
+                                    {% if req.status == 'Pending' %}
+                                        <span class="badge badge-pending px-3 py-2 rounded-pill"><i class="bi bi-clock me-1"></i> Pending</span>
+                                    {% elif req.status == 'Accepted' %}
+                                        <span class="badge badge-accepted px-3 py-2 rounded-pill"><i class="bi bi-check-lg me-1"></i> Accepted</span>
+                                    {% else %}
+                                        <span class="badge badge-rejected px-3 py-2 rounded-pill"><i class="bi bi-x-lg me-1"></i> Rejected</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="card-body p-4 d-flex flex-column">
+                                    <p class="mb-1 text-muted"><strong>Department:</strong> {{ receiver.department }}</p>
+                                    <p class="mb-2 text-muted"><strong>Date Sent:</strong> {{ req.created_at.strftime('%Y-%m-%d %H:%M') if req.created_at else 'Recent' }}</p>
+
+                                    {% if req.message %}
+                                        <div class="bg-light p-3 rounded-3 text-dark small mb-3">
+                                            <strong>Your Note:</strong> "{{ req.message }}"
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="mt-auto pt-3 border-top">
+                                        {% if req.status == 'Pending' %}
+                                            <form action="{{ url_for('cancel_request', request_id=req.id) }}" method="POST">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill w-100">
+                                                    <i class="bi bi-trash-fill me-1"></i> Cancel Request
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <p class="text-center text-muted mb-0 small">Status: <strong>{{ req.status }}</strong></p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card shadow border-0 text-center py-5 rounded-4">
+                    <i class="bi bi-send text-pink fs-1 mb-2"></i>
+                    <h5 class="fw-bold text-dark mb-1">No Requests Sent Yet</h5>
+                    <p class="text-muted mb-3">Search for partners and send them study invitations.</p>
+                    <div>
+                        <a href="{{ url_for('find_partner') }}" class="btn btn-gradient rounded-pill px-4">
+                            <i class="bi bi-search me-1"></i> Find Study Partners
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
