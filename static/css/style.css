@@ -1,8 +1,8 @@
-/* Custom Styles for College Sports Equipment Booking System */
+/* Custom Styles for College Placement & Job Application Portal */
 
 :root {
-    --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    --accent-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    --primary-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    --accent-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     --card-hover-shadow: 0 12px 24px rgba(0,0,0,0.12);
 }
 
@@ -44,8 +44,8 @@ body {
     color: #212529;
 }
 
-.badge-approved {
-    background-color: #0d6efd;
+.badge-selected {
+    background-color: #198754;
     color: #ffffff;
 }
 
@@ -54,14 +54,9 @@ body {
     color: #ffffff;
 }
 
-.badge-returned {
-    background-color: #198754;
-    color: #ffffff;
-}
-
 /* Hero Banner */
 .hero-banner {
-    background: linear-gradient(rgba(30, 60, 114, 0.85), rgba(42, 82, 152, 0.9)), url('https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
+    background: linear-gradient(rgba(15, 32, 39, 0.88), rgba(44, 83, 100, 0.92)), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
     color: white;
     padding: 80px 0;
     border-radius: 0 0 25px 25px;
