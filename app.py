@@ -1,20 +1,20 @@
 import os
-from datetime import datetime, date
+from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'smart_college_helpdesk_secret_key_98765')
 
-# Admin Hardcoded Credentials
+# Admin Hardcoded Fallback Credentials
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 # Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/smart_college_helpdesk')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'smart_college_helpdesk.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,6 +22,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# Models
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
@@ -32,7 +33,7 @@ class Student(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='student', lazy=True)
+    requests = db.relationship('HelpRequest', backref='student', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,42 +41,92 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+class Admin(db.Model):
+    __tablename__ = 'admins'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class HelpRequest(db.Model):
+    __tablename__ = 'help_requests'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    category = db.Column(db.String(50), nullable=False) # Academic, Fees, Exam, Lab, Other
+    subject = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='Pending') # Pending, In Progress, Resolved
+    admin_reply = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
+def seed_default_admin():
+    admin = Admin.query.filter_by(username=ADMIN_USERNAME).first()
+    if not admin:
+        new_admin = Admin(username=ADMIN_USERNAME)
+        new_admin.set_password(ADMIN_PASSWORD)
+        db.session.add(new_admin)
         db.session.commit()
+
+# Predefined FAQs for Smart Help
+FAQS = {
+    'Academic': [
+        {
+            'question': 'How can I request attendance correction or leave approval?',
+            'answer': 'Attendance corrections require an application endorsed by your Head of Department (HOD) submitted to the academic office within 3 working days.'
+        },
+        {
+            'question': 'What is the procedure to change or add elective courses?',
+            'answer': 'Elective changes can be requested during the first week of the semester through your academic coordinator.'
+        }
+    ],
+    'Fees': [
+        {
+            'question': 'How can I pay tuition fees online?',
+            'answer': 'Visit the official college portal student accounts section. We support net banking, UPI, and major debit/credit cards.'
+        },
+        {
+            'question': 'What is the deadline for late fee waiver requests?',
+            'answer': 'Late fee waiver requests must be submitted to the accounts office prior to the last date of fee payment with supporting documents.'
+        }
+    ],
+    'Exam': [
+        {
+            'question': 'When will the hall ticket / admit card be issued?',
+            'answer': 'Hall tickets are available for download from the student portal 5 days before the semester examinations commence, provided all dues are cleared.'
+        },
+        {
+            'question': 'How do I apply for revaluation of exam papers?',
+            'answer': 'Revaluation applications are open for 10 days after result announcement. Submit the form in the Controller of Examinations section.'
+        }
+    ],
+    'Lab': [
+        {
+            'question': 'What are the computer lab timing hours for self-study?',
+            'answer': 'The central computing facility is open from 8:00 AM to 7:00 PM on working weekdays.'
+        },
+        {
+            'question': 'How do I get access to specialized lab software/hardware?',
+            'answer': 'Submit a request approved by your lab instructor specifying project requirements and system configuration needs.'
+        }
+    ],
+    'Other': [
+        {
+            'question': 'How do I apply for a bonafide or transfer certificate?',
+            'answer': 'Certificate applications can be submitted online or directly at the student administrative office with valid student ID.'
+        },
+        {
+            'question': 'Who should I contact for hostel or transportation queries?',
+            'answer': 'Please contact the Student Welfare Officer or visit the Campus Administrative Desk on Floor 1.'
+        }
+    ]
+}
 
 # Auth Decorators
 def student_required(f):
@@ -96,6 +147,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -146,10 +198,12 @@ def login():
         if login_type == 'admin':
             username = request.form.get('username', '').strip()
             password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+
+            admin = Admin.query.filter_by(username=username).first()
+            if (admin and admin.check_password(password)) or (username == ADMIN_USERNAME and password == ADMIN_PASSWORD):
                 session['user_type'] = 'admin'
                 session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
+                flash('Logged in successfully as Help Desk Administrator.', 'success')
                 return redirect(url_for('admin_dashboard'))
             else:
                 flash('Invalid admin credentials.', 'danger')
@@ -181,209 +235,131 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
+# Smart Help Module
+@app.route('/smart-help')
+def smart_help():
+    selected_category = request.args.get('category', 'Academic')
+    if selected_category not in FAQS:
+        selected_category = 'Academic'
+
+    suggested_faqs = FAQS.get(selected_category, [])
+    return render_template(
+        'smart_help.html',
+        categories=list(FAQS.keys()),
+        selected_category=selected_category,
+        faqs=suggested_faqs
+    )
+
+# Submit Help Request Page & Action
+@app.route('/student/request/new', methods=['GET', 'POST'])
+@student_required
+def submit_request():
+    if request.method == 'POST':
+        category = request.form.get('category', '').strip()
+        subject = request.form.get('subject', '').strip()
+        description = request.form.get('description', '').strip()
+
+        valid_categories = ['Academic', 'Fees', 'Exam', 'Lab', 'Other']
+        if not category or category not in valid_categories or not subject or not description:
+            flash('Please fill in all fields with valid information.', 'danger')
+            return redirect(url_for('submit_request'))
+
+        student_id = session.get('user_id')
+        help_req = HelpRequest(
+            student_id=student_id,
+            category=category,
+            subject=subject,
+            description=description,
+            status='Pending'
+        )
+        db.session.add(help_req)
+        db.session.commit()
+
+        flash('Your help request has been submitted successfully!', 'success')
+        return redirect(url_for('student_dashboard'))
+
+    category_param = request.args.get('category', 'Academic')
+    return render_template('submit_request.html', default_category=category_param)
+
+# Student Dashboard
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
     student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student = db.session.get(Student, student_id)
+    requests_list = HelpRequest.query.filter_by(student_id=student_id).order_by(HelpRequest.created_at.desc()).all()
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+    pending_count = len([r for r in requests_list if r.status == 'Pending'])
+    in_progress_count = len([r for r in requests_list if r.status == 'In Progress'])
+    resolved_count = len([r for r in requests_list if r.status == 'Resolved'])
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
+    return render_template(
+        'student_dashboard.html',
+        student=student,
+        requests=requests_list,
+        pending_count=pending_count,
+        in_progress_count=in_progress_count,
+        resolved_count=resolved_count
     )
-    db.session.add(booking)
-    db.session.commit()
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
-
-# Admin Dashboard & Equipment Management
+# Admin Help Desk Dashboard
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    category_filter = request.args.get('category', 'All')
+    status_filter = request.args.get('status', 'All')
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    query = HelpRequest.query
+    if category_filter != 'All':
+        query = query.filter_by(category=category_filter)
+    if status_filter != 'All':
+        query = query.filter_by(status=status_filter)
+
+    all_requests = query.order_by(HelpRequest.created_at.desc()).all()
+
+    total_requests = HelpRequest.query.count()
+    pending_count = HelpRequest.query.filter_by(status='Pending').count()
+    in_progress_count = HelpRequest.query.filter_by(status='In Progress').count()
+    resolved_count = HelpRequest.query.filter_by(status='Resolved').count()
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
+        requests=all_requests,
+        total_requests=total_requests,
         pending_count=pending_count,
-        approved_count=approved_count
+        in_progress_count=in_progress_count,
+        resolved_count=resolved_count,
+        selected_category=category_filter,
+        selected_status=status_filter
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+# Admin Reply & Status Update
+@app.route('/admin/request/reply/<int:request_id>', methods=['POST'])
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
-
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
+def admin_reply_request(request_id):
+    help_req = db.session.get(HelpRequest, request_id)
+    if not help_req:
+        flash('Help request not found.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
-    )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+    reply_text = request.form.get('admin_reply', '').strip()
+    status = request.form.get('status', 'Pending').strip()
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
-@admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
+    valid_statuses = ['Pending', 'In Progress', 'Resolved']
+    if status not in valid_statuses:
+        status = 'Pending'
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
+    if reply_text:
+        help_req.admin_reply = reply_text
+    help_req.status = status
+    help_req.updated_at = datetime.utcnow()
 
     db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
-@admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
-@admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
+    flash(f'Request #{help_req.id} updated successfully to status "{status}".', 'success')
     return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        seed_default_data()
+        seed_default_admin()
     app.run(debug=True)

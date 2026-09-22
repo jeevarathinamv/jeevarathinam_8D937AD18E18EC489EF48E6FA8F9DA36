@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Help Request{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card card-glass p-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="icon-box icon-box-cyan mx-auto mb-3">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">Submit Help Request</h3>
+                    <p class="text-muted">Fill out the details below and our team will get back to you promptly</p>
+                </div>
+
+                <form action="{{ url_for('submit_request') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="category" class="form-label fw-semibold">Category</label>
+                        <select class="form-select border-1" id="category" name="category" required>
+                            <option value="Academic" {% if default_category == 'Academic' %}selected{% endif %}>Academic</option>
+                            <option value="Fees" {% if default_category == 'Fees' %}selected{% endif %}>Fees</option>
+                            <option value="Exam" {% if default_category == 'Exam' %}selected{% endif %}>Exam</option>
+                            <option value="Lab" {% if default_category == 'Lab' %}selected{% endif %}>Lab</option>
+                            <option value="Other" {% if default_category == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="subject" class="form-label fw-semibold">Subject / Brief Title</label>
+                        <input type="text" class="form-control" id="subject" name="subject" placeholder="e.g. Issue with hall ticket download for Semester 3" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-semibold">Problem Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="5" placeholder="Describe your issue in detail so the admin can assist you effectively..." required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-gradient-primary px-4 shadow">
+                            <i class="bi bi-send-fill me-1"></i> Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
