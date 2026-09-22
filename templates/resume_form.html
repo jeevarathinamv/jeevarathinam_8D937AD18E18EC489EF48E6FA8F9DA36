@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if action == 'edit' %}Edit Resume{% else %}Create Resume{% endif %} - Resume Builder{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-primary text-white p-4 rounded-top-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h3 class="mb-0 fw-bold">
+                            <i class="bi {% if action == 'edit' %}bi-pencil-square{% else %}bi-file-earmark-plus-fill{% endif %} me-2"></i>
+                            {% if action == 'edit' %}Edit Resume Profile{% else %}Create New Resume Profile{% endif %}
+                        </h3>
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form action="{% if action == 'edit' %}{{ url_for('edit_resume', resume_id=resume.id) }}{% else %}{{ url_for('create_resume') }}{% endif %}" method="POST">
+
+                        <!-- Resume Profile Title -->
+                        <div class="mb-4 bg-light p-3 rounded-3 border">
+                            <label for="title" class="form-label fw-bold text-dark fs-5">Resume Title / Target Role</label>
+                            <input type="text" class="form-control form-control-lg" id="title" name="title" value="{{ resume.title if resume else 'Software Developer Resume' }}" placeholder="e.g. Software Engineer Resume, Marketing Resume" required>
+                            <div class="form-text">A title to help you identify this resume version in your dashboard.</div>
+                        </div>
+
+                        <!-- 1. Personal Details -->
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                            <i class="bi bi-person-lines-fill me-2"></i> 1. Personal Details
+                        </h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="full_name" class="form-label fw-medium">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="full_name" name="full_name" value="{{ resume.full_name if resume else (student.name if student else '') }}" placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label fw-medium">Phone Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="phone" name="phone" value="{{ resume.phone if resume else '' }}" placeholder="+1 234 567 8900" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-medium">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ resume.email if resume else (student.email if student else '') }}" placeholder="john@example.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="address" class="form-label fw-medium">City & State / Address <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="address" name="address" value="{{ resume.address if resume else '' }}" placeholder="New York, NY" required>
+                            </div>
+                        </div>
+
+                        <!-- 2. Career Objective -->
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                            <i class="bi bi-bullseye me-2"></i> 2. Career Objective
+                        </h5>
+                        <div class="mb-4">
+                            <label for="career_objective" class="form-label fw-medium">Career Objective Statement <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="career_objective" name="career_objective" rows="3" placeholder="Dedicated and detail-oriented computer science student seeking an entry-level software engineer position to leverage my programming skills and academic knowledge..." required>{{ resume.career_objective if resume else '' }}</textarea>
+                        </div>
+
+                        <!-- 3. Education Details -->
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                            <i class="bi bi-mortarboard-fill me-2"></i> 3. Education Details
+                        </h5>
+                        <div class="mb-4">
+                            <label for="education" class="form-label fw-medium">Education Details <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="education" name="education" rows="4" placeholder="- B.Tech in Computer Science & Engineering, XYZ University (2021 - 2025) - CGPA: 8.5/10&#10;- Higher Secondary Education, ABC School (2019 - 2021) - Percentage: 90%" required>{{ resume.education if resume else '' }}</textarea>
+                            <div class="form-text">List your degrees, institutions, graduation years, and GPAs/percentages. Use new lines or bullets.</div>
+                        </div>
+
+                        <!-- 4. Technical Skills -->
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                            <i class="bi bi-code-slash me-2"></i> 4. Technical Skills
+                        </h5>
+                        <div class="mb-4">
+                            <label for="skills" class="form-label fw-medium">Technical Skills <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="skills" name="skills" rows="3" placeholder="- Programming Languages: Python, Java, JavaScript, C++&#10;- Web Technologies: HTML5, CSS3, Bootstrap 5, Flask&#10;- Databases: MySQL, PostgreSQL, SQLite&#10;- Tools & Frameworks: Git, VS Code, Linux" required>{{ resume.skills if resume else '' }}</textarea>
+                        </div>
+
+                        <!-- 5. Projects -->
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                            <i class="bi bi-folder-check me-2"></i> 5. Projects
+                        </h5>
+                        <div class="mb-4">
+                            <label for="projects" class="form-label fw-medium">Key Projects</label>
+                            <textarea class="form-control" id="projects" name="projects" rows="4" placeholder="- Student Resume Builder App: Built a full-stack Flask web application with MySQL and PDF generation using ReportLab.&#10;- Online E-Commerce Portal: Developed a responsive web store using Python, HTML, Bootstrap, and payment gateway API integration.">{{ resume.projects if resume else '' }}</textarea>
+                        </div>
+
+                        <!-- 6. Certifications -->
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                            <i class="bi bi-patch-check-fill me-2"></i> 6. Certifications
+                        </h5>
+                        <div class="mb-4">
+                            <label for="certifications" class="form-label fw-medium">Certifications & Courses</label>
+                            <textarea class="form-control" id="certifications" name="certifications" rows="3" placeholder="- Python for Everybody Specialization - Coursera&#10;- AWS Certified Cloud Practitioner - Amazon Web Services&#10;- Web Development Bootcamp - Udemy">{{ resume.certifications if resume else '' }}</textarea>
+                        </div>
+
+                        <!-- 7. Hobbies & Interests -->
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                            <i class="bi bi-heart-fill me-2"></i> 7. Hobbies & Interests
+                        </h5>
+                        <div class="mb-4">
+                            <label for="hobbies" class="form-label fw-medium">Hobbies & Extra-Curricular Activities</label>
+                            <textarea class="form-control" id="hobbies" name="hobbies" rows="2" placeholder="- Open-source contribution, Competitive Programming, Playing Chess, Photography">{{ resume.hobbies if resume else '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i> {% if action == 'edit' %}Update Resume{% else %}Save Resume Details{% endif %}
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

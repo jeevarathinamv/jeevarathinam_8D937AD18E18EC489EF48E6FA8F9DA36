@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ resume.full_name }} - Professional Resume Preview{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        body {
+            background-color: #ffffff !important;
+        }
+        .resume-paper {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+    }
+    .resume-paper {
+        background: #ffffff;
+        min-height: 1050px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+    .resume-header {
+        border-bottom: 3px solid #0d6efd;
+    }
+    .resume-section-title {
+        color: #0d6efd;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 4px;
+        margin-bottom: 12px;
+    }
+    .resume-content-list {
+        white-space: pre-line;
+        line-height: 1.6;
+        color: #333333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Action Bar -->
+    <div class="d-flex align-items-center justify-content-between mb-4 no-print">
+        <a href="{% if session.get('user_type') == 'admin' %}{{ url_for('admin_dashboard') }}{% else %}{{ url_for('student_dashboard') }}{% endif %}" class="btn btn-outline-secondary rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+        <div class="d-flex gap-2">
+            <button onclick="window.print();" class="btn btn-outline-primary rounded-pill px-3">
+                <i class="bi bi-printer-fill me-1"></i> Print
+            </button>
+            <a href="{{ url_for('download_resume_pdf', resume_id=resume.id) }}" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm">
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Download PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Resume Document -->
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <div class="resume-paper p-4 p-md-5 mb-5">
+                <!-- Resume Header -->
+                <div class="resume-header pb-3 mb-4">
+                    <h1 class="display-5 fw-bold text-primary mb-2">{{ resume.full_name }}</h1>
+                    <div class="row text-secondary">
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-envelope-fill text-primary me-2"></i> {{ resume.email }}
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <i class="bi bi-telephone-fill text-primary me-2"></i> {{ resume.phone }}
+                        </div>
+                        <div class="col-12">
+                            <i class="bi bi-geo-alt-fill text-primary me-2"></i> {{ resume.address }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Career Objective -->
+                <div class="mb-4">
+                    <h5 class="resume-section-title"><i class="bi bi-bullseye me-2"></i> Career Objective</h5>
+                    <p class="resume-content-list text-dark mb-0">{{ resume.career_objective }}</p>
+                </div>
+
+                <!-- Education Details -->
+                <div class="mb-4">
+                    <h5 class="resume-section-title"><i class="bi bi-mortarboard-fill me-2"></i> Education Details</h5>
+                    <div class="resume-content-list">{{ resume.education }}</div>
+                </div>
+
+                <!-- Technical Skills -->
+                <div class="mb-4">
+                    <h5 class="resume-section-title"><i class="bi bi-code-slash me-2"></i> Technical Skills</h5>
+                    <div class="resume-content-list">{{ resume.skills }}</div>
+                </div>
+
+                <!-- Projects -->
+                {% if resume.projects %}
+                <div class="mb-4">
+                    <h5 class="resume-section-title"><i class="bi bi-folder-check me-2"></i> Key Projects</h5>
+                    <div class="resume-content-list">{{ resume.projects }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Certifications -->
+                {% if resume.certifications %}
+                <div class="mb-4">
+                    <h5 class="resume-section-title"><i class="bi bi-patch-check-fill me-2"></i> Certifications</h5>
+                    <div class="resume-content-list">{{ resume.certifications }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Hobbies & Interests -->
+                {% if resume.hobbies %}
+                <div class="mb-4">
+                    <h5 class="resume-section-title"><i class="bi bi-heart-fill me-2"></i> Hobbies & Interests</h5>
+                    <div class="resume-content-list">{{ resume.hobbies }}</div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
