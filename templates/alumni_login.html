@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Alumni Login - Alumni Mentorship Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom shadow-lg">
+            <div class="card-header-gradient text-center py-4">
+                <h3 class="fw-bold mb-1"><i class="bi bi-box-arrow-in-right me-2"></i>Alumni Login</h3>
+                <p class="small mb-0 opacity-90">Sign in to mentor students and post career guidance</p>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('alumni_login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold text-dark">
+                            <i class="bi bi-envelope-fill me-1 text-primary"></i> Email Address
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold text-dark">
+                            <i class="bi bi-lock-fill me-1 text-purple"></i> Password
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient-secondary w-100 py-2 fs-5 fw-bold mb-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login as Alumni
+                    </button>
+
+                    <div class="text-center pt-2 border-top">
+                        <p class="mb-0 text-muted">Don't have an alumni account?
+                            <a href="{{ url_for('alumni_register') }}" class="fw-bold text-pink text-decoration-none">Register Alumni Account</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

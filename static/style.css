@@ -1,0 +1,248 @@
+/* Custom Stylesheet - Alumni Mentorship & Career Guidance Portal */
+/* Theme: Blue + Purple + Pink Vibrant Gradient */
+
+:root {
+  --gradient-main: linear-gradient(135deg, #0d6efd 0%, #6f42c1 50%, #d63384 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 240, 255, 0.95) 100%);
+  --gradient-primary-btn: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+  --gradient-secondary-btn: linear-gradient(135deg, #6f42c1 0%, #d63384 100%);
+  --gradient-accent-btn: linear-gradient(135deg, #d63384 0%, #0d6efd 100%);
+  --gradient-hero: linear-gradient(135deg, #1e3c72 0%, #2a5298 35%, #6f42c1 70%, #d63384 100%);
+  --shadow-glow: 0 10px 30px rgba(111, 66, 193, 0.35);
+  --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --text-dark: #212529;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #3b0764 70%, #831843 100%);
+  background-attachment: fixed;
+  color: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Base Wrapper & Container Padding */
+.main-content {
+  flex: 1 0 auto;
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
+}
+
+/* Glassmorphism Navbar */
+.navbar-custom {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid rgba(214, 51, 132, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.35rem;
+  background: linear-gradient(45deg, #38bdf8, #a855f7, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-link {
+  color: #e2e8f0 !important;
+  font-weight: 500;
+  margin: 0 3px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  background: rgba(111, 66, 193, 0.3);
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3);
+}
+
+/* Cards styling */
+.card-custom {
+  background: var(--gradient-card);
+  color: var(--text-dark);
+  border: none;
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.card-custom:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-glow);
+}
+
+.card-header-gradient {
+  background: var(--gradient-main);
+  color: #ffffff;
+  font-weight: 700;
+  border-bottom: none;
+  padding: 1rem 1.25rem;
+}
+
+/* Hero Section */
+.hero-card {
+  background: var(--gradient-hero);
+  border-radius: 24px;
+  padding: 3.5rem 2rem;
+  color: #ffffff;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-title {
+  font-weight: 800;
+  font-size: 2.75rem;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradient Buttons */
+.btn-gradient-primary {
+  background: var(--gradient-primary-btn);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.6rem 1.4rem;
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-primary:hover {
+  background: linear-gradient(135deg, #0b5ed7 0%, #59359a 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 110, 253, 0.6);
+}
+
+.btn-gradient-secondary {
+  background: var(--gradient-secondary-btn);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.6rem 1.4rem;
+  box-shadow: 0 4px 15px rgba(111, 66, 193, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-secondary:hover {
+  background: linear-gradient(135deg, #59359a 0%, #b02a70 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(111, 66, 193, 0.6);
+}
+
+.btn-gradient-pink {
+  background: var(--gradient-accent-btn);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.6rem 1.4rem;
+  box-shadow: 0 4px 15px rgba(214, 51, 132, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-pink:hover {
+  background: linear-gradient(135deg, #b02a70 0%, #0b5ed7 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(214, 51, 132, 0.6);
+}
+
+/* Stat Cards */
+.stat-card {
+  border-radius: 16px;
+  padding: 1.5rem;
+  color: #ffffff;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: scale(1.03);
+}
+
+.stat-blue { background: linear-gradient(135deg, #0d6efd 0%, #1e3c72 100%); }
+.stat-purple { background: linear-gradient(135deg, #6f42c1 0%, #4a00e0 100%); }
+.stat-pink { background: linear-gradient(135deg, #d63384 0%, #910048 100%); }
+.stat-teal { background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%); }
+
+/* Badges */
+.badge-status-pending {
+  background-color: #ffc107;
+  color: #000;
+  font-weight: 600;
+  padding: 0.5em 0.8em;
+  border-radius: 8px;
+}
+
+.badge-status-accepted {
+  background-color: #198754;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.5em 0.8em;
+  border-radius: 8px;
+}
+
+.badge-status-rejected {
+  background-color: #dc3545;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.5em 0.8em;
+  border-radius: 8px;
+}
+
+/* Category Badges */
+.badge-category {
+  background: var(--gradient-main);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4em 0.8em;
+  border-radius: 20px;
+}
+
+/* Forms styling */
+.form-control, .form-select {
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  border: 1px solid #cbd5e1;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #6f42c1;
+  box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+}
+
+/* Custom Table */
+.table-custom {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-custom thead {
+  background: var(--gradient-main);
+  color: #ffffff;
+}
+
+.table-custom th, .table-custom td {
+  vertical-align: middle;
+  padding: 0.9rem;
+}
+
+/* Footer */
+.footer-custom {
+  background: rgba(15, 23, 42, 0.95);
+  border-top: 2px solid rgba(214, 51, 132, 0.4);
+  color: #94a3b8;
+  padding: 1.5rem 0;
+  text-align: center;
+}

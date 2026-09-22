@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Career Guidance - Alumni Mentorship Portal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-card py-4 px-4 text-center">
+            <h2 class="fw-bold mb-2"><i class="bi bi-journal-bookmark-fill me-2"></i>Career Guidance Hub</h2>
+            <p class="lead mb-0 opacity-90">Explore career advice, interview strategies, resume tips, and skill roadmaps written by experienced alumni.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Category Filters & Add Post Button -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('career_guidance') }}" class="btn {% if not selected_category %}btn-gradient-primary{% else %}btn-outline-light{% endif %} rounded-pill px-3">
+            All Categories
+        </a>
+        {% for cat in categories %}
+            <a href="{{ url_for('career_guidance', category=cat) }}" class="btn {% if selected_category == cat %}btn-gradient-pink{% else %}btn-outline-light{% endif %} rounded-pill px-3">
+                {{ cat }}
+            </a>
+        {% endfor %}
+    </div>
+
+    {% if session.get('user_type') == 'alumni' %}
+        <button type="button" class="btn btn-gradient-secondary rounded-pill px-4 fw-bold shadow" data-bs-toggle="collapse" data-bs-target="#postGuidanceForm">
+            <i class="bi bi-plus-circle-fill me-2"></i> Post Career Advice
+        </button>
+    {% endif %}
+</div>
+
+<!-- Alumni Post Guidance Collapse Form -->
+{% if session.get('user_type') == 'alumni' %}
+    <div class="collapse mb-5" id="postGuidanceForm">
+        <div class="card card-custom shadow-lg">
+            <div class="card-header-gradient">
+                <h4 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2"></i>Share Your Career Guidance</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('career_guidance') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-bold text-dark"><i class="bi bi-fonts me-1 text-primary"></i> Article Title</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g. 5 Resume Mistakes Freshers Should Avoid" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label fw-bold text-dark"><i class="bi bi-tags-fill me-1 text-purple"></i> Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="" disabled selected>Select Category</option>
+                            <option value="Career Advice">Career Advice</option>
+                            <option value="Interview Tips">Interview Tips</option>
+                            <option value="Resume Tips">Resume Tips</option>
+                            <option value="Skill Suggestions">Skill Suggestions</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="content" class="form-label fw-bold text-dark"><i class="bi bi-file-text-fill me-1 text-pink"></i> Guidance Content / Details</label>
+                        <textarea class="form-control" id="content" name="content" rows="6" placeholder="Provide detailed actionable guidance, recommendations, or step-by-step tips..." required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#postGuidanceForm">Cancel</button>
+                        <button type="submit" class="btn btn-gradient-pink rounded-pill px-5 fw-bold">
+                            <i class="bi bi-send-fill me-1"></i> Publish Post
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Guidance Posts Display -->
+<div class="row g-4 mb-5">
+    {% if guidance_list %}
+        {% for post in guidance_list %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-custom h-100 shadow">
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge badge-category">{{ post.category }}</span>
+                            <small class="text-muted"><i class="bi bi-calendar3"></i> {{ post.created_at.strftime('%b %d, %Y') }}</small>
+                        </div>
+
+                        <h4 class="card-title fw-bold text-dark mb-3">{{ post.title }}</h4>
+
+                        <div class="card-text text-secondary mb-4 flex-grow-1" style="white-space: pre-line;">
+                            {{ post.content }}
+                        </div>
+
+                        <div class="border-top pt-3 d-flex align-items-center justify-content-between mt-auto">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="fw-bold mb-0 text-dark small">{{ post.alumni.name }}</p>
+                                    <small class="text-purple">{{ post.alumni.job_role }} @ {{ post.alumni.company }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12 text-center py-5 bg-white bg-opacity-10 rounded-4">
+            <i class="bi bi-journal-x display-3 text-light opacity-50 d-block mb-3"></i>
+            <h4 class="text-light fw-bold">No Guidance Posts Found</h4>
+            <p class="text-light opacity-75 mb-0">No posts exist for this category yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

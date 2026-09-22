@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Mentorship Request - Alumni Mentorship Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card card-custom shadow-lg">
+            <div class="card-header-gradient text-center py-4">
+                <h3 class="fw-bold mb-1"><i class="bi bi-send-fill me-2"></i>Send Mentorship Request</h3>
+                <p class="small mb-0 opacity-90">Ask questions regarding career paths, interviews, resumes, or industry guidance</p>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('mentorship_request') }}" method="POST">
+                    <div class="mb-4">
+                        <label for="alumni_id" class="form-label fw-semibold text-dark"><i class="bi bi-person-badge-fill me-1 text-primary"></i> Select Alumni Mentor</label>
+                        <select class="form-select form-select-lg" id="alumni_id" name="alumni_id" required>
+                            <option value="" disabled {% if not selected_alumni %}selected{% endif %}>Choose an Alumni Mentor...</option>
+                            {% for mentor in all_alumni %}
+                                <option value="{{ mentor.id }}" {% if selected_alumni and selected_alumni.id == mentor.id %}selected{% endif %}>
+                                    {{ mentor.name }} - {{ mentor.job_role }} at {{ mentor.company }} ({{ mentor.department }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {% if selected_alumni %}
+                        <div class="p-3 bg-light rounded-3 mb-4 border-start border-4 border-purple">
+                            <h6 class="fw-bold text-dark mb-1"><i class="bi bi-info-circle-fill text-purple me-1"></i> Mentor Profile Overview:</h6>
+                            <p class="small mb-1"><strong>Name:</strong> {{ selected_alumni.name }}</p>
+                            <p class="small mb-1"><strong>Role & Company:</strong> {{ selected_alumni.job_role }} @ {{ selected_alumni.company }}</p>
+                            <p class="small mb-0"><strong>Experience:</strong> {{ selected_alumni.experience }} | Graduated {{ selected_alumni.graduation_year }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label for="question" class="form-label fw-semibold text-dark"><i class="bi bi-chat-text-fill me-1 text-pink"></i> Your Career Question / Mentorship Detail</label>
+                        <textarea class="form-control" id="question" name="question" rows="5" placeholder="e.g. Hi! I am interested in Software Engineering roles. Could you share advice on how to prepare for interviews and structure my resume?" required></textarea>
+                        <small class="text-muted">Be specific with your questions to help the alumni mentor provide tailored guidance.</small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-gradient-primary rounded-pill px-5 flex-grow-1 fw-bold fs-5">
+                            <i class="bi bi-send-fill me-2"></i> Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
