@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Grievance #GR-{{ grievance.id }} - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Navigation header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-cyan btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard</a>
+        <form action="{{ url_for('admin_delete_grievance', grievance_id=grievance.id) }}" method="POST" onsubmit="return confirm('Delete this grievance permanently?');">
+            <button type="submit" class="btn btn-danger btn-sm px-3"><i class="bi bi-trash me-1"></i> Delete Grievance</button>
+        </form>
+    </div>
+
+    <div class="row g-4">
+        <!-- Student Details & Grievance Info -->
+        <div class="col-lg-7">
+            <!-- Student Details Card -->
+            <div class="card card-custom p-4 mb-4" style="border-left: 4px solid #00f2fe;">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-person-lines-fill text-info me-2"></i> Student Details</h5>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Student Name</small>
+                        <span class="fw-bold text-light fs-6">{{ grievance.student.name }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Register Number</small>
+                        <span class="badge bg-dark border border-info text-info fs-6">{{ grievance.student.register_number }}</span>
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <small class="text-muted d-block">Department</small>
+                        <span class="text-light">{{ grievance.student.department }}</span>
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <small class="text-muted d-block">Email</small>
+                        <a href="mailto:{{ grievance.student.email }}" class="text-info text-decoration-none">{{ grievance.student.email }}</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grievance Content Card -->
+            <div class="card card-custom p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-info bg-opacity-20 text-info border border-info">{{ grievance.category }}</span>
+                    <small class="text-muted"><i class="bi bi-clock me-1"></i> {{ grievance.created_at.strftime('%d %B %Y, %I:%M %p') }}</small>
+                </div>
+
+                <h4 class="fw-bold text-white mb-3">{{ grievance.subject }}</h4>
+
+                <h6 class="fw-semibold text-info mb-2"><i class="bi bi-card-text me-1"></i> Grievance Statement</h6>
+                <div class="p-3 rounded-3 mb-3" style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); color: #e2e8f0; white-space: pre-line;">
+                    {{ grievance.description }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Action Card: Status Update & Reply -->
+        <div class="col-lg-5">
+            <div class="card card-sky p-4">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-reply-all-fill text-warning me-2"></i> Admin Action & Response</h5>
+
+                <form action="{{ url_for('admin_reply_grievance', grievance_id=grievance.id) }}" method="POST">
+                    <!-- Update Status -->
+                    <div class="mb-3">
+                        <label for="status" class="form-label text-light fw-medium"><i class="bi bi-toggle-on text-warning me-1"></i> Update Status</label>
+                        <select class="form-select form-select-custom py-2" id="status" name="status" required>
+                            <option value="Pending" {% if grievance.status == 'Pending' %}selected{% endif %}>Yellow - Pending</option>
+                            <option value="In Progress" {% if grievance.status == 'In Progress' %}selected{% endif %}>Cyan - In Progress</option>
+                            <option value="Resolved" {% if grievance.status == 'Resolved' %}selected{% endif %}>Green - Resolved</option>
+                            <option value="Rejected" {% if grievance.status == 'Rejected' %}selected{% endif %}>Red - Rejected</option>
+                        </select>
+                    </div>
+
+                    <!-- Admin Reply Text -->
+                    <div class="mb-4">
+                        <label for="admin_reply" class="form-label text-light fw-medium"><i class="bi bi-chat-left-dots text-warning me-1"></i> Administrator Reply</label>
+                        <textarea class="form-control form-control-custom" id="admin_reply" name="admin_reply" rows="5" placeholder="Type official response or action taken..." required>{{ grievance.admin_reply or '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyan w-100 py-2 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Save Changes & Send Reply
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

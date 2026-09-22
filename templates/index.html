@@ -1,73 +1,124 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - College Student Grievance Portal{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="container my-4">
+    <!-- Hero Banner -->
+    <div class="p-5 mb-4 card-custom border-0 text-center position-relative overflow-hidden" style="background: linear-gradient(135deg, #0a192f 0%, #1e3a8a 50%, #0f172a 100%);">
+        <div class="position-relative z-1 py-3">
+            <span class="badge bg-info bg-opacity-20 text-info border border-info rounded-pill px-3 py-2 mb-3">
+                <i class="bi bi-stars me-1"></i> Student Care & Support
+            </span>
+            <h1 class="display-4 fw-bold text-white mb-3">College Student Grievance Portal</h1>
+            <p class="lead text-light opacity-90 mx-auto max-w-700" style="max-width: 750px;">
+                A centralized, efficient, and transparent platform for students to lodge complaints, track grievance status in real time, and receive speedy resolutions from administrative departments.
+            </p>
+            <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+                {% if session.get('user_type') == 'student' %}
+                    <a href="{{ url_for('submit_grievance') }}" class="btn btn-cyan btn-lg px-4"><i class="bi bi-plus-circle me-1"></i> Submit Grievance</a>
+                    <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-cyan btn-lg px-4"><i class="bi bi-speedometer2 me-1"></i> My Dashboard</a>
+                {% elif session.get('user_type') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-cyan btn-lg px-4"><i class="bi bi-shield-lock me-1"></i> Admin Dashboard</a>
+                {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-cyan btn-lg px-4"><i class="bi bi-person-plus me-1"></i> Register Student Account</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-cyan btn-lg px-4"><i class="bi bi-box-arrow-in-right me-1"></i> Student Login</a>
+                {% endif %}
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+    <!-- Grievance Categories Section -->
+    <div class="my-5">
+        <h3 class="fw-bold text-info mb-4 text-center"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Grievance Categories</h3>
+        <div class="row g-4">
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-custom h-100 text-center p-4">
+                    <div class="icon-box-cyan mx-auto mb-3">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <h5 class="fw-bold text-light">Academic</h5>
+                    <p class="text-muted small mb-0">Course content, exam schedules, grading issues, teaching support, and department queries.</p>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-custom h-100 text-center p-4">
+                    <div class="icon-box-cyan mx-auto mb-3">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <h5 class="fw-bold text-light">Fees & Accounts</h5>
+                    <p class="text-muted small mb-0">Tuition fee payment receipts, scholarship queries, fine disputes, and fee refunds.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-custom h-100 text-center p-4">
+                    <div class="icon-box-cyan mx-auto mb-3">
+                        <i class="bi bi-house-door"></i>
+                    </div>
+                    <h5 class="fw-bold text-light">Hostel & Mess</h5>
+                    <p class="text-muted small mb-0">Room maintenance, mess food quality, water/electricity facilities, and hostel rules.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-custom h-100 text-center p-4">
+                    <div class="icon-box-cyan mx-auto mb-3">
+                        <i class="bi bi-bus-front"></i>
+                    </div>
+                    <h5 class="fw-bold text-light">Transport</h5>
+                    <p class="text-muted small mb-0">College bus timing, route modifications, driver feedback, and pass issuance.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-custom h-100 text-center p-4">
+                    <div class="icon-box-cyan mx-auto mb-3">
+                        <i class="bi bi-pc-display"></i>
+                    </div>
+                    <h5 class="fw-bold text-light">Laboratory & IT</h5>
+                    <p class="text-muted small mb-0">Lab equipment functionality, Wi-Fi connectivity, computer systems, and software access.</p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-custom h-100 text-center p-4">
+                    <div class="icon-box-cyan mx-auto mb-3">
+                        <i class="bi bi-three-dots"></i>
+                    </div>
+                    <h5 class="fw-bold text-light">Other Grievances</h5>
+                    <p class="text-muted small mb-0">Library resources, sports amenities, campus hygiene, and general administration.</p>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+    <!-- Features / Tracking Progress Info -->
+    <div class="card card-sky p-4 p-md-5 my-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h3 class="fw-bold text-white mb-3"><i class="bi bi-check2-square text-info me-2"></i> Transparent Grievance Tracking</h3>
+                <p class="text-light opacity-90 mb-4">
+                    Track your complaint status every step of the way with live status badges and official admin replies:
+                </p>
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge badge-pending fs-6">Pending</span>
+                        <span class="text-muted">Submitted grievance is queued for administrative review.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge badge-in-progress fs-6">In Progress</span>
+                        <span class="text-muted">Concerned department is actively investigating the issue.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge badge-resolved fs-6">Resolved</span>
+                        <span class="text-muted">Issue has been addressed and officially resolved with reply.</span>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="col-lg-5 text-center mt-4 mt-lg-0">
+                <div class="p-4 rounded-4" style="background: rgba(10, 25, 47, 0.8); border: 1px solid rgba(0, 242, 254, 0.3);">
+                    <i class="bi bi-shield-check display-1 text-info mb-3"></i>
+                    <h4 class="text-white fw-bold">Ready to submit a query?</h4>
+                    <p class="text-muted small">Log in now to lodge your grievance or track previous entries.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-cyan w-100"><i class="bi bi-box-arrow-in-right me-1"></i> Get Started</a>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
             </div>
         </div>
     </div>

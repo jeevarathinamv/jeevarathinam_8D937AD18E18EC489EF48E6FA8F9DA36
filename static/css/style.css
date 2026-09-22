@@ -1,79 +1,222 @@
-/* Custom Styles for College Sports Equipment Booking System */
+/* College Student Grievance Portal Theme */
+/* Navy Blue + Cyan + Sky Blue Dark/Gradient Theme */
 
 :root {
-    --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    --accent-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-    --card-hover-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    --bg-navy-dark: #0a192f;
+    --bg-navy-mid: #112240;
+    --bg-navy-card: #1d2d50;
+    --primary-cyan: #00f2fe;
+    --cyan-hover: #4facfe;
+    --sky-blue: #38bdf8;
+    --sky-blue-light: #e0f2fe;
+    --sky-blue-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-muted: #cbd5e1;
+
+    /* Status Colors */
+    --status-pending: #fbbf24;
+    --status-in-progress: #06b6d4;
+    --status-resolved: #10b981;
+    --status-rejected: #ef4444;
+
+    --card-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
+    --glow-cyan: 0 0 15px rgba(0, 242, 254, 0.4);
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    color: #2b2d42;
-    background-color: #f8f9fa;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #070d19 0%, #0a192f 40%, #1e293b 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    background-attachment: fixed;
 }
 
-/* Navbar Styling */
-.bg-gradient-primary {
-    background: var(--primary-gradient) !important;
+.text-muted {
+    color: #cbd5e1 !important;
 }
 
-.navbar-brand {
+/* Navbar */
+.navbar-custom {
+    background: rgba(10, 25, 47, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+}
+
+.navbar-brand-title {
     font-size: 1.35rem;
+    color: var(--primary-cyan) !important;
+    text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+}
+
+/* Glassmorphism / Dark Navy Cards */
+.card-custom {
+    background: rgba(29, 45, 80, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    color: var(--text-primary);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.card-custom:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0, 242, 254, 0.15);
+    border-color: rgba(0, 242, 254, 0.4);
+}
+
+.card-sky {
+    background: linear-gradient(145deg, #1e293b 0%, #111827 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+}
+
+/* Stat Cards */
+.stat-card {
+    border-radius: 16px;
+    padding: 1.25rem;
+    background: rgba(17, 34, 64, 0.9);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-cyan);
+}
+
+/* Cyan Highlight Buttons */
+.btn-cyan {
+    background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    color: #070d19;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    padding: 0.5rem 1.4rem;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+    transition: all 0.25s ease;
+}
+
+.btn-cyan:hover {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #070d19;
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+    transform: translateY(-2px);
+}
+
+.btn-outline-cyan {
+    color: var(--primary-cyan);
+    border: 2px solid var(--primary-cyan);
+    border-radius: 30px;
+    font-weight: 600;
+    background: transparent;
+    transition: all 0.25s ease;
+}
+
+.btn-outline-cyan:hover {
+    background: var(--primary-cyan);
+    color: #070d19;
+    box-shadow: var(--glow-cyan);
+}
+
+/* Table Styling */
+.table-custom {
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.table-custom th {
+    background-color: rgba(10, 25, 47, 0.9);
+    color: var(--sky-blue);
+    border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
     letter-spacing: 0.5px;
 }
 
-/* Card Improvements */
-.card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+.table-custom td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(17, 34, 64, 0.6);
+    color: var(--text-primary);
 }
 
-.card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--card-hover-shadow) !important;
+.table-custom tbody tr:hover td {
+    background-color: rgba(30, 58, 138, 0.4);
 }
 
-/* Modern Gradient Headers */
-.header-gradient {
-    background: var(--primary-gradient);
-    color: #ffffff;
-}
-
-/* Custom Status Badges */
+/* Status Badges */
 .badge-pending {
-    background-color: #ffc107;
-    color: #212529;
+    background-color: rgba(251, 191, 36, 0.2);
+    color: var(--status-pending);
+    border: 1px solid var(--status-pending);
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 20px;
 }
 
-.badge-approved {
-    background-color: #0d6efd;
-    color: #ffffff;
+.badge-in-progress {
+    background-color: rgba(6, 182, 212, 0.2);
+    color: var(--status-in-progress);
+    border: 1px solid var(--status-in-progress);
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 20px;
+}
+
+.badge-resolved {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--status-resolved);
+    border: 1px solid var(--status-resolved);
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 20px;
 }
 
 .badge-rejected {
-    background-color: #dc3545;
-    color: #ffffff;
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--status-rejected);
+    border: 1px solid var(--status-rejected);
+    font-weight: 600;
+    padding: 0.4em 0.8em;
+    border-radius: 20px;
 }
 
-.badge-returned {
-    background-color: #198754;
-    color: #ffffff;
+/* Form Controls */
+.form-control-custom, .form-select-custom {
+    background-color: rgba(10, 25, 47, 0.8) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    color: #ffffff !important;
+    border-radius: 10px !important;
 }
 
-/* Hero Banner */
-.hero-banner {
-    background: linear-gradient(rgba(30, 60, 114, 0.85), rgba(42, 82, 152, 0.9)), url('https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
-    color: white;
-    padding: 80px 0;
-    border-radius: 0 0 25px 25px;
+.form-control-custom:focus, .form-select-custom:focus {
+    background-color: rgba(10, 25, 47, 0.95) !important;
+    border-color: var(--primary-cyan) !important;
+    color: #ffffff !important;
+    box-shadow: var(--glow-cyan) !important;
 }
 
-/* Feature Icon Box */
-.icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+.form-control-custom::placeholder {
+    color: #94a3b8;
+}
+
+/* Icon Box */
+.icon-box-cyan {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(0, 242, 254, 0.15);
+    color: var(--primary-cyan);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
+}
+
+/* Footer */
+.footer-custom {
+    background: #070d19;
+    border-top: 1px solid rgba(56, 189, 248, 0.2);
+    color: var(--text-muted);
 }

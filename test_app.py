@@ -1,8 +1,7 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Admin, Grievance
 
-class SportsBookingTestCase(unittest.TestCase):
+class GrievancePortalTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +10,14 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Seed admin user
+            admin = Admin(
+                username='admin',
+                email='admin@college.edu',
+                name='System Administrator'
+            )
+            admin.set_password('admin123')
+            db.session.add(admin)
             db.session.commit()
 
     def tearDown(self):
@@ -25,92 +28,141 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
+            'name': 'Rahul Sharma',
+            'register_number': '21MCA042',
             'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'email': 'rahul@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
-        # Login student
+        # Login student with Email
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'rahul@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'Welcome back, Rahul Sharma!', response.data)
+
+        # Logout
+        self.client.get('/logout')
+
+        # Login student with Register Number
+        response = self.client.post('/login', data={
+            'email_or_reg': '21MCA042',
+            'password': 'password123'
+        }, follow_redirects=True)
+        self.assertIn(b'Welcome back, Rahul Sharma!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_grievance_workflow(self):
+        # 1. Register and Login Student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
+            'name': 'Ananya Roy',
+            'register_number': '21CSE015',
+            'department': 'Computer Science & Engineering',
+            'email': 'ananya@college.edu',
+            'password': 'password123'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
+            'email_or_reg': 'ananya@college.edu',
+            'password': 'password123'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # 2. Submit Grievance
+        response = self.client.post('/student/submit-grievance', data={
+            'category': 'Academic',
+            'subject': 'Exam Schedule Conflict',
+            'description': 'Two major subject exams are scheduled on the same date.'
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn(b'submitted successfully', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        # 3. View Student Dashboard
+        response = self.client.get('/student/dashboard')
+        self.assertIn(b'Total Grievances', response.data)
+        self.assertIn(b'Exam Schedule Conflict', response.data)
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # 4. View Grievance History and Details
+        response = self.client.get('/student/grievance-history')
+        self.assertIn(b'#GR-1', response.data)
 
-        # Admin login and approval
+        response = self.client.get('/student/grievance/1')
+        self.assertIn(b'Exam Schedule Conflict', response.data)
+        self.assertIn(b'Two major subject exams are scheduled on the same date.', response.data)
+
+        # 5. Admin Login and Review
         self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+        self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        # Admin Dashboard View
+        response = self.client.get('/admin/dashboard')
+        self.assertIn(b'Ananya Roy', response.data)
+        self.assertIn(b'21CSE015', response.data)
+
+        # Admin Reply & Update Status to In Progress
+        response = self.client.post('/admin/grievance/reply/1', data={
+            'status': 'In Progress',
+            'admin_reply': 'We are looking into rescheduling the exam date with HOD.'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
+
+        # Admin Update Status to Resolved
+        response = self.client.post('/admin/grievance/reply/1', data={
+            'status': 'Resolved',
+            'admin_reply': 'Exam schedule conflict resolved. Revised timetable published on notice board.'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
+
+        # 6. Verify Student sees updated reply and Resolved status
+        self.client.get('/logout')
+        self.client.post('/login', data={
+            'email_or_reg': 'ananya@college.edu',
+            'password': 'password123'
+        })
+
+        response = self.client.get('/student/grievance/1')
+        self.assertIn(b'Resolved', response.data)
+        self.assertIn(b'Exam schedule conflict resolved', response.data)
+
+    def test_admin_delete_grievance(self):
+        # Register and submit grievance
+        self.client.post('/register', data={
+            'name': 'Karan Singh',
+            'register_number': '21ME008',
+            'department': 'Mechanical Engineering',
+            'email': 'karan@college.edu',
+            'password': 'pass'
+        })
+        self.client.post('/login', data={
+            'email_or_reg': 'karan@college.edu',
+            'password': 'pass'
+        })
+        self.client.post('/student/submit-grievance', data={
+            'category': 'Hostel',
+            'subject': 'Hot Water Facility',
+            'description': 'Geyser in Block A second floor is not working.'
+        })
+
+        # Admin login and delete grievance
+        self.client.get('/logout')
+        self.client.post('/admin/login', data={
+            'username': 'admin',
+            'password': 'admin123'
+        })
+
+        response = self.client.post('/admin/grievance/delete/1', follow_redirects=True)
+        self.assertIn(b'deleted successfully', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
-
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            self.assertEqual(Grievance.query.count(), 0)
 
 if __name__ == '__main__':
     unittest.main()

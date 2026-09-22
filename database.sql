@@ -1,8 +1,8 @@
--- College Sports Equipment Booking System
+-- College Student Grievance Portal
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `college_grievance`;
+USE `college_grievance`;
 
 -- Table structure for students
 CREATE TABLE IF NOT EXISTS `students` (
@@ -15,37 +15,32 @@ CREATE TABLE IF NOT EXISTS `students` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table structure for admins
+CREATE TABLE IF NOT EXISTS `admins` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password_hash` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(120) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
+-- Table structure for grievances
+CREATE TABLE IF NOT EXISTS `grievances` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
+    `category` VARCHAR(50) NOT NULL,
+    `subject` VARCHAR(200) NOT NULL,
+    `description` TEXT NOT NULL,
+    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, In Progress, Resolved, Rejected
+    `admin_reply` TEXT DEFAULT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
 );
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Seed default admin account (username: admin, password: admin123)
+-- Password hash generated using Werkzeug security
+INSERT INTO `admins` (`username`, `password_hash`, `email`, `name`) VALUES
+('admin', 'scrypt:32768:8:1$7uKzV19616h2U43g$dcd413b5ef24805bb528a49c9eb11c0ed38d0eef7fcf64188fa6c5ecf05dfa02d8bf4e8c1c5cd700d9fcd18e11b4ba251ee2b144fa5eece19c6f2df3a9edecfa', 'admin@college.edu', 'System Administrator')
+ON DUPLICATE KEY UPDATE `username`=`username`;

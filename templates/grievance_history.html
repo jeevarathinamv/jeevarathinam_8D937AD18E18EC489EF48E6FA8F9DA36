@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Grievance History - College Student Grievance Portal{% endblock %}
+
+{% block content %}
+<div class="container my-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-white mb-0"><i class="bi bi-journal-text text-info me-2"></i> My Grievance History</h3>
+            <p class="text-muted small mb-0">View all your submitted grievances, current status, and administrator replies.</p>
+        </div>
+        <a href="{{ url_for('submit_grievance') }}" class="btn btn-cyan"><i class="bi bi-plus-circle me-1"></i> Submit New Grievance</a>
+    </div>
+
+    <div class="card card-custom p-4">
+        {% if grievances %}
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Grievance ID</th>
+                            <th>Category</th>
+                            <th>Subject</th>
+                            <th>Date Submitted</th>
+                            <th>Status</th>
+                            <th>Admin Reply</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in grievances %}
+                            <tr>
+                                <td class="fw-bold text-info">#GR-{{ g.id }}</td>
+                                <td><span class="badge bg-secondary bg-opacity-50 text-light border border-secondary">{{ g.category }}</span></td>
+                                <td class="text-light fw-medium">{{ g.subject }}</td>
+                                <td class="text-muted small">{{ g.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                                <td>
+                                    {% if g.status == 'Pending' %}
+                                        <span class="badge badge-pending"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                                    {% elif g.status == 'In Progress' %}
+                                        <span class="badge badge-in-progress"><i class="bi bi-arrow-repeat me-1"></i> In Progress</span>
+                                    {% elif g.status == 'Resolved' %}
+                                        <span class="badge badge-resolved"><i class="bi bi-check-all me-1"></i> Resolved</span>
+                                    {% elif g.status == 'Rejected' %}
+                                        <span class="badge badge-rejected"><i class="bi bi-x-circle me-1"></i> Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if g.admin_reply %}
+                                        <span class="text-info small fw-medium" title="{{ g.admin_reply }}">
+                                            <i class="bi bi-chat-left-quote me-1"></i> {{ g.admin_reply[:40] }}{% if g.admin_reply|length > 40 %}...{% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted small italic">Awaiting reply...</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('grievance_details', grievance_id=g.id) }}" class="btn btn-cyan btn-sm py-1 px-3 fs-7">
+                                        <i class="bi bi-eye me-1"></i> Track Status
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-journal-x display-3 d-block mb-3 opacity-50"></i>
+                <h5 class="text-white">No Grievances Found</h5>
+                <p class="text-muted small mb-3">You have not submitted any grievances yet.</p>
+                <a href="{{ url_for('submit_grievance') }}" class="btn btn-cyan btn-sm"><i class="bi bi-plus-circle me-1"></i> Submit Grievance Now</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
