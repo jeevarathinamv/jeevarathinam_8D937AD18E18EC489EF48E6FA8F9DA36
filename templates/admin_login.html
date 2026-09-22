@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom card-teal-header shadow-lg">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="p-3 bg-dark text-warning rounded-circle d-inline-block mb-3">
+                        <i class="bi bi-shield-lock-fill fs-2"></i>
+                    </span>
+                    <h2 class="fw-bold text-dark">Admin Login</h2>
+                    <p class="text-muted">Administrator access for marking and managing attendance</p>
+                </div>
+
+                <form action="{{ url_for('admin_login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">
+                            <i class="bi bi-person-fill text-teal me-1"></i> Admin Username / Email
+                        </label>
+                        <input type="text" class="form-control form-control-lg rounded-3" id="username" name="username" placeholder="Username or Email" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">
+                            <i class="bi bi-lock-fill text-teal me-1"></i> Password
+                        </label>
+                        <input type="password" class="form-control form-control-lg rounded-3" id="password" name="password" placeholder="Enter admin password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-teal w-100 py-3 text-uppercase fw-bold shadow-sm">
+                        <i class="bi bi-shield-check me-2"></i> Admin Sign In
+                    </button>
+                </form>
+
+                <div class="alert alert-info mt-4 mb-0 rounded-3 small">
+                    <i class="bi bi-info-circle-fill me-1"></i> Default Credentials: <strong>Username:</strong> admin | <strong>Password:</strong> admin123
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

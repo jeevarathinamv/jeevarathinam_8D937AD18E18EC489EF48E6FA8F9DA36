@@ -6,15 +6,15 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'student_attendance_secret_key_123')
 
-# Admin Hardcoded Credentials
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+# Admin Credentials fallback
+DEFAULT_ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+DEFAULT_ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
-# Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+# Database configuration: Default to MySQL URI (student_attendance), fallback to SQLite for testing
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/student_attendance')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'student_attendance.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -32,7 +32,7 @@ class Student(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='student', lazy=True)
+    attendances = db.relationship('Attendance', backref='student', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,42 +40,63 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+class Admin(db.Model):
+    __tablename__ = 'admins'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Attendance(db.Model):
+    __tablename__ = 'attendance'
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    subject = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), nullable=False)  # 'Present' or 'Absent'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
+
+def seed_default_admin():
+    if Admin.query.count() == 0:
+        admin = Admin(username=DEFAULT_ADMIN_USERNAME, email='admin@college.edu')
+        admin.set_password(DEFAULT_ADMIN_PASSWORD)
+        db.session.add(admin)
         db.session.commit()
+
+# Helper function to calculate student attendance metrics
+def get_student_attendance_stats(student_id, subject_filter=None):
+    query = Attendance.query.filter_by(student_id=student_id)
+    if subject_filter:
+        query = query.filter_by(subject=subject_filter)
+
+    records = query.order_by(Attendance.date.desc()).all()
+    total_classes = len(records)
+    attended_classes = len([r for r in records if r.status == 'Present'])
+    absent_classes = len([r for r in records if r.status == 'Absent'])
+
+    if total_classes > 0:
+        percentage = round((attended_classes / total_classes) * 100, 2)
+    else:
+        percentage = 0.0
+
+    status_satisfactory = percentage >= 75.0
+
+    return {
+        'records': records,
+        'total_classes': total_classes,
+        'attended_classes': attended_classes,
+        'absent_classes': absent_classes,
+        'percentage': percentage,
+        'is_satisfactory': status_satisfactory
+    }
 
 # Auth Decorators
 def student_required(f):
@@ -92,10 +113,11 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_type' not in session or session['user_type'] != 'admin':
             flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
+# Home Page
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -114,9 +136,11 @@ def register():
             flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
 
-        existing_student = Student.query.filter(
-            (Student.email == email) | (Student.register_number == register_number)
-        ).first()
+        existing_student = db.session.scalar(
+            db.select(Student).where(
+                (Student.email == email) | (Student.register_number == register_number)
+            )
+        )
 
         if existing_student:
             flash('Student with this Email or Register Number already exists.', 'danger')
@@ -137,42 +161,61 @@ def register():
 
     return render_template('register.html')
 
-# Student & Admin Login
+# Student Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        email_or_reg = request.form.get('email_or_reg', '').strip()
+        password = request.form.get('password', '')
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
-        else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
-
-            student = Student.query.filter(
+        student = db.session.scalar(
+            db.select(Student).where(
                 (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
+            )
+        )
 
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
+        if student and student.check_password(password):
+            session['user_type'] = 'student'
+            session['user_id'] = student.id
+            session['user_name'] = student.name
+            flash(f'Welcome back, {student.name}!', 'success')
+            return redirect(url_for('student_dashboard'))
+        else:
+            flash('Invalid credentials. Please check your details and try again.', 'danger')
+            return redirect(url_for('login'))
 
     return render_template('login.html')
+
+# Admin Login
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username_or_email = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        admin = db.session.scalar(
+            db.select(Admin).where(
+                (Admin.username == username_or_email) | (Admin.email == username_or_email.lower())
+            )
+        )
+
+        # Fallback to hardcoded credentials if database admin record matches or fallback works
+        if admin and admin.check_password(password):
+            session['user_type'] = 'admin'
+            session['admin_id'] = admin.id
+            session['user_name'] = admin.username
+            flash('Logged in successfully as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        elif username_or_email == DEFAULT_ADMIN_USERNAME and password == DEFAULT_ADMIN_PASSWORD:
+            session['user_type'] = 'admin'
+            session['user_name'] = 'admin'
+            flash('Logged in successfully as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid admin credentials.', 'danger')
+            return redirect(url_for('admin_login'))
+
+    return render_template('admin_login.html')
 
 # Logout
 @app.route('/logout')
@@ -181,209 +224,145 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
+# Student Dashboard
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
     student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student = db.session.get(Student, student_id)
+    if not student:
+        session.clear()
+        return redirect(url_for('login'))
 
-@app.route('/student/book', methods=['POST'])
+    stats = get_student_attendance_stats(student_id)
+    return render_template('student_dashboard.html', student=student, stats=stats)
+
+# Student Attendance Report
+@app.route('/student/report')
 @student_required
-def book_equipment():
+def attendance_report():
     student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+    student = db.session.get(Student, student_id)
+    if not student:
+        session.clear()
+        return redirect(url_for('login'))
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    subject_filter = request.args.get('subject', '').strip()
+    stats = get_student_attendance_stats(student_id, subject_filter if subject_filter else None)
 
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    # Get distinct list of subjects for filtering
+    subjects = db.session.scalars(
+        db.select(Attendance.subject).where(Attendance.student_id == student_id).distinct()
+    ).all()
 
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
+    return render_template(
+        'attendance_report.html',
+        student=student,
+        stats=stats,
+        subjects=subjects,
+        selected_subject=subject_filter
     )
-    db.session.add(booking)
-    db.session.commit()
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
-
-# Admin Dashboard & Equipment Management
+# Admin Dashboard
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    students = db.session.scalars(db.select(Student).order_by(Student.name)).all()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    student_summary = []
+    shortage_students = []
+
+    for s in students:
+        stats = get_student_attendance_stats(s.id)
+        info = {
+            'student': s,
+            'total_classes': stats['total_classes'],
+            'attended_classes': stats['attended_classes'],
+            'absent_classes': stats['absent_classes'],
+            'percentage': stats['percentage'],
+            'is_satisfactory': stats['is_satisfactory']
+        }
+        student_summary.append(info)
+        if stats['total_classes'] > 0 and not stats['is_satisfactory']:
+            shortage_students.append(info)
+
+    all_attendances = db.session.scalars(
+        db.select(Attendance).order_by(Attendance.date.desc(), Attendance.id.desc())
+    ).all()
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        students=students,
+        student_summary=student_summary,
+        shortage_students=shortage_students,
+        attendances=all_attendances,
+        today=date.today().isoformat()
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+# Admin Attendance Page & Mark Attendance Route
+@app.route('/admin/attendance', methods=['GET', 'POST'])
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+def attendance_management():
+    if request.method == 'POST':
+        student_id = request.form.get('student_id', type=int)
+        subject = request.form.get('subject', '').strip()
+        date_str = request.form.get('date', '')
+        status = request.form.get('status', '').strip()
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
+        if not student_id or not subject or not date_str or not status:
+            flash('All attendance fields are required.', 'danger')
+            return redirect(url_for('attendance_management'))
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
-    )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+        if status not in ['Present', 'Absent']:
+            flash('Invalid attendance status.', 'danger')
+            return redirect(url_for('attendance_management'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+        try:
+            attendance_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format.', 'danger')
+            return redirect(url_for('attendance_management'))
+
+        student = db.session.get(Student, student_id)
+        if not student:
+            flash('Selected student not found.', 'danger')
+            return redirect(url_for('attendance_management'))
+
+        record = Attendance(
+            student_id=student_id,
+            subject=subject,
+            date=attendance_date,
+            status=status
+        )
+        db.session.add(record)
+        db.session.commit()
+
+        flash(f'Attendance recorded successfully for {student.name} ({subject} - {status}).', 'success')
+        return redirect(url_for('attendance_management'))
+
+    students = db.session.scalars(db.select(Student).order_by(Student.name)).all()
+    records = db.session.scalars(
+        db.select(Attendance).order_by(Attendance.date.desc(), Attendance.id.desc())
+    ).all()
+    today_str = date.today().isoformat()
+
+    return render_template('attendance.html', students=students, records=records, today=today_str)
+
+# Delete Attendance Record (Admin)
+@app.route('/admin/attendance/delete/<int:record_id>', methods=['POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
-
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
-
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
-@admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
-@admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+def delete_attendance(record_id):
+    record = db.session.get(Attendance, record_id)
+    if record:
+        db.session.delete(record)
+        db.session.commit()
+        flash('Attendance record deleted successfully.', 'info')
+    else:
+        flash('Record not found.', 'danger')
+    return redirect(request.referrer or url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        seed_default_data()
+        seed_default_admin()
     app.run(debug=True)
