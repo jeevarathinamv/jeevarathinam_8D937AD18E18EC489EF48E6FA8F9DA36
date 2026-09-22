@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+sports_booking.db
+instance/
+.pytest_cache/
+*.log
+/verification/
