@@ -1,8 +1,8 @@
--- College Sports Equipment Booking System
+-- Internship Application & Follow-up Tracker
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `internship_tracker`;
+USE `internship_tracker`;
 
 -- Table structure for students
 CREATE TABLE IF NOT EXISTS `students` (
@@ -13,39 +13,46 @@ CREATE TABLE IF NOT EXISTS `students` (
     `email` VARCHAR(120) UNIQUE NOT NULL,
     `password_hash` VARCHAR(255) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table structure for admins
+CREATE TABLE IF NOT EXISTS `admins` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password_hash` VARCHAR(255) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
+-- Table structure for internship applications
+CREATE TABLE IF NOT EXISTS `internship_applications` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
+    `company_name` VARCHAR(100) NOT NULL,
+    `role` VARCHAR(100) NOT NULL,
+    `location` VARCHAR(100) NOT NULL,
+    `application_date` DATE NOT NULL,
+    `application_link` VARCHAR(255) DEFAULT NULL,
+    `status` VARCHAR(50) DEFAULT 'Applied', -- Status: Applied, Shortlisted, Interview Scheduled, Selected, Rejected
+    `interview_date` DATE DEFAULT NULL,
+    `notes` TEXT DEFAULT NULL,
+    `admin_remarks` TEXT DEFAULT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
-);
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Table structure for follow-ups
+CREATE TABLE IF NOT EXISTS `followups` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `application_id` INT NOT NULL,
+    `followup_date` DATE NOT NULL,
+    `notes` TEXT NOT NULL,
+    `updated_status` VARCHAR(50) DEFAULT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`application_id`) REFERENCES `internship_applications`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Seed initial admin user (username: admin, password: admin123)
+-- Hash generated using werkzeug generate_password_hash('admin123')
+INSERT INTO `admins` (`username`, `password_hash`) VALUES
+('admin', 'scrypt:32768:8:1$C1W2v4fS7z3J9q$c7128527a29e4b7b3e0c034edffea0971239c4a8ee1f1f91fb342b4b4dd4f923a54d68800bb8db1e8a9391d16ec85c496be6ef4dd8a313d420f17e3f8ec47d3c')
+ON DUPLICATE KEY UPDATE `id`=`id`;

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Add Application - Internship Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-7">
+            <div class="card sky-card p-4 p-md-5 border-0 shadow-lg">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="p-3 bg-primary bg-opacity-10 text-cyan rounded-circle me-3">
+                        <i class="bi bi-briefcase-fill fs-2"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold text-dark mb-1">Add Internship Application</h3>
+                        <p class="text-secondary small mb-0">Record details of a new company or portal application</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('add_application') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="company_name" class="form-label fw-semibold text-dark">Company Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-building text-cyan"></i></span>
+                                <input type="text" class="form-control" id="company_name" name="company_name" placeholder="e.g. Google, TCS, Infosys" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="role" class="form-label fw-semibold text-dark">Internship Role <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-person-badge text-cyan"></i></span>
+                                <input type="text" class="form-control" id="role" name="role" placeholder="e.g. Software Engineer Intern" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="location" class="form-label fw-semibold text-dark">Location <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-geo-alt text-cyan"></i></span>
+                                <input type="text" class="form-control" id="location" name="location" placeholder="e.g. Remote, Bangalore, Chennai" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="application_date" class="form-label fw-semibold text-dark">Application Date <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-calendar-event text-cyan"></i></span>
+                                <input type="date" class="form-control" id="application_date" name="application_date" value="{{ today }}" required>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="application_link" class="form-label fw-semibold text-dark">Application Link / Portal URL</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-link-45deg text-cyan"></i></span>
+                                <input type="url" class="form-control" id="application_link" name="application_link" placeholder="https://linkedin.com/jobs/view/...">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="notes" class="form-label fw-semibold text-dark">Notes / Job Description Highlights</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Key skills required, referral contact, stipend info, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Back
+                        </a>
+                        <button type="submit" class="btn btn-cyan rounded-pill px-4">
+                            <i class="bi bi-check-circle-fill me-1"></i> Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
