@@ -1,73 +1,86 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Student Internal Marks & Result Tracker{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<div class="row align-items-center my-5">
+    <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
+        <span class="badge badge-warning-custom mb-3 px-3 py-2 fs-6">
+            <i class="bi bi-star-fill me-1"></i> Academic Performance Portal
+        </span>
+        <h1 class="display-4 fw-bold text-white mb-3">
+            Student Internal Marks & <span class="text-warning">Result Tracker</span>
+        </h1>
+        <p class="lead text-light mb-4">
+            A simple, colorful, and beginner-friendly system to manage internal assessments, track subject grades, and check pass/fail status in real-time.
         </p>
-        <div class="d-flex justify-content-center gap-3">
+
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
             {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-teal btn-lg px-4 py-2">
+                    <i class="bi bi-speedometer2 me-2"></i>Go to Student Dashboard
+                </a>
+                <a href="{{ url_for('result') }}" class="btn btn-green btn-lg px-4 py-2">
+                    <i class="bi bi-journal-check me-2"></i>View Results
                 </a>
             {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-yellow btn-lg px-4 py-2">
+                    <i class="bi bi-speedometer2 me-2"></i>Go to Admin Dashboard
+                </a>
+                <a href="{{ url_for('marks') }}" class="btn btn-teal btn-lg px-4 py-2">
+                    <i class="bi bi-pencil-square me-2"></i>Manage Marks
                 </a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
+                <a href="{{ url_for('login') }}" class="btn btn-teal btn-lg px-4 py-2">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Student Login
                 </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
+                <a href="{{ url_for('register') }}" class="btn btn-green btn-lg px-4 py-2">
+                    <i class="bi bi-person-plus-fill me-2"></i>Student Register
+                </a>
+                <a href="{{ url_for('admin_login') }}" class="btn btn-yellow btn-lg px-4 py-2">
+                    <i class="bi bi-shield-lock-fill me-2"></i>Admin Login
                 </a>
             {% endif %}
         </div>
     </div>
-</div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+    <div class="col-lg-5">
+        <div class="card card-glass border-0 shadow-lg text-white">
+            <div class="card-glass-header text-center">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-award-fill text-warning me-2"></i>Grading Criteria</h4>
             </div>
-        </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush bg-transparent">
+                    <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                        <span><strong>90 – 100 Marks</strong></span>
+                        <span class="badge bg-success fs-6">Grade A+</span>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                        <span><strong>80 – 89 Marks</strong></span>
+                        <span class="badge bg-success fs-6">Grade A</span>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                        <span><strong>70 – 79 Marks</strong></span>
+                        <span class="badge bg-info text-dark fs-6">Grade B</span>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                        <span><strong>60 – 69 Marks</strong></span>
+                        <span class="badge bg-warning text-dark fs-6">Grade C</span>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                        <span><strong>50 – 59 Marks</strong></span>
+                        <span class="badge bg-warning text-dark fs-6">Grade D</span>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                        <span><strong>Below 50 Marks</strong></span>
+                        <span class="badge bg-danger fs-6">Grade F (Fail)</span>
+                    </li>
+                </ul>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+                <div class="mt-4 p-3 rounded text-center" style="background: rgba(13, 148, 136, 0.3);">
+                    <p class="mb-1 fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> Pass Mark: 50 Total Marks</p>
+                    <small class="text-light">Includes Test 1 + Test 2 + Assignment + Attendance</small>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
             </div>
         </div>
     </div>

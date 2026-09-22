@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Marks - Student Internal Marks & Result Tracker{% endblock %}
+
+{% block content %}
+<div class="container my-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-white mb-1">
+                <i class="bi bi-pencil-square text-warning me-2"></i>Enter Internal Marks
+            </h2>
+            <p class="text-light small mb-0">Admin entry portal for student test marks, assignments, and attendance</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-teal">
+                <i class="bi bi-speedometer2 me-1"></i>Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Enter Internal Marks Form -->
+    <div class="card card-glass border-0 shadow-lg mb-4">
+        <div class="card-glass-header">
+            <h4 class="mb-0 fw-bold text-white"><i class="bi bi-plus-circle-fill text-warning me-2"></i>Add Marks Form</h4>
+        </div>
+        <div class="card-body p-4">
+            <form action="{{ url_for('add_marks') }}" method="POST">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="register_number" class="form-label text-light fw-semibold">Student Register Number</label>
+                        <select class="form-select form-select-custom" id="register_number" name="register_number" required>
+                            <option value="" disabled selected>-- Select Registered Student --</option>
+                            {% for student in students %}
+                                <option value="{{ student.register_number }}">{{ student.register_number }} - {{ student.name }} ({{ student.department }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="subject" class="form-label text-light fw-semibold">Subject Name</label>
+                        <input type="text" class="form-control form-control-custom" id="subject" name="subject" placeholder="e.g. Data Structures / Web Development" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="internal_test_1" class="form-label text-light fw-semibold">Internal Test 1 Mark</label>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-custom" id="internal_test_1" name="internal_test_1" placeholder="e.g. 25" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="internal_test_2" class="form-label text-light fw-semibold">Internal Test 2 Mark</label>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-custom" id="internal_test_2" name="internal_test_2" placeholder="e.g. 25" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="assignment" class="form-label text-light fw-semibold">Assignment Mark</label>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-custom" id="assignment" name="assignment" placeholder="e.g. 10" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="attendance" class="form-label text-light fw-semibold">Attendance Mark</label>
+                        <input type="number" step="0.01" min="0" max="100" class="form-control form-control-custom" id="attendance" name="attendance" placeholder="e.g. 5" required>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <button type="submit" class="btn btn-yellow px-4 py-2 fw-bold">
+                        <i class="bi bi-save-fill me-1"></i>Calculate & Submit Marks
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
