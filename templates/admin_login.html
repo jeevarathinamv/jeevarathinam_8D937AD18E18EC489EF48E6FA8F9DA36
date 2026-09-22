@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Student Internal Marks & Result Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-glass border-0 shadow-lg">
+            <div class="card-glass-header text-center" style="background: rgba(245, 158, 11, 0.25);">
+                <h3 class="mb-1 fw-bold text-white"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Admin Portal Login</h3>
+                <p class="text-light small mb-0">Authorized Administrator Access Only</p>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('admin_login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label text-light fw-semibold">Admin Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-warning"><i class="bi bi-shield-person"></i></span>
+                            <input type="text" class="form-control form-control-custom" id="username" name="username" placeholder="Username" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label text-light fw-semibold">Admin Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-warning"><i class="bi bi-key-fill"></i></span>
+                            <input type="password" class="form-control form-control-custom" id="password" name="password" placeholder="Password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-yellow w-100 py-2 fs-6 mb-3">
+                        <i class="bi bi-shield-lock me-2"></i>Admin Login
+                    </button>
+
+                    <div class="text-center">
+                        <p class="mb-0 text-light small"><a href="{{ url_for('login') }}" class="text-teal fw-bold text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Switch to Student Login</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

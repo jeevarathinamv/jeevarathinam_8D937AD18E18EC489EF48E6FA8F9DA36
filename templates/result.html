@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Result Tracker - Student Internal Marks & Result Tracker{% endblock %}
+
+{% block content %}
+<div class="container my-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-white mb-1">
+                <i class="bi bi-award-fill text-warning me-2"></i>Result Tracker
+            </h2>
+            <p class="text-light small mb-0">Detailed view of internal test marks, grades, and pass/fail results</p>
+        </div>
+        <div>
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-teal">
+                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Results Table Card -->
+    <div class="card card-glass border-0 shadow-lg">
+        <div class="card-glass-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-bold text-white">
+                <i class="bi bi-person-badge text-warning me-2"></i>{{ student.name }} ({{ student.register_number }}) - {{ student.department }}
+            </h5>
+            <span class="badge badge-warning-custom"><i class="bi bi-calendar3 me-1"></i>Academic Record</span>
+        </div>
+        <div class="card-body p-0">
+            {% if marks %}
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0 text-center align-middle">
+                        <thead>
+                            <tr>
+                                <th class="text-start ps-4">Subject</th>
+                                <th>Test 1</th>
+                                <th>Test 2</th>
+                                <th>Assignment</th>
+                                <th>Attendance</th>
+                                <th>Total Mark</th>
+                                <th>Grade</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in marks %}
+                                <tr>
+                                    <td class="fw-bold text-start ps-4 text-warning fs-6">{{ m.subject }}</td>
+                                    <td>{{ m.internal_test_1 }}</td>
+                                    <td>{{ m.internal_test_2 }}</td>
+                                    <td>{{ m.assignment }}</td>
+                                    <td>{{ m.attendance }}</td>
+                                    <td class="fw-bold fs-6 text-white">{{ m.total_mark }}</td>
+                                    <td>
+                                        {% if m.grade in ['A+', 'A'] %}
+                                            <span class="badge bg-success px-3 py-2 fs-6">Grade {{ m.grade }}</span>
+                                        {% elif m.grade in ['B', 'C', 'D'] %}
+                                            <span class="badge bg-warning text-dark px-3 py-2 fs-6">Grade {{ m.grade }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger px-3 py-2 fs-6">Grade {{ m.grade }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if 'PASS' in m.result %}
+                                            <span class="badge badge-pass px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i>{{ m.result }}</span>
+                                        {% else %}
+                                            <span class="badge badge-fail px-3 py-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ m.result }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-5 text-center text-light">
+                    <i class="bi bi-journal-x fs-1 text-warning mb-3 d-block"></i>
+                    <h5>No Results Available</h5>
+                    <p class="text-light small">There are no marks recorded for your account yet. Contact your administrator or subject faculty.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
