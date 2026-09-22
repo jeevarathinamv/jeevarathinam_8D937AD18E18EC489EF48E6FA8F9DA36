@@ -1,73 +1,119 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Campus Recruitment Drive System{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+<div class="card card-sky p-4 p-md-5 mb-4 shadow-lg border-0" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <span class="badge bg-cyan-soft text-dark fw-bold px-3 py-2 rounded-pill mb-3 border border-cyan">
+                <i class="bi bi-stars text-primary me-1"></i> Official Training & Placement Portal
+            </span>
+            <h1 class="display-5 fw-bold text-navy mb-3" style="color: #0a192f;">Accelerate Your Career with Top Companies</h1>
+            <p class="lead text-secondary mb-4">
+                Register for upcoming campus placement drives, track application status in real-time, and secure your dream job.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{{ url_for('drives') }}" class="btn btn-cyan btn-lg">
+                    <i class="bi bi-building me-2"></i> Explore Recruitment Drives
                 </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+                {% if not session.get('user_type') %}
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-dark btn-lg">
+                        <i class="bi bi-person-plus me-2"></i> Student Registration
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-5 mt-4 mt-lg-0 text-center">
+            <div class="card card-sky-dark p-4 text-start">
+                <h5 class="text-cyan mb-3"><i class="bi bi-graph-up-arrow me-2"></i> Placement Highlights</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <span><i class="bi bi-briefcase text-cyan me-2"></i> Active Drives</span>
+                    <span class="fs-4 fw-bold text-cyan">{{ total_drives or 0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+                    <span><i class="bi bi-people text-cyan me-2"></i> Registered Students</span>
+                    <span class="fs-4 fw-bold text-cyan">{{ total_students or 0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-trophy text-success me-2"></i> Selected Students</span>
+                    <span class="fs-4 fw-bold text-success">{{ total_selected or 0 }}</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
-        </div>
+<!-- Upcoming Recruitment Drives -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="text-cyan mb-0"><i class="bi bi-calendar-event me-2"></i> Featured Recruitment Drives</h3>
+    <a href="{{ url_for('drives') }}" class="btn btn-sm btn-outline-cyan">View All Drives <i class="bi bi-arrow-right"></i></a>
+</div>
+
+{% if upcoming_drives %}
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+        {% for drive in upcoming_drives %}
+            <div class="col">
+                <div class="card card-sky h-100 p-3">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary text-white rounded-pill px-3 py-1">{{ drive.package }}</span>
+                            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ drive.drive_date.strftime('%b %d, %Y') }}</small>
+                        </div>
+                        <h5 class="card-title text-navy fw-bold mb-1" style="color: #0a192f;">{{ drive.company_name }}</h5>
+                        <p class="text-cyan-dark fw-semibold mb-2" style="color: #0284c7;"><i class="bi bi-person-badge me-1"></i> {{ drive.job_role }}</p>
+
+                        <p class="card-text small text-secondary mb-2">
+                            <strong>Eligibility:</strong> {{ drive.eligibility }}
+                        </p>
+                        <p class="card-text small text-secondary mb-3">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ drive.location }}
+                        </p>
+
+                        <div class="mt-auto">
+                            <a href="{{ url_for('drive_details', drive_id=drive.id) }}" class="btn btn-cyan w-100">
+                                View Details & Register
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
+{% else %}
+    <div class="alert alert-info text-center p-4 rounded-3 card-sky">
+        <i class="bi bi-info-circle fs-3 d-block mb-2 text-cyan"></i>
+        No upcoming drives scheduled yet. Check back soon!
+    </div>
+{% endif %}
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+<!-- How to Demonstrate & Setup Banner -->
+<div class="card card-sky-dark p-4 mb-4">
+    <h4 class="text-cyan mb-3"><i class="bi bi-gear-wide-connected me-2"></i> System Quick Setup Guide & Demonstration</h4>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="p-3 bg-navy-mid rounded-3 border border-secondary">
+                <h6 class="text-cyan mb-2">1. XAMPP Setup</h6>
+                <small class="text-muted">Start Apache and MySQL in XAMPP Control Panel. Create database <code>campus_recruitment</code>.</small>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+        <div class="col-md-3">
+            <div class="p-3 bg-navy-mid rounded-3 border border-secondary">
+                <h6 class="text-cyan mb-2">2. Import SQL</h6>
+                <small class="text-muted">Import <code>database.sql</code> into phpMyAdmin to create <code>students</code>, <code>recruitment_drives</code>, <code>registrations</code>, and <code>admins</code> tables.</small>
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+        <div class="col-md-3">
+            <div class="p-3 bg-navy-mid rounded-3 border border-secondary">
+                <h6 class="text-cyan mb-2">3. Python Dependencies</h6>
+                <small class="text-muted">Open VS Code terminal and run:<br><code>pip install -r requirements.txt</code></small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-navy-mid rounded-3 border border-secondary">
+                <h6 class="text-cyan mb-2">4. Run Flask Application</h6>
+                <small class="text-muted">Run <code>python app.py</code> in VS Code.<br>Default Admin: <strong>admin / admin123</strong></small>
             </div>
         </div>
     </div>

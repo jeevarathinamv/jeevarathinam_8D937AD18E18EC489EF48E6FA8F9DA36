@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}My Registrations - Campus Recruitment System{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <h2 class="text-cyan fw-bold mb-1"><i class="bi bi-file-earmark-check me-2"></i> My Drive Registrations & Application Status</h2>
+        <p class="text-light opacity-75 mb-0">Track your recruitment history and current application status in real-time.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('drives') }}" class="btn btn-cyan">
+            <i class="bi bi-plus-circle me-1"></i> Apply for More Drives
+        </a>
+    </div>
+</div>
+
+<div class="card card-sky p-4 shadow-lg">
+    {% if registrations %}
+        <div class="table-responsive">
+            <table class="table table-custom align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Job Role</th>
+                        <th>Drive Date</th>
+                        <th>Registration Date</th>
+                        <th>Application Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ reg.drive.company_name }}</td>
+                            <td><span class="badge bg-light text-primary border">{{ reg.drive.job_role }}</span></td>
+                            <td><i class="bi bi-calendar-event me-1 text-muted"></i> {{ reg.drive.drive_date.strftime('%Y-%m-%d') }}</td>
+                            <td><small class="text-muted">{{ reg.registration_date.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                            <td>
+                                {% if reg.status == 'Selected' %}
+                                    <span class="badge-status-selected"><i class="bi bi-trophy-fill me-1"></i> Selected</span>
+                                {% elif reg.status == 'Rejected' %}
+                                    <span class="badge-status-rejected"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                                {% elif reg.status == 'Shortlisted' %}
+                                    <span class="badge-status-pending"><i class="bi bi-star-fill me-1"></i> Shortlisted</span>
+                                {% else %}
+                                    <span class="badge-status-registered"><i class="bi bi-check-circle-fill me-1"></i> Registered</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('drive_details', drive_id=reg.drive.id) }}" class="btn btn-sm btn-outline-dark">
+                                    <i class="bi bi-eye me-1"></i> View Drive
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-card-checklist fs-1 text-muted d-block mb-3"></i>
+            <h4 class="text-navy fw-bold" style="color: #0a192f;">No Application History Found</h4>
+            <p class="text-secondary mb-4">You have not registered for any recruitment drives yet.</p>
+            <a href="{{ url_for('drives') }}" class="btn btn-cyan px-4 py-2">
+                Browse Active Recruitment Drives
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

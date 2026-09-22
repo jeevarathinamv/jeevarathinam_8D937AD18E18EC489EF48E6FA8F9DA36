@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, RecruitmentDrive, Registration, Admin
 
-class SportsBookingTestCase(unittest.TestCase):
+class CampusRecruitmentTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +11,23 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+
+            # Seed admin
+            admin = Admin(username='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+
+            # Seed sample drive
+            self.drive1 = RecruitmentDrive(
+                company_name='TechCorp',
+                job_role='Software Engineer',
+                eligibility='B.Tech CS/IT',
+                package='$12,000',
+                drive_date=date(2025, 12, 1),
+                location='Main Auditorium',
+                description='Python and Flask developer'
+            )
+            db.session.add(self.drive1)
             db.session.commit()
 
     def tearDown(self):
@@ -25,92 +38,102 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'name': 'John Doe',
+            'register_number': 'REG101',
+            'department': 'Computer Science & Engineering',
+            'email': 'john@student.edu',
+            'phone_number': '9876543210',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'john@student.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'Welcome back, John Doe!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
+        self.assertIn(b'Logged in successfully as Admin', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_drive_registration_workflow(self):
+        # Register student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
+            'name': 'Alice',
+            'register_number': 'REG102',
+            'department': 'Information Technology',
+            'email': 'alice@student.edu',
+            'phone_number': '9876543211',
             'password': 'pass'
         })
+        # Login student
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
+            'email_or_reg': 'REG102',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        # Register for drive
+        response = self.client.post('/drives/1/register', follow_redirects=True)
+        self.assertIn(b'Successfully registered', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        # Attempt double registration
+        response = self.client.post('/drives/1/register', follow_redirects=True)
+        self.assertIn(b'already registered', response.data)
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
+        # Admin login and update status to Selected
         self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+        self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        response = self.client.post('/admin/registrations/update-status/1', data={
+            'status': 'Selected'
+        }, follow_redirects=True)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            reg = Registration.query.get(1)
+            self.assertEqual(reg.status, 'Selected')
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+    def test_admin_add_edit_delete_drive(self):
+        # Admin login
+        self.client.post('/admin/login', data={
+            'username': 'admin',
+            'password': 'admin123'
+        })
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+        # Add drive
+        response = self.client.post('/admin/drives/add', data={
+            'company_name': 'DataWorks',
+            'job_role': 'Data Scientist',
+            'eligibility': 'MCA / M.Tech',
+            'package': '$15,000',
+            'drive_date': '2025-11-20',
+            'location': 'Virtual',
+            'description': 'Data analytics and ML'
+        }, follow_redirects=True)
+        self.assertIn(b'created successfully', response.data)
+
+        # Edit drive
+        response = self.client.post('/admin/drives/edit/2', data={
+            'company_name': 'DataWorks Inc',
+            'job_role': 'Senior Data Scientist',
+            'eligibility': 'MCA / M.Tech',
+            'package': '$18,000',
+            'drive_date': '2025-11-25',
+            'location': 'Virtual',
+            'description': 'Updated description'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
+
+        # Delete drive
+        response = self.client.post('/admin/drives/delete/2', follow_redirects=True)
+        self.assertIn(b'deleted', response.data)
 
 if __name__ == '__main__':
     unittest.main()

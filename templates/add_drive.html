@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{% if drive %}Edit Drive{% else %}Add Recruitment Drive{% endif %} - Campus Recruitment System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-8 col-lg-7">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-cyan btn-sm mb-3">
+            <i class="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
+        </a>
+
+        <div class="card card-sky p-4 p-md-5 shadow-lg">
+            <div class="text-center mb-4">
+                <div class="icon-box bg-cyan-soft text-cyan mx-auto mb-2" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-building-add fs-2" style="color: #0284c7;"></i>
+                </div>
+                <h3 class="fw-bold text-navy mb-1" style="color: #0a192f;">
+                    {% if drive %}Edit Recruitment Drive{% else %}Add Recruitment Drive{% endif %}
+                </h3>
+                <p class="text-secondary small">Fill in the details for the campus placement opportunity</p>
+            </div>
+
+            <form action="{% if drive %}{{ url_for('edit_drive', drive_id=drive.id) }}{% else %}{{ url_for('add_drive') }}{% endif %}" method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="company_name" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                            <i class="bi bi-building me-1"></i> Company Name *
+                        </label>
+                        <input type="text" class="form-control" id="company_name" name="company_name" value="{{ drive.company_name if drive else '' }}" placeholder="e.g., Google, Microsoft, TCS" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="job_role" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                            <i class="bi bi-person-badge me-1"></i> Job Role / Position *
+                        </label>
+                        <input type="text" class="form-control" id="job_role" name="job_role" value="{{ drive.job_role if drive else '' }}" placeholder="e.g., Software Engineer" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="eligibility" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                            <i class="bi bi-check2-circle me-1"></i> Eligibility Criteria *
+                        </label>
+                        <input type="text" class="form-control" id="eligibility" name="eligibility" value="{{ drive.eligibility if drive else '' }}" placeholder="e.g., B.Tech CS/IT, MCA, 60%+" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="package" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                            <i class="bi bi-cash-stack me-1"></i> Package / Salary *
+                        </label>
+                        <input type="text" class="form-control" id="package" name="package" value="{{ drive.package if drive else '' }}" placeholder="e.g., $10,000 / 7 LPA" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="drive_date" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                            <i class="bi bi-calendar-event me-1"></i> Drive Date *
+                        </label>
+                        <input type="date" class="form-control" id="drive_date" name="drive_date" value="{{ drive.drive_date.strftime('%Y-%m-%d') if drive else '' }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="location" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                            <i class="bi bi-geo-alt me-1"></i> Drive Location *
+                        </label>
+                        <input type="text" class="form-control" id="location" name="location" value="{{ drive.location if drive else '' }}" placeholder="e.g., Auditorium / Virtual" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-semibold text-navy" style="color: #0a192f;">
+                        <i class="bi bi-file-text me-1"></i> Job Description & Details
+                    </label>
+                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter key responsibilities, skill requirements, selection rounds, etc.">{{ drive.description if drive else '' }}</textarea>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary w-50 py-2">Cancel</a>
+                    <button type="submit" class="btn btn-cyan w-50 py-2 fw-bold">
+                        {% if drive %}<i class="bi bi-check-circle me-1"></i> Save Changes{% else %}<i class="bi bi-plus-circle me-1"></i> Add Drive{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
