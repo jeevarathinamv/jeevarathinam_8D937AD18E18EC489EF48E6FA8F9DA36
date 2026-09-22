@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Find Study Partner - Student Study Partner Finder{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Banner -->
+    <div class="card bg-gradient-theme text-white border-0 shadow-lg p-4 mb-4 rounded-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2"><i class="bi bi-search me-2"></i> Find Your Perfect Study Partner</h2>
+                <p class="mb-0 opacity-90">Filter by department, subject, study time, or mode to find classmates with matching learning goals.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('my_partners') }}" class="btn btn-light rounded-pill px-4 text-purple fw-semibold shadow-sm">
+                    <i class="bi bi-person-hearts me-1"></i> My Connections
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="card shadow-lg border-0 mb-4 rounded-4">
+        <div class="card-body p-4">
+            <form action="{{ url_for('find_partner') }}" method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="department" class="form-label fw-semibold text-dark"><i class="bi bi-building text-purple me-1"></i> Department</label>
+                    <select class="form-select" id="department" name="department">
+                        <option value="">All Departments</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept }}" {% if search_params.department == dept %}selected{% endif %}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="subject" class="form-label fw-semibold text-dark"><i class="bi bi-book text-blue me-1"></i> Subject</label>
+                    <input type="text" class="form-control" id="subject" name="subject" value="{{ search_params.subject }}" placeholder="e.g. Python, DBMS">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="study_time" class="form-label fw-semibold text-dark"><i class="bi bi-clock text-pink me-1"></i> Study Time</label>
+                    <select class="form-select" id="study_time" name="study_time">
+                        <option value="">Any Preferred Time</option>
+                        <option value="Morning" {% if search_params.study_time == 'Morning' %}selected{% endif %}>Morning</option>
+                        <option value="Afternoon" {% if search_params.study_time == 'Afternoon' %}selected{% endif %}>Afternoon</option>
+                        <option value="Evening" {% if search_params.study_time == 'Evening' %}selected{% endif %}>Evening</option>
+                        <option value="Night" {% if search_params.study_time == 'Night' %}selected{% endif %}>Night</option>
+                        <option value="Flexible" {% if search_params.study_time == 'Flexible' %}selected{% endif %}>Flexible</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="study_mode" class="form-label fw-semibold text-dark"><i class="bi bi-laptop text-purple me-1"></i> Study Mode</label>
+                    <select class="form-select" id="study_mode" name="study_mode">
+                        <option value="">Any Mode</option>
+                        <option value="Online" {% if search_params.study_mode == 'Online' %}selected{% endif %}>Online</option>
+                        <option value="Offline" {% if search_params.study_mode == 'Offline' %}selected{% endif %}>Offline</option>
+                        <option value="Hybrid" {% if search_params.study_mode == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                    <a href="{{ url_for('find_partner') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                    </a>
+                    <button type="submit" class="btn btn-gradient rounded-pill px-4 shadow">
+                        <i class="bi bi-funnel-fill me-1"></i> Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Partner Cards Grid -->
+    <div class="row g-4">
+        {% if results %}
+            {% for p_student, p_profile in results %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 card-hover shadow border-0 overflow-hidden rounded-4">
+                        <div class="card-header bg-gradient-pink-purple text-white py-3 px-4 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle icon-blue me-3" style="width: 45px; height: 45px; font-size: 1.1rem;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-white">{{ p_student.name }}</h5>
+                                    <small class="text-white-50"><i class="bi bi-building me-1"></i> {{ p_student.department }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="mb-3">
+                                <span class="badge bg-purple text-white rounded-pill px-3 py-1 me-1 mb-1">
+                                    <i class="bi bi-clock me-1"></i> {{ p_profile.preferred_study_time if p_profile else 'Flexible' }}
+                                </span>
+                                <span class="badge bg-pink text-white rounded-pill px-3 py-1 mb-1">
+                                    <i class="bi bi-laptop me-1"></i> {{ p_profile.study_mode if p_profile else 'Hybrid' }}
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                <p class="mb-2"><strong><i class="bi bi-book text-purple me-1"></i> Subjects:</strong><br>
+                                    <span class="text-dark">{{ p_profile.subjects if p_profile and p_profile.subjects else 'Not specified yet' }}</span>
+                                </p>
+
+                                {% if p_profile and p_profile.skills %}
+                                    <p class="mb-2"><strong><i class="bi bi-tools text-blue me-1"></i> Skills:</strong><br>
+                                        <span class="text-dark">{{ p_profile.skills }}</span>
+                                    </p>
+                                {% endif %}
+
+                                <p class="mb-0"><strong><i class="bi bi-chat-left-quote text-pink me-1"></i> Short Bio:</strong><br>
+                                    <span class="text-muted small">{{ p_profile.short_bio if p_profile and p_profile.short_bio else 'No bio provided.' }}</span>
+                                </p>
+                            </div>
+
+                            <!-- Action Button based on request status -->
+                            <div class="mt-auto pt-3 border-top text-center">
+                                {% set req_info = request_status_map.get(p_student.id) %}
+                                {% if req_info %}
+                                    {% if req_info.status == 'Accepted' %}
+                                        <button class="btn btn-success btn-sm rounded-pill w-100 disabled" disabled>
+                                            <i class="bi bi-check-circle-fill me-1"></i> Connected Partner
+                                        </button>
+                                    {% elif req_info.status == 'Pending' %}
+                                        {% if req_info.is_sender %}
+                                            <button class="btn btn-warning text-dark btn-sm rounded-pill w-100 disabled" disabled>
+                                                <i class="bi bi-hourglass-split me-1"></i> Request Pending
+                                            </button>
+                                        {% else %}
+                                            <a href="{{ url_for('my_partners') }}" class="btn btn-info text-white btn-sm rounded-pill w-100">
+                                                <i class="bi bi-inbox-fill me-1"></i> Respond to Request
+                                            </a>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="{{ url_for('send_request', receiver_id=p_student.id) }}" class="btn btn-gradient btn-sm rounded-pill w-100">
+                                            <i class="bi bi-send-fill me-1"></i> Resend Request
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{{ url_for('send_request', receiver_id=p_student.id) }}" class="btn btn-gradient rounded-pill w-100 shadow-sm">
+                                        <i class="bi bi-send-fill me-1"></i> Send Request
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="card shadow-lg border-0 p-5 rounded-4">
+                    <i class="bi bi-search text-purple fs-1 mb-3"></i>
+                    <h4 class="fw-bold text-dark mb-2">No Matching Study Partners Found</h4>
+                    <p class="text-muted">Try adjusting your search filters or clearing department/subject preferences.</p>
+                    <div>
+                        <a href="{{ url_for('find_partner') }}" class="btn btn-gradient rounded-pill px-4">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

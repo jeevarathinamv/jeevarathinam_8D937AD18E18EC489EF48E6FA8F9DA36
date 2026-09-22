@@ -1,73 +1,101 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Student Study Partner Finder{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+<div class="container py-4">
+    <!-- Hero Banner -->
+    <div class="hero-card mb-5 text-center shadow-lg">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <span class="badge bg-gradient-pink-purple px-4 py-2 rounded-pill fs-6 mb-3 shadow-sm">
+                    <i class="bi bi-stars me-1"></i> Collaborate & Excel Together
+                </span>
+                <h1 class="display-4 fw-bold mb-3 text-white">
+                    Find Your Ideal <span class="text-gradient">Study Partner</span> Today
+                </h1>
+                <p class="lead text-light mb-4 opacity-90">
+                    Connect with fellow students based on department, common subjects, preferred study times, and study modes. Boost your learning experience together!
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    {% if session.get('user_type') == 'student' %}
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-gradient btn-lg rounded-pill px-4 shadow">
+                            <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+                        </a>
+                        <a href="{{ url_for('find_partner') }}" class="btn btn-light btn-lg rounded-pill px-4 text-purple fw-semibold shadow">
+                            <i class="bi bi-search me-2"></i> Find Study Partner
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-gradient btn-lg rounded-pill px-4 shadow">
+                            <i class="bi bi-person-plus-fill me-2"></i> Get Started
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-light btn-lg rounded-pill px-4 text-purple fw-semibold shadow">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
+                        </a>
+                    {% endif %}
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Highlights Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 card-hover text-center p-4">
+                <div class="card-body">
+                    <div class="icon-circle icon-blue mb-3">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2 text-dark">1. Smart Search</h4>
+                    <p class="text-muted">
+                        Filter study partners by department, specific subjects, study time preferences (Morning/Evening/Night), and mode (Online/Offline/Hybrid).
+                    </p>
+                </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="card h-100 card-hover text-center p-4">
+                <div class="card-body">
+                    <div class="icon-circle icon-purple mb-3">
+                        <i class="bi bi-send-check-fill"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2 text-dark">2. Send Requests</h4>
+                    <p class="text-muted">
+                        Send study partner requests directly to classmates and keep track of pending, accepted, or rejected request statuses in real time.
+                    </p>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="card h-100 card-hover text-center p-4">
+                <div class="card-body">
+                    <div class="icon-circle icon-pink mb-3">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2 text-dark">3. Rich Profiles</h4>
+                    <p class="text-muted">
+                        Showcase your favorite subjects, technical skills, short bio, and preferred study schedule to attract compatible study buddies.
+                    </p>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Info Banner -->
+    <div class="card bg-gradient-theme text-white border-0 shadow-lg p-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold mb-2"><i class="bi bi-shield-lock-fill me-2"></i> Admin & Account Management</h3>
+                <p class="mb-0 text-white-50">
+                    Administrators can log in to view registered students, review study partner profiles, track request activity, and manage student accounts effortlessly.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('admin_login') }}" class="btn btn-light rounded-pill px-4 fw-bold text-dark shadow-sm">
+                    <i class="bi bi-speedometer2 me-1"></i> Admin Portal
+                </a>
             </div>
         </div>
     </div>

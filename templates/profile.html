@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Student Study Partner Finder{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="card-header bg-gradient-theme text-white py-4 px-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <h3 class="fw-bold mb-1"><i class="bi bi-person-vcard-fill me-2"></i> Student Profile</h3>
+                        <p class="small text-white-50 mb-0">Update your learning preferences so study partners can find you</p>
+                    </div>
+                    <span class="badge bg-white text-purple fs-6 px-3 py-2 rounded-pill shadow-sm">
+                        {{ student.department }}
+                    </span>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <!-- Student Info Summary Banner -->
+                    <div class="alert bg-gradient-blue-purple text-white border-0 rounded-4 p-4 mb-4 shadow-sm">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="fw-bold mb-1"><i class="bi bi-person-circle me-2"></i> {{ student.name }}</h4>
+                                <p class="mb-1 opacity-90"><i class="bi bi-card-text me-2"></i> Register No: <strong>{{ student.register_number }}</strong></p>
+                                <p class="mb-0 opacity-90"><i class="bi bi-envelope-fill me-2"></i> Email: <strong>{{ student.email }}</strong></p>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                <span class="badge bg-pink text-white px-3 py-2 rounded-pill">
+                                    <i class="bi bi-calendar-check me-1"></i> Registered
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <form action="{{ url_for('profile') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="subjects" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-book-fill text-purple me-1"></i> Subjects (comma separated)
+                            </label>
+                            <input type="text" class="form-control" id="subjects" name="subjects" value="{{ profile.subjects or '' }}" placeholder="e.g. Data Structures, Web Development, Python, DBMS" required>
+                            <div class="form-text">List key subjects you want to study or discuss with partners.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="skills" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-tools text-blue me-1"></i> Skills / Tech Stack
+                            </label>
+                            <input type="text" class="form-control" id="skills" name="skills" value="{{ profile.skills or '' }}" placeholder="e.g. Python, SQL, HTML/CSS, Problem Solving">
+                            <div class="form-text">Highlight your skills to share with study partners.</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="preferred_study_time" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-clock-fill text-pink me-1"></i> Preferred Study Time
+                                </label>
+                                <select class="form-select" id="preferred_study_time" name="preferred_study_time" required>
+                                    <option value="Morning (8 AM - 12 PM)" {% if profile.preferred_study_time == 'Morning (8 AM - 12 PM)' %}selected{% endif %}>Morning (8 AM - 12 PM)</option>
+                                    <option value="Afternoon (12 PM - 4 PM)" {% if profile.preferred_study_time == 'Afternoon (12 PM - 4 PM)' %}selected{% endif %}>Afternoon (12 PM - 4 PM)</option>
+                                    <option value="Evening (5 PM - 8 PM)" {% if profile.preferred_study_time == 'Evening (5 PM - 8 PM)' %}selected{% endif %}>Evening (5 PM - 8 PM)</option>
+                                    <option value="Night (8 PM - 11 PM)" {% if profile.preferred_study_time == 'Night (8 PM - 11 PM)' %}selected{% endif %}>Night (8 PM - 11 PM)</option>
+                                    <option value="Flexible" {% if profile.preferred_study_time == 'Flexible' or not profile.preferred_study_time %}selected{% endif %}>Flexible</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="study_mode" class="form-label fw-semibold text-dark">
+                                    <i class="bi bi-laptop text-purple me-1"></i> Preferred Study Mode
+                                </label>
+                                <select class="form-select" id="study_mode" name="study_mode" required>
+                                    <option value="Online" {% if profile.study_mode == 'Online' %}selected{% endif %}>Online (Google Meet/Zoom)</option>
+                                    <option value="Offline" {% if profile.study_mode == 'Offline' %}selected{% endif %}>Offline (Library/Campus)</option>
+                                    <option value="Hybrid" {% if profile.study_mode == 'Hybrid' or not profile.study_mode %}selected{% endif %}>Hybrid (Both Online & Offline)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="short_bio" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-chat-square-text-fill text-blue me-1"></i> Short Bio
+                            </label>
+                            <textarea class="form-control" id="short_bio" name="short_bio" rows="4" placeholder="Briefly describe your goals, interests, or study habits...">{{ profile.short_bio or '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-gradient rounded-pill px-4 shadow">
+                                <i class="bi bi-check-lg me-1"></i> Save Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
