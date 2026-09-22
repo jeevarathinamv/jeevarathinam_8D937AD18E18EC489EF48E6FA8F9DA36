@@ -1,8 +1,7 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Admin, HelpRequest
 
-class SportsBookingTestCase(unittest.TestCase):
+class SmartCollegeHelpDeskTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +10,10 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Seed default admin
+            admin = Admin(username='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
             db.session.commit()
 
     def tearDown(self):
@@ -23,23 +22,23 @@ class SportsBookingTestCase(unittest.TestCase):
             db.drop_all()
 
     def test_student_registration_and_login(self):
-        # Register student
+        # Register
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'name': 'Jane Student',
+            'register_number': 'REG999',
+            'department': 'Computer Science',
+            'email': 'jane@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
-        # Login student
+        # Login
         response = self.client.post('/login', data={
             'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'jane@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'Welcome back, Jane Student!', response.data)
 
     def test_admin_login(self):
         response = self.client.post('/login', data={
@@ -47,48 +46,49 @@ class SportsBookingTestCase(unittest.TestCase):
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
+        self.assertIn(b'Logged in successfully as Help Desk Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_smart_help_faq_access(self):
+        response = self.client.get('/smart-help?category=Academic')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Academic', response.data)
+
+    def test_help_request_submission_and_admin_workflow(self):
+        # Register student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
+            'name': 'Bob Smith',
+            'register_number': 'REG555',
+            'department': 'Electronics',
+            'email': 'bob@college.edu',
             'password': 'pass'
         })
+
+        # Login student
         self.client.post('/login', data={
             'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
+            'email_or_reg': 'bob@college.edu',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # Submit Help Request
+        response = self.client.post('/student/request/new', data={
+            'category': 'Exam',
+            'subject': 'Exam timetable clash',
+            'description': 'Two of my elective papers are scheduled on the same date.'
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn(b'submitted successfully', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        with app.app_context():
+            req = HelpRequest.query.filter_by(subject='Exam timetable clash').first()
+            self.assertIsNotNone(req)
+            self.assertEqual(req.status, 'Pending')
+            req_id = req.id
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # Student Dashboard check
+        response = self.client.get('/student/dashboard')
+        self.assertIn(b'Exam timetable clash', response.data)
 
-        # Admin login and approval
+        # Logout student and Login Admin
         self.client.get('/logout')
         self.client.post('/login', data={
             'login_type': 'admin',
@@ -96,21 +96,28 @@ class SportsBookingTestCase(unittest.TestCase):
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        # Admin replies and updates status to In Progress
+        response = self.client.post(f'/admin/request/reply/{req_id}', data={
+            'admin_reply': 'We have forwarded your request to Controller of Exams.',
+            'status': 'In Progress'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully to status', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            req = db.session.get(HelpRequest, req_id)
+            self.assertEqual(req.status, 'In Progress')
+            self.assertIn('Controller of Exams', req.admin_reply)
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+        # Admin resolves request
+        response = self.client.post(f'/admin/request/reply/{req_id}', data={
+            'admin_reply': 'Timetable revised and updated on exam portal.',
+            'status': 'Resolved'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully to status', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            req = db.session.get(HelpRequest, req_id)
+            self.assertEqual(req.status, 'Resolved')
 
 if __name__ == '__main__':
     unittest.main()

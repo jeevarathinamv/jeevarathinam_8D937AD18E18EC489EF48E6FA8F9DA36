@@ -1,74 +1,89 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+<div class="row align-items-center my-4 g-4">
+    <div class="col-lg-12">
+        <div class="hero-box text-center p-5">
+            <span class="badge bg-info text-dark mb-3 px-3 py-2 fs-6 rounded-pill">
+                <i class="bi bi-stars me-1"></i> Fast & Responsive Student Support
+            </span>
+            <h1 class="display-4 fw-bold mb-3">Smart College Student Help Desk</h1>
+            <p class="lead text-light-50 mb-4 mx-auto" style="max-width: 750px;">
+                Welcome to your one-stop portal for resolving queries on Academic, Fees, Exams, Labs, and campus support services with real-time status tracking.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ url_for('smart_help') }}" class="btn btn-gradient-cyan btn-lg px-4 shadow">
+                    <i class="bi bi-search-heart me-2"></i> Explore Smart FAQs
                 </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+                {% if not session.get('user_type') %}
+                    <a href="{{ url_for('login') }}" class="btn btn-gradient-primary btn-lg px-4 shadow">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
+                    </a>
+                {% elif session.get('user_type') == 'student' %}
+                    <a href="{{ url_for('submit_request') }}" class="btn btn-gradient-primary btn-lg px-4 shadow">
+                        <i class="bi bi-pencil-square me-2"></i> Submit Request
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-gradient-primary btn-lg px-4 shadow">
+                        <i class="bi bi-speedometer me-2"></i> Admin Dashboard
+                    </a>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="row g-4 mt-2">
+    <div class="col-md-4">
+        <div class="card card-glass card-hover h-100 p-4 text-center">
+            <div class="mb-3">
+                <div class="icon-box mx-auto">
+                    <i class="bi bi-patch-question"></i>
+                </div>
+            </div>
+            <h4 class="fw-bold text-dark">1. Instant Smart Help</h4>
+            <p class="text-muted">
+                Browse through structured category FAQs for Academic, Fees, Exam, and Lab issues to get quick answers instantly.
+            </p>
+            <a href="{{ url_for('smart_help') }}" class="btn btn-sm btn-outline-primary mt-auto rounded-pill">
+                View Solutions <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+    <div class="col-md-4">
+        <div class="card card-glass card-hover h-100 p-4 text-center">
+            <div class="mb-3">
+                <div class="icon-box icon-box-cyan mx-auto">
+                    <i class="bi bi-send-check"></i>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
             </div>
+            <h4 class="fw-bold text-dark">2. Submit Ticket</h4>
+            <p class="text-muted">
+                If your issue remains unresolved, submit a ticket detailing your query directly to campus administrators.
+            </p>
+            <a href="{{ url_for('submit_request') }}" class="btn btn-sm btn-outline-info mt-auto rounded-pill">
+                Submit Help Ticket <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
+    </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+    <div class="col-md-4">
+        <div class="card card-glass card-hover h-100 p-4 text-center">
+            <div class="mb-3">
+                <div class="icon-box mx-auto">
+                    <i class="bi bi-clock-history"></i>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
-            </div>
+            <h4 class="fw-bold text-dark">3. Track Progress</h4>
+            <p class="text-muted">
+                Monitor status updates from Pending to In Progress and Resolved with direct admin feedback.
+            </p>
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-sm btn-outline-primary mt-auto rounded-pill">
+                Check Status <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
 </div>
