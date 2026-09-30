@@ -1,51 +1,44 @@
--- College Sports Equipment Booking System
+-- College Admission Seat Allocation System (MCA Project)
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `college_admission`;
+USE `college_admission`;
 
--- Table structure for students
+-- Table structure for seat reservation settings
+CREATE TABLE IF NOT EXISTS `settings` (
+    `id` INT PRIMARY KEY DEFAULT 1,
+    `oc_seats` INT NOT NULL DEFAULT 9,
+    `bc_seats` INT NOT NULL DEFAULT 8,
+    `bcm_seats` INT NOT NULL DEFAULT 1,
+    `mbc_seats` INT NOT NULL DEFAULT 6,
+    `sc_seats` INT NOT NULL DEFAULT 5,
+    `sca_seats` INT NOT NULL DEFAULT 1,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default seat reservation settings (Total 30 Seats)
+INSERT INTO `settings` (`id`, `oc_seats`, `bc_seats`, `bcm_seats`, `mbc_seats`, `sc_seats`, `sca_seats`)
+VALUES (1, 9, 8, 1, 6, 5, 1)
+ON DUPLICATE KEY UPDATE
+`oc_seats` = VALUES(`oc_seats`),
+`bc_seats` = VALUES(`bc_seats`),
+`bcm_seats` = VALUES(`bcm_seats`),
+`mbc_seats` = VALUES(`mbc_seats`),
+`sc_seats` = VALUES(`sc_seats`),
+`sca_seats` = VALUES(`sca_seats`);
+
+-- Table structure for students (NO quota column)
 CREATE TABLE IF NOT EXISTS `students` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `application_no` VARCHAR(50) UNIQUE NOT NULL,
     `name` VARCHAR(100) NOT NULL,
-    `register_number` VARCHAR(50) UNIQUE NOT NULL,
-    `department` VARCHAR(100) NOT NULL,
-    `email` VARCHAR(120) UNIQUE NOT NULL,
-    `password_hash` VARCHAR(255) NOT NULL,
+    `gender` VARCHAR(20) NOT NULL,
+    `community` VARCHAR(20) NOT NULL,
+    `marks` FLOAT NOT NULL,
+    `rank_no` INT NOT NULL,
+    `admission_date` DATE DEFAULT NULL,
+    `status` VARCHAR(20) DEFAULT 'Waiting',
+    `allocated_category` VARCHAR(20) DEFAULT NULL,
+    `remark` TEXT DEFAULT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
-);
-
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');

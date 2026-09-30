@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Admission - College Admission System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-1"><i class="bi bi-check2-square text-primary me-2"></i>Admission Processing</h2>
+    <p class="text-muted mb-0">View category vacancies and admit allocated students.</p>
+</div>
+
+<!-- Admission Category Vacancy Summary Table -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-pie-chart-fill me-2"></i>Admission Seats & Vacancy Summary</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-start ps-4">Category</th>
+                        <th>Allocated</th>
+                        <th>Admitted</th>
+                        <th>Vacancy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in cat_stats %}
+                    <tr>
+                        <td class="text-start ps-4"><span class="fw-bold badge bg-secondary">{{ stat.category }}</span></td>
+                        <td class="fw-bold"><span class="badge bg-primary fs-6">{{ stat.allocated }}</span></td>
+                        <td class="fw-bold"><span class="badge bg-success fs-6">{{ stat.admitted }}</span></td>
+                        <td class="fw-bold"><span class="badge bg-danger fs-6">{{ stat.vacancy }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Allocated Students List for Admission Action -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-people me-2"></i>Allocated & Admitted Students</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Application No</th>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Community</th>
+                        <th>Rank</th>
+                        <th>Allocated Category</th>
+                        <th>Status</th>
+                        <th>Admission Date</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in allocated_students %}
+                    <tr>
+                        <td class="fw-bold">{{ student.application_no }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>
+                            {% if student.gender.lower() == 'male' %}
+                                <span class="badge bg-info text-dark"><i class="bi bi-gender-male me-1"></i>Male</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="bi bi-gender-female me-1"></i>Female</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ student.community }}</span></td>
+                        <td class="fw-bold text-primary">#{{ student.rank_no }}</td>
+                        <td><span class="badge bg-success fs-6">{{ student.allocated_category }}</span></td>
+                        <td>
+                            {% if student.status == 'Admitted' %}
+                                <span class="badge badge-status-admitted px-2 py-1"><i class="bi bi-check-circle me-1"></i>Admitted</span>
+                            {% else %}
+                                <span class="badge badge-status-allocated px-2 py-1"><i class="bi bi-bookmark-check me-1"></i>Allocated</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.admission_date %}
+                                {{ student.admission_date.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if student.status == 'Allocated' %}
+                                <form method="POST" action="{{ url_for('admit_student', id=student.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm px-3 shadow-sm">
+                                        <i class="bi bi-check-circle me-1"></i> Admit
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button class="btn btn-secondary btn-sm px-3" disabled>
+                                    <i class="bi bi-check-all me-1"></i> Admitted
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i> No allocated students available for admission.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
