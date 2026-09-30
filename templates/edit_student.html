@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Student - College Admission System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Student Details</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('edit_student', id=student.id) }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="application_no" class="form-label fw-semibold">Application No <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="application_no" name="application_no" value="{{ student.application_no }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Student Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ student.name }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="gender" class="form-label fw-semibold">Gender <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="Male" {% if student.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if student.gender == 'Female' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="community" class="form-label fw-semibold">Community <span class="text-danger">*</span></label>
+                            <select class="form-select" id="community" name="community" required>
+                                {% for cat in ['OC', 'BC', 'BCM', 'MBC', 'SC', 'SCA'] %}
+                                    <option value="{{ cat }}" {% if student.community == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="marks" class="form-label fw-semibold">Marks <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" id="marks" name="marks" value="{{ student.marks }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="rank_no" class="form-label fw-semibold">Rank No <span class="text-danger">*</span></label>
+                            <input type="number" min="1" class="form-control" id="rank_no" name="rank_no" value="{{ student.rank_no }}" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="remark" class="form-label fw-semibold">Remark</label>
+                            <textarea class="form-control" id="remark" name="remark" rows="3">{{ student.remark or '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{{ url_for('view_students') }}" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-circle me-1"></i> Update Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

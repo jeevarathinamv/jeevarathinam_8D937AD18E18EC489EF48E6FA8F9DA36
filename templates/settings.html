@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Seat Settings - College Admission System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-sliders me-2"></i>Seat Reservation Settings</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">
+                    Modify the default category seat distribution. Saving updated settings will automatically trigger a complete recalculation of student seat allocations and status updates.
+                </p>
+
+                <form method="POST" action="{{ url_for('view_settings') }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="oc_seats" class="form-label fw-semibold">OC Seats (Open Competition)</label>
+                            <input type="number" min="0" class="form-control" id="oc_seats" name="oc_seats" value="{{ settings.oc_seats }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="bc_seats" class="form-label fw-semibold">BC Seats</label>
+                            <input type="number" min="0" class="form-control" id="bc_seats" name="bc_seats" value="{{ settings.bc_seats }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="bcm_seats" class="form-label fw-semibold">BCM Seats</label>
+                            <input type="number" min="0" class="form-control" id="bcm_seats" name="bcm_seats" value="{{ settings.bcm_seats }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mbc_seats" class="form-label fw-semibold">MBC Seats</label>
+                            <input type="number" min="0" class="form-control" id="mbc_seats" name="mbc_seats" value="{{ settings.mbc_seats }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sc_seats" class="form-label fw-semibold">SC Seats</label>
+                            <input type="number" min="0" class="form-control" id="sc_seats" name="sc_seats" value="{{ settings.sc_seats }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sca_seats" class="form-label fw-semibold">SCA Seats</label>
+                            <input type="number" min="0" class="form-control" id="sca_seats" name="sca_seats" value="{{ settings.sca_seats }}" required>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 mb-0 d-flex align-items-center" role="alert">
+                        <i class="bi bi-info-circle-fill fs-5 me-2"></i>
+                        <div>
+                            <strong>Total Default Seats: 30</strong> (OC: 9, BC: 8, BCM: 1, MBC: 6, SC: 5, SCA: 1)
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                            <i class="bi bi-save me-1"></i> Save & Recalculate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

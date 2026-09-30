@@ -1,20 +1,14 @@
 import os
-from datetime import datetime, date
-from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from datetime import datetime, date, timezone
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
-
-# Admin Hardcoded Credentials
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_admission_secret_key_mca_123')
 
 # Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/college_admission')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'college_admission.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,368 +16,358 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+class Settings(db.Model):
+    __tablename__ = 'settings'
+    id = db.Column(db.Integer, primary_key=True, default=1)
+    oc_seats = db.Column(db.Integer, nullable=False, default=9)
+    bc_seats = db.Column(db.Integer, nullable=False, default=8)
+    bcm_seats = db.Column(db.Integer, nullable=False, default=1)
+    mbc_seats = db.Column(db.Integer, nullable=False, default=6)
+    sc_seats = db.Column(db.Integer, nullable=False, default=5)
+    sca_seats = db.Column(db.Integer, nullable=False, default=1)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    @classmethod
+    def get_settings(cls):
+        settings = db.session.get(cls, 1)
+        if not settings:
+            settings = cls(id=1, oc_seats=9, bc_seats=8, bcm_seats=1, mbc_seats=6, sc_seats=5, sca_seats=1)
+            db.session.add(settings)
+            db.session.commit()
+        return settings
+
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
+    application_no = db.Column(db.String(50), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    register_number = db.Column(db.String(50), unique=True, nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    gender = db.Column(db.String(20), nullable=False)
+    community = db.Column(db.String(20), nullable=False)
+    marks = db.Column(db.Float, nullable=False)
+    rank_no = db.Column(db.Integer, nullable=False)
+    admission_date = db.Column(db.Date, nullable=True)
+    status = db.Column(db.String(20), default='Waiting') # Waiting, Allocated, Admitted
+    allocated_category = db.Column(db.String(20), nullable=True)
+    remark = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    bookings = db.relationship('Booking', backref='student', lazy=True)
+def recalculate_allocations():
+    """
+    Recalculates seat allocations for all students based on:
+    1. Rank Number - ascending
+    2. Marks - descending
+    3. Community seat availability -> OC fallback -> Waiting
+    """
+    settings = Settings.get_settings()
+    capacity = {
+        'OC': settings.oc_seats,
+        'BC': settings.bc_seats,
+        'BCM': settings.bcm_seats,
+        'MBC': settings.mbc_seats,
+        'SC': settings.sc_seats,
+        'SCA': settings.sca_seats
+    }
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+    used = {cat: 0 for cat in capacity}
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    # Order students by Rank No ASC, Marks DESC, ID ASC
+    students = Student.query.order_by(Student.rank_no.asc(), Student.marks.desc(), Student.id.asc()).all()
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    for student in students:
+        comm = student.community.upper() if student.community else ''
+        category_to_allocate = None
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
+        # Check if student's community category has available seats
+        if comm in capacity and used[comm] < capacity[comm]:
+            category_to_allocate = comm
+        # If community category is full or OC itself, try OC
+        elif used['OC'] < capacity['OC']:
+            category_to_allocate = 'OC'
 
-class Booking(db.Model):
-    __tablename__ = 'bookings'
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        if category_to_allocate:
+            used[category_to_allocate] += 1
+            student.allocated_category = category_to_allocate
+            if student.status != 'Admitted':
+                student.status = 'Allocated'
+        else:
+            student.allocated_category = None
+            student.status = 'Waiting'
+            student.admission_date = None
 
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
-        db.session.commit()
+    db.session.commit()
 
-# Auth Decorators
-def student_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'student':
-            flash('Please log in as a student to access this page.', 'warning')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+def get_category_stats(gender_filter=None):
+    """
+    Generates category-wise allocation, admission, and vacancy stats.
+    """
+    settings = Settings.get_settings()
+    categories = ['OC', 'BC', 'BCM', 'MBC', 'SC', 'SCA']
+    capacity_map = {
+        'OC': settings.oc_seats,
+        'BC': settings.bc_seats,
+        'BCM': settings.bcm_seats,
+        'MBC': settings.mbc_seats,
+        'SC': settings.sc_seats,
+        'SCA': settings.sca_seats
+    }
 
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'admin':
-            flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+    stats = []
+    all_students = Student.query.all()
+
+    for cat in categories:
+        if gender_filter:
+            cat_students = [s for s in all_students if s.allocated_category == cat and s.gender.lower() == gender_filter.lower()]
+            allocated = len(cat_students)
+            admitted = len([s for s in cat_students if s.status == 'Admitted'])
+            vacancy = max(0, allocated - admitted)
+            total_seats = allocated
+        else:
+            cat_students = [s for s in all_students if s.allocated_category == cat]
+            total_seats = capacity_map[cat]
+            allocated = len(cat_students)
+            admitted = len([s for s in cat_students if s.status == 'Admitted'])
+            vacancy = max(0, total_seats - admitted)
+
+        stats.append({
+            'category': cat,
+            'total_seats': total_seats,
+            'allocated': allocated,
+            'admitted': admitted,
+            'vacancy': vacancy
+        })
+
+    return stats
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def dashboard():
+    recalculate_allocations()
+    settings = Settings.get_settings()
+    students = Student.query.all()
 
-# Student Registration
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+    total_seats = (settings.oc_seats + settings.bc_seats + settings.bcm_seats +
+                   settings.mbc_seats + settings.sc_seats + settings.sca_seats)
+    total_students = len(students)
+    total_allocated = len([s for s in students if s.status in ['Allocated', 'Admitted']])
+    total_admitted = len([s for s in students if s.status == 'Admitted'])
+    total_waiting = len([s for s in students if s.status == 'Waiting'])
+    total_vacancy = max(0, total_seats - total_admitted)
+
+    total_boys = len([s for s in students if s.gender.lower() == 'male'])
+    total_girls = len([s for s in students if s.gender.lower() == 'female'])
+
+    cat_stats = get_category_stats()
+
+    # Boys and Girls category-wise stats
+    boys_stats = get_category_stats(gender_filter='male')
+    girls_stats = get_category_stats(gender_filter='female')
+
+    return render_template('dashboard.html',
+                           total_students=total_students,
+                           total_allocated=total_allocated,
+                           total_admitted=total_admitted,
+                           total_waiting=total_waiting,
+                           total_vacancy=total_vacancy,
+                           total_boys=total_boys,
+                           total_girls=total_girls,
+                           cat_stats=cat_stats,
+                           boys_stats=boys_stats,
+                           girls_stats=girls_stats,
+                           datetime=datetime)
+
+@app.route('/students')
+def view_students():
+    recalculate_allocations()
+    query = Student.query
+
+    search = request.args.get('search', '').strip()
+    category = request.args.get('category', '').strip()
+    gender = request.args.get('gender', '').strip()
+    status = request.args.get('status', '').strip()
+
+    if search:
+        query = query.filter(
+            (Student.name.ilike(f'%{search}%')) |
+            (Student.application_no.ilike(f'%{search}%'))
+        )
+    if category:
+        query = query.filter(Student.community == category)
+    if gender:
+        query = query.filter(Student.gender == gender)
+    if status:
+        query = query.filter(Student.status == status)
+
+    students = query.order_by(Student.rank_no.asc(), Student.marks.desc()).all()
+
+    return render_template('students.html',
+                           students=students,
+                           search=search,
+                           selected_category=category,
+                           selected_gender=gender,
+                           selected_status=status,
+                           datetime=datetime)
+
+@app.route('/students/add', methods=['GET', 'POST'])
+def add_student():
     if request.method == 'POST':
+        application_no = request.form.get('application_no', '').strip()
         name = request.form.get('name', '').strip()
-        register_number = request.form.get('register_number', '').strip()
-        department = request.form.get('department', '').strip()
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
+        gender = request.form.get('gender', '').strip()
+        community = request.form.get('community', '').strip()
+        marks_raw = request.form.get('marks', '').strip()
+        rank_no_raw = request.form.get('rank_no', '').strip()
+        remark = request.form.get('remark', '').strip()
 
-        if not name or not register_number or not department or not email or not password:
-            flash('All fields are required.', 'danger')
-            return redirect(url_for('register'))
+        if not application_no or not name or not gender or not community or not marks_raw or not rank_no_raw:
+            flash('All required fields must be filled out.', 'danger')
+            return redirect(url_for('add_student'))
 
-        existing_student = Student.query.filter(
-            (Student.email == email) | (Student.register_number == register_number)
-        ).first()
+        try:
+            marks = float(marks_raw)
+            rank_no = int(rank_no_raw)
+        except ValueError:
+            flash('Marks must be a number and Rank must be an integer.', 'danger')
+            return redirect(url_for('add_student'))
 
-        if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
-            return redirect(url_for('register'))
+        existing_app = Student.query.filter_by(application_no=application_no).first()
+        if existing_app:
+            flash(f'Student with Application No "{application_no}" already exists.', 'danger')
+            return redirect(url_for('add_student'))
 
         student = Student(
+            application_no=application_no,
             name=name,
-            register_number=register_number,
-            department=department,
-            email=email
+            gender=gender,
+            community=community,
+            marks=marks,
+            rank_no=rank_no,
+            remark=remark
         )
-        student.set_password(password)
         db.session.add(student)
         db.session.commit()
 
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
+        recalculate_allocations()
+        flash(f'Student "{name}" added successfully.', 'success')
+        return redirect(url_for('view_students'))
 
-    return render_template('register.html')
+    return render_template('add_student.html', datetime=datetime)
 
-# Student & Admin Login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/students/edit/<int:id>', methods=['GET', 'POST'])
+def edit_student(id):
+    student = db.session.get(Student, id)
+    if not student:
+        flash('Student not found.', 'danger')
+        return redirect(url_for('view_students'))
+
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        application_no = request.form.get('application_no', '').strip()
+        name = request.form.get('name', '').strip()
+        gender = request.form.get('gender', '').strip()
+        community = request.form.get('community', '').strip()
+        marks_raw = request.form.get('marks', '').strip()
+        rank_no_raw = request.form.get('rank_no', '').strip()
+        remark = request.form.get('remark', '').strip()
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
-        else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
+        if not application_no or not name or not gender or not community or not marks_raw or not rank_no_raw:
+            flash('All required fields must be filled out.', 'danger')
+            return redirect(url_for('edit_student', id=id))
 
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
+        try:
+            marks = float(marks_raw)
+            rank_no = int(rank_no_raw)
+        except ValueError:
+            flash('Marks must be a number and Rank must be an integer.', 'danger')
+            return redirect(url_for('edit_student', id=id))
 
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
+        existing_app = Student.query.filter(Student.application_no == application_no, Student.id != id).first()
+        if existing_app:
+            flash(f'Another student with Application No "{application_no}" already exists.', 'danger')
+            return redirect(url_for('edit_student', id=id))
 
-    return render_template('login.html')
+        student.application_no = application_no
+        student.name = name
+        student.gender = gender
+        student.community = community
+        student.marks = marks
+        student.rank_no = rank_no
+        student.remark = remark
 
-# Logout
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('index'))
+        db.session.commit()
+        recalculate_allocations()
 
-# Student Dashboard & Equipment Booking
-@app.route('/student/dashboard')
-@student_required
-def student_dashboard():
-    student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+        flash(f'Student "{name}" updated successfully.', 'success')
+        return redirect(url_for('view_students'))
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+    return render_template('edit_student.html', student=student, datetime=datetime)
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
+@app.route('/students/delete/<int:id>', methods=['POST'])
+def delete_student(id):
+    student = db.session.get(Student, id)
+    if not student:
+        flash('Student not found.', 'danger')
+        return redirect(url_for('view_students'))
 
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
-    )
-    db.session.add(booking)
+    name = student.name
+    db.session.delete(student)
     db.session.commit()
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
+    recalculate_allocations()
+    flash(f'Student "{name}" deleted successfully.', 'success')
+    return redirect(url_for('view_students'))
 
-# Admin Dashboard & Equipment Management
-@app.route('/admin/dashboard')
-@admin_required
-def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+@app.route('/admission')
+def view_admission():
+    recalculate_allocations()
+    cat_stats = get_category_stats()
+    allocated_students = Student.query.filter(Student.status.in_(['Allocated', 'Admitted'])).order_by(Student.rank_no.asc()).all()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    return render_template('admission.html',
+                           cat_stats=cat_stats,
+                           allocated_students=allocated_students,
+                           datetime=datetime)
 
-    return render_template(
-        'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
-    )
+@app.route('/admission/admit/<int:id>', methods=['POST'])
+def admit_student(id):
+    student = db.session.get(Student, id)
+    if not student:
+        flash('Student not found.', 'danger')
+        return redirect(url_for('view_admission'))
 
-@app.route('/admin/equipment/add', methods=['POST'])
-@admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+    if student.allocated_category:
+        student.status = 'Admitted'
+        student.admission_date = date.today()
+        db.session.commit()
+        flash(f'Student "{student.name}" admitted successfully!', 'success')
+    else:
+        flash(f'Cannot admit student "{student.name}" - No seat allocated.', 'danger')
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('view_admission'))
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
-    )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+@app.route('/settings', methods=['GET', 'POST'])
+def view_settings():
+    settings = Settings.get_settings()
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
-@admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
+    if request.method == 'POST':
+        try:
+            settings.oc_seats = int(request.form.get('oc_seats', 0))
+            settings.bc_seats = int(request.form.get('bc_seats', 0))
+            settings.bcm_seats = int(request.form.get('bcm_seats', 0))
+            settings.mbc_seats = int(request.form.get('mbc_seats', 0))
+            settings.sc_seats = int(request.form.get('sc_seats', 0))
+            settings.sca_seats = int(request.form.get('sca_seats', 0))
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
+            db.session.commit()
+            recalculate_allocations()
+            flash('Seat reservation settings updated successfully and allocations recalculated.', 'success')
+            return redirect(url_for('view_settings'))
+        except ValueError:
+            flash('Invalid seat count input. All fields must be integers.', 'danger')
+            return redirect(url_for('view_settings'))
 
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
-@admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
-@admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+    return render_template('settings.html', settings=settings, datetime=datetime)
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        seed_default_data()
+        Settings.get_settings()
+        recalculate_allocations()
     app.run(debug=True)

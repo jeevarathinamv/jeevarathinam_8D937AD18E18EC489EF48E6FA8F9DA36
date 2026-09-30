@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - College Admission System{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h2 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i>Admission Dashboard</h2>
+        <p class="text-muted mb-0">Overview of student applications, seat allocations, and vacancy statistics.</p>
+    </div>
+</div>
+
+<!-- Main Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-lg-2">
+        <div class="card stat-card bg-stat-total p-3 text-center">
+            <i class="bi bi-people-fill fs-2 mb-1"></i>
+            <h6 class="text-uppercase small fw-bold text-white-50 mb-1">Total Students</h6>
+            <h3 class="fw-bold mb-0">{{ total_students }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card stat-card bg-stat-allocated p-3 text-center">
+            <i class="bi bi-bookmark-check-fill fs-2 mb-1"></i>
+            <h6 class="text-uppercase small fw-bold text-white-50 mb-1">Total Allocated</h6>
+            <h3 class="fw-bold mb-0">{{ total_allocated }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card stat-card bg-stat-admitted p-3 text-center">
+            <i class="bi bi-person-check-fill fs-2 mb-1"></i>
+            <h6 class="text-uppercase small fw-bold text-white-50 mb-1">Total Admitted</h6>
+            <h3 class="fw-bold mb-0">{{ total_admitted }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card stat-card bg-stat-waiting p-3 text-center">
+            <i class="bi bi-hourglass-split fs-2 mb-1"></i>
+            <h6 class="text-uppercase small fw-bold text-white-50 mb-1">Total Waiting</h6>
+            <h3 class="fw-bold mb-0">{{ total_waiting }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card stat-card bg-stat-vacancy p-3 text-center">
+            <i class="bi bi-door-open-fill fs-2 mb-1"></i>
+            <h6 class="text-uppercase small fw-bold text-white-50 mb-1">Total Vacancy</h6>
+            <h3 class="fw-bold mb-0">{{ total_vacancy }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="card stat-card bg-stat-boys p-3 text-center mb-2">
+            <h6 class="text-uppercase small fw-bold text-white-50 mb-1"><i class="bi bi-gender-male me-1"></i>Boys</h6>
+            <h4 class="fw-bold mb-0">{{ total_boys }}</h4>
+        </div>
+        <div class="card stat-card bg-stat-girls p-3 text-center">
+            <h6 class="text-uppercase small fw-bold text-secondary mb-1"><i class="bi bi-gender-female me-1"></i>Girls</h6>
+            <h4 class="fw-bold mb-0">{{ total_girls }}</h4>
+        </div>
+    </div>
+</div>
+
+<!-- Overall Category-wise Statistics -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-table me-2"></i>Overall Category-Wise Statistics</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th class="text-center">Total Seats</th>
+                        <th class="text-center">Allocated</th>
+                        <th class="text-center">Admitted</th>
+                        <th class="text-center">Vacancy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in cat_stats %}
+                    <tr>
+                        <td><span class="fw-bold badge bg-secondary">{{ stat.category }}</span></td>
+                        <td class="text-center fw-semibold">{{ stat.total_seats }}</td>
+                        <td class="text-center"><span class="badge bg-primary fs-6">{{ stat.allocated }}</span></td>
+                        <td class="text-center"><span class="badge bg-success fs-6">{{ stat.admitted }}</span></td>
+                        <td class="text-center"><span class="badge bg-danger fs-6">{{ stat.vacancy }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Boys and Girls Statistics -->
+<div class="row g-4">
+    <!-- Boys Statistics -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-info"><i class="bi bi-gender-male me-2"></i>Boys Statistics</h5>
+                <span class="badge bg-info text-dark fs-6">Total Boys: {{ total_boys }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-center">Allocated</th>
+                                <th class="text-center">Admitted</th>
+                                <th class="text-center">Vacancy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in boys_stats %}
+                            <tr>
+                                <td><span class="fw-bold badge bg-secondary">{{ stat.category }}</span></td>
+                                <td class="text-center"><span class="badge bg-primary fs-6">{{ stat.allocated }}</span></td>
+                                <td class="text-center"><span class="badge bg-success fs-6">{{ stat.admitted }}</span></td>
+                                <td class="text-center"><span class="badge bg-warning text-dark fs-6">{{ stat.vacancy }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Girls Statistics -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-gender-female me-2"></i>Girls Statistics</h5>
+                <span class="badge bg-danger fs-6">Total Girls: {{ total_girls }}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-center">Allocated</th>
+                                <th class="text-center">Admitted</th>
+                                <th class="text-center">Vacancy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in girls_stats %}
+                            <tr>
+                                <td><span class="fw-bold badge bg-secondary">{{ stat.category }}</span></td>
+                                <td class="text-center"><span class="badge bg-primary fs-6">{{ stat.allocated }}</span></td>
+                                <td class="text-center"><span class="badge bg-success fs-6">{{ stat.admitted }}</span></td>
+                                <td class="text-center"><span class="badge bg-warning text-dark fs-6">{{ stat.vacancy }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

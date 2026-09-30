@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Student Management - College Admission System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Student Management</h2>
+        <p class="text-muted mb-0">View, search, filter, and manage student applications.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('add_student') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> Add Student
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('view_students') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="search" class="form-label fw-semibold">Search</label>
+                <input type="text" class="form-control" id="search" name="search" value="{{ search }}" placeholder="Name or App No...">
+            </div>
+            <div class="col-md-2">
+                <label for="category" class="form-label fw-semibold">Community</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for cat in ['OC', 'BC', 'BCM', 'MBC', 'SC', 'SCA'] %}
+                        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="gender" class="form-label fw-semibold">Gender</label>
+                <select class="form-select" id="gender" name="gender">
+                    <option value="">All Genders</option>
+                    <option value="Male" {% if selected_gender == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if selected_gender == 'Female' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="status" class="form-label fw-semibold">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="Allocated" {% if selected_status == 'Allocated' %}selected{% endif %}>Allocated</option>
+                    <option value="Admitted" {% if selected_status == 'Admitted' %}selected{% endif %}>Admitted</option>
+                    <option value="Waiting" {% if selected_status == 'Waiting' %}selected{% endif %}>Waiting</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i> Filter</button>
+                <a href="{{ url_for('view_students') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-arrow-counterclockwise me-1"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Student List Table -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Application No</th>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Community</th>
+                        <th>Marks</th>
+                        <th>Rank</th>
+                        <th>Status</th>
+                        <th>Allocated Category</th>
+                        <th>Admission Date</th>
+                        <th>Remark</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td class="fw-bold">{{ student.application_no }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>
+                            {% if student.gender.lower() == 'male' %}
+                                <span class="badge bg-info text-dark"><i class="bi bi-gender-male me-1"></i>Male</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="bi bi-gender-female me-1"></i>Female</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ student.community }}</span></td>
+                        <td class="fw-semibold">{{ student.marks }}</td>
+                        <td class="fw-bold text-primary">#{{ student.rank_no }}</td>
+                        <td>
+                            {% if student.status == 'Admitted' %}
+                                <span class="badge badge-status-admitted px-2 py-1"><i class="bi bi-check-circle me-1"></i>Admitted</span>
+                            {% elif student.status == 'Allocated' %}
+                                <span class="badge badge-status-allocated px-2 py-1"><i class="bi bi-bookmark-check me-1"></i>Allocated</span>
+                            {% else %}
+                                <span class="badge badge-status-waiting px-2 py-1"><i class="bi bi-hourglass me-1"></i>Waiting</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.allocated_category %}
+                                <span class="badge bg-success fs-6">{{ student.allocated_category }}</span>
+                            {% else %}
+                                <span class="text-muted fs-7">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.admission_date %}
+                                {{ student.admission_date.strftime('%Y-%m-%d') }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-muted">{{ student.remark or '-' }}</small></td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('edit_student', id=student.id) }}" class="btn btn-outline-primary" title="Edit Student">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('delete_student', id=student.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ student.name }}?');">
+                                    <button type="submit" class="btn btn-outline-danger" title="Delete Student">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="11" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i> No students found matching the criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

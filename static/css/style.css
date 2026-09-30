@@ -1,79 +1,108 @@
-/* Custom Styles for College Sports Equipment Booking System */
+/* Custom Styles for College Admission Seat Allocation System */
 
 :root {
-    --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    --accent-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-    --card-hover-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #6b11ff 100%);
+    --card-gradient-1: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    --card-gradient-2: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --card-gradient-3: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    --card-gradient-4: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);
+    --card-gradient-5: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    color: #2b2d42;
-    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    color: #333333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Navbar Styling */
-.bg-gradient-primary {
+.navbar {
     background: var(--primary-gradient) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .navbar-brand {
-    font-size: 1.35rem;
+    font-weight: 700;
     letter-spacing: 0.5px;
+    font-size: 1.35rem;
 }
 
-/* Card Improvements */
-.card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+.nav-link {
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
 }
 
-.card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--card-hover-shadow) !important;
+.nav-link:hover, .nav-link.active {
+    color: #ffd700 !important;
+    transform: translateY(-1px);
 }
 
-/* Modern Gradient Headers */
-.header-gradient {
-    background: var(--primary-gradient);
+.stat-card {
+    border: none;
+    border-radius: 12px;
     color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Custom Status Badges */
-.badge-pending {
-    background-color: #ffc107;
-    color: #212529;
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-.badge-approved {
-    background-color: #0d6efd;
-    color: #ffffff;
+.bg-stat-total { background: var(--card-gradient-1); }
+.bg-stat-allocated { background: var(--card-gradient-5); }
+.bg-stat-admitted { background: var(--card-gradient-2); }
+.bg-stat-waiting { background: var(--card-gradient-3); }
+.bg-stat-vacancy { background: var(--card-gradient-4); }
+.bg-stat-boys { background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%); }
+.bg-stat-girls { background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%); color: #4a4a4a !important; }
+
+.table-responsive {
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background-color: #ffffff;
 }
 
-.badge-rejected {
-    background-color: #dc3545;
-    color: #ffffff;
+.table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
 }
 
-.badge-returned {
+.badge-status-admitted {
     background-color: #198754;
     color: #ffffff;
 }
 
-/* Hero Banner */
-.hero-banner {
-    background: linear-gradient(rgba(30, 60, 114, 0.85), rgba(42, 82, 152, 0.9)), url('https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
-    color: white;
-    padding: 80px 0;
-    border-radius: 0 0 25px 25px;
+.badge-status-allocated {
+    background-color: #0d6efd;
+    color: #ffffff;
 }
 
-/* Feature Icon Box */
-.icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
+.badge-status-waiting {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #edf2f7;
+    font-weight: 600;
+}
+
+footer {
+    margin-top: auto;
+    background-color: #ffffff;
+    border-top: 1px solid #e9ecef;
+    padding: 15px 0;
+    color: #6c757d;
 }
