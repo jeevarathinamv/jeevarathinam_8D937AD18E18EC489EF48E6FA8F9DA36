@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Task Management - Student Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="text-white fw-bold mb-1"><i class="bi bi-list-task me-2"></i> Task Management</h2>
+        <p class="text-white-50 mb-0">Organize and track individual project tasks</p>
+    </div>
+    <div>
+        <button type="button" class="btn btn-orange shadow-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="bi bi-plus-circle me-1"></i> Add New Task
+        </button>
+    </div>
+</div>
+
+<!-- Task Filters -->
+<div class="card glass-card p-3 mb-4">
+    <form action="{{ url_for('tasks') }}" method="GET" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <select class="form-select" name="project_id" onchange="this.form.submit()">
+                <option value="">All Projects</option>
+                {% for proj in projects %}
+                    <option value="{{ proj.id }}" {% if filter_project == proj.id %}selected{% endif %}>{{ proj.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <select class="form-select" name="status" onchange="this.form.submit()">
+                <option value="">All Task Statuses</option>
+                <option value="Pending" {% if filter_status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if filter_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Completed" {% if filter_status == 'Completed' %}selected{% endif %}>Completed</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ url_for('tasks') }}" class="btn btn-outline-secondary w-100">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Tasks Table -->
+<div class="card glass-card p-4">
+    {% if tasks %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Task Title</th>
+                        <th>Project</th>
+                        <th>Priority</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                        <tr>
+                            <td>
+                                <strong>{{ task.title }}</strong>
+                                {% if task.description %}
+                                    <small class="d-block text-muted">{{ task.description }}</small>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ task.project.title }}</span></td>
+                            <td><span class="badge badge-priority-{{ task.priority.lower() }}">{{ task.priority }}</span></td>
+                            <td class="small">{{ task.due_date or 'N/A' }}</td>
+                            <td>
+                                <form action="{{ url_for('update_task_status', task_id=task.id) }}" method="POST" class="d-inline">
+                                    <select name="status" class="form-select form-select-sm border-0 bg-light fw-bold" onchange="this.form.submit()">
+                                        <option value="Pending" {% if task.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="In Progress" {% if task.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="Completed" {% if task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('delete_task', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this task?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-check2-all fs-1 text-muted mb-2 d-block"></i>
+            <p class="text-muted">No tasks found. Click "Add New Task" to create one!</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle text-primary me-2"></i> Add New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('tasks') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="project_id" class="form-label font-weight-bold">Project *</label>
+                        <select class="form-select" id="project_id" name="project_id" required>
+                            <option value="">-- Select Project --</option>
+                            {% for proj in projects %}
+                                <option value="{{ proj.id }}">{{ proj.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label font-weight-bold">Task Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Design Database Schema" required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label font-weight-bold">Priority</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="High">High</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="due_date" class="form-label font-weight-bold">Due Date</label>
+                            <input type="date" class="form-control" id="due_date" name="due_date">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label font-weight-bold">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="Pending" selected>Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label font-weight-bold">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2" placeholder="Task details..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-cobalt"><i class="bi bi-check-circle me-1"></i> Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

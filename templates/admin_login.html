@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Student Freelance Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-5">
+        <div class="card glass-card p-4 p-md-5 border-warning">
+            <div class="text-center mb-4">
+                <div class="bg-warning bg-opacity-10 text-warning d-inline-flex p-3 rounded-circle mb-3">
+                    <i class="bi bi-shield-lock-fill fs-1 text-warning"></i>
+                </div>
+                <h3 class="fw-bold text-dark">Admin Portal Login</h3>
+                <p class="text-muted">Administrator Supervision & Management</p>
+            </div>
+
+            <form action="{{ url_for('admin_login') }}" method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label font-weight-bold">Admin Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username (e.g. admin)" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label font-weight-bold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password (e.g. admin123)" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-warning text-dark fw-bold w-100 py-2 mb-3">
+                    <i class="bi bi-shield-check me-1"></i> Log In as Admin
+                </button>
+            </form>
+
+            <div class="alert alert-info py-2 px-3 small rounded-3 mb-0 text-center">
+                <i class="bi bi-info-circle me-1"></i> Demo Credentials: <strong>admin</strong> / <strong>admin123</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
