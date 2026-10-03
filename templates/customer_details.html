@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Profile - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Customer Info Card -->
+    <div class="col-lg-4">
+        <div class="card shadow-lg h-100">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i> Customer Profile</h5>
+                <a href="{{ url_for('edit_customer', customer_id=customer.id) }}" class="btn btn-sm btn-light">
+                    <i class="bi bi-pencil me-1"></i> Edit
+                </a>
+            </div>
+            <div class="card-body p-4 bg-white">
+                <div class="text-center mb-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 80px; height: 80px;">
+                        <i class="bi bi-person fs-1 text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ customer.name }}</h4>
+                    {% if customer.customer_type == 'VIP' %}
+                        <span class="badge badge-coral fs-6"><i class="bi bi-star-fill me-1"></i> VIP Customer</span>
+                    {% elif customer.customer_type == 'Regular' %}
+                        <span class="badge badge-royal fs-6">Regular Customer</span>
+                    {% else %}
+                        <span class="badge badge-mint fs-6">New Customer</span>
+                    {% endif %}
+                </div>
+
+                <hr class="my-3">
+
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3">
+                        <small class="text-muted d-block"><i class="bi bi-telephone me-1"></i> Phone Number</small>
+                        <span class="fw-semibold text-dark">{{ customer.phone }}</span>
+                    </li>
+                    <li class="mb-3">
+                        <small class="text-muted d-block"><i class="bi bi-envelope me-1"></i> Email Address</small>
+                        <span class="fw-semibold text-dark">{{ customer.email }}</span>
+                    </li>
+                    <li class="mb-3">
+                        <small class="text-muted d-block"><i class="bi bi-geo-alt me-1"></i> Address</small>
+                        <span class="fw-semibold text-dark">{{ customer.address }}</span>
+                    </li>
+                    <li class="mb-0">
+                        <small class="text-muted d-block"><i class="bi bi-calendar-event me-1"></i> Registration Date</small>
+                        <span class="fw-semibold text-dark">{{ customer.registration_date.strftime('%d %B %Y') }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase History & Summary -->
+    <div class="col-lg-8">
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card metric-card h-100 p-3 text-center">
+                    <i class="bi bi-cart-check fs-2 text-primary mb-1"></i>
+                    <small class="text-muted fw-semibold">Total Purchases</small>
+                    <h4 class="fw-bold text-dark mb-0">{{ total_purchases }}</h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card metric-card mint-border h-100 p-3 text-center">
+                    <i class="bi bi-cash-stack fs-2 text-success mb-1"></i>
+                    <small class="text-muted fw-semibold">Total Amount Spent</small>
+                    <h4 class="fw-bold text-success mb-0">₹{{ "%.2f"|format(total_spent) }}</h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card metric-card coral-border h-100 p-3 text-center">
+                    <i class="bi bi-clock-history fs-2 text-danger mb-1"></i>
+                    <small class="text-muted fw-semibold">Last Purchase Date</small>
+                    <h5 class="fw-bold text-dark mb-0">
+                        {% if last_purchase_date %}{{ last_purchase_date.strftime('%d %b %Y') }}{% else %}N/A{% endif %}
+                    </h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase History Table -->
+        <div class="card shadow-lg">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-receipt me-2"></i> Purchase History</h5>
+                <a href="{{ url_for('create_sale') }}" class="btn btn-sm btn-coral">
+                    <i class="bi bi-cart-plus me-1"></i> New Sale
+                </a>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sale #</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Discount</th>
+                            <th>Grand Total</th>
+                            <th>Payment Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if sales_history %}
+                            {% for sale in sales_history %}
+                            <tr>
+                                <td><span class="fw-bold text-primary">{{ sale.sale_number }}</span></td>
+                                <td>{{ sale.sale_date.strftime('%d %b %Y') }}</td>
+                                <td>₹{{ "%.2f"|format(sale.total_amount) }}</td>
+                                <td class="text-danger">-₹{{ "%.2f"|format(sale.discount) }}</td>
+                                <td class="fw-bold text-success">₹{{ "%.2f"|format(sale.grand_total) }}</td>
+                                <td>
+                                    {% if sale.payment_status == 'Paid' %}
+                                        <span class="badge badge-paid">Paid</span>
+                                    {% elif sale.payment_status == 'Partially Paid' %}
+                                        <span class="badge badge-partially-paid">Partially Paid</span>
+                                    {% else %}
+                                        <span class="badge badge-unpaid">Unpaid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('sale_details', sale_id=sale.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Receipt
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="bi bi-journal-x fs-2 d-block mb-2"></i> No purchase history available for this customer.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light">
+                <a href="{{ url_for('customers') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Customers List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

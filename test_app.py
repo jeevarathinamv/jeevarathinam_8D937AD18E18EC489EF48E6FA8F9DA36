@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Admin, Customer, Product, Sale, SaleItem
 
-class SportsBookingTestCase(unittest.TestCase):
+class SmallBusinessSalesTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +11,40 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Seed admin
+            admin = Admin(username='admin', name='Test Admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+
+            # Seed Customer
+            self.c1 = Customer(
+                name='John Doe',
+                phone='9876543210',
+                email='john@example.com',
+                address='123 Street',
+                customer_type='Regular',
+                registration_date=date.today()
+            )
+            db.session.add(self.c1)
+
+            # Seed Product
+            self.p1 = Product(
+                name='Test Mouse',
+                product_code='PRD-001',
+                category='Electronics',
+                selling_price=500.0,
+                available_stock=10,
+                min_stock_level=3
+            )
+            self.p2 = Product(
+                name='Out of Stock Item',
+                product_code='PRD-002',
+                category='Gadgets',
+                selling_price=1000.0,
+                available_stock=0,
+                min_stock_level=2
+            )
+            db.session.add_all([self.p1, self.p2])
             db.session.commit()
 
     def tearDown(self):
@@ -22,95 +52,100 @@ class SportsBookingTestCase(unittest.TestCase):
             db.session.remove()
             db.drop_all()
 
-    def test_student_registration_and_login(self):
-        # Register student
-        response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
-            'password': 'password123'
-        }, follow_redirects=True)
-        self.assertIn(b'Registration successful', response.data)
-
-        # Login student
-        response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
-            'password': 'password123'
-        }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
-
     def test_admin_login(self):
         response = self.client.post('/login', data={
-            'login_type': 'admin',
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
-        self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
-        })
-        self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
-        })
+    def test_customer_management(self):
+        # Login first
+        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'})
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # Add customer
+        response = self.client.post('/customers/add', data={
+            'name': 'Alice Smith',
+            'phone': '9123456789',
+            'email': 'alice@example.com',
+            'address': '456 Avenue',
+            'customer_type': 'VIP'
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn(b'added successfully', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
+        # Search customer
+        response = self.client.get('/customers?search=Alice', follow_redirects=True)
+        self.assertIn(b'Alice Smith', response.data)
+
+        # Edit customer
+        response = self.client.post('/customers/edit/1', data={
+            'name': 'John Doe Updated',
+            'phone': '9876543210',
+            'email': 'john@example.com',
+            'address': '123 Street Updated',
+            'customer_type': 'VIP'
         }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        self.assertIn(b'updated successfully', response.data)
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
+    def test_product_management_and_stock_status(self):
+        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'})
+
+        # Add product
+        response = self.client.post('/products/add', data={
+            'name': 'Keyboard',
+            'product_code': 'PRD-003',
+            'category': 'Electronics',
+            'selling_price': 1500.0,
+            'available_stock': 2,
+            'min_stock_level': 5
         }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
-        })
-
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        self.assertIn(b'added successfully', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            p = db.session.get(Product, 3)
+            self.assertEqual(p.stock_status, 'Low Stock')
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+            p_out = db.session.get(Product, 2)
+            self.assertEqual(p_out.stock_status, 'Out of Stock')
 
+    def test_sale_creation_and_automatic_stock_deduction(self):
+        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'})
+
+        # Create Sale
+        response = self.client.post('/sales/create', data={
+            'customer_id': 1,
+            'product_id': 1,
+            'quantity': 3,
+            'selling_price': 500.0,
+            'discount': 100.0,
+            'payment_status': 'Paid',
+            'sale_date': date.today().isoformat()
+        }, follow_redirects=True)
+        self.assertIn(b'created successfully', response.data)
+
+        # Verify stock reduced from 10 to 7
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            p = db.session.get(Product, 1)
+            self.assertEqual(p.available_stock, 7)
+
+            sale = db.session.get(Sale, 1)
+            self.assertEqual(sale.total_amount, 1500.0)
+            self.assertEqual(sale.grand_total, 1400.0)
+
+    def test_insufficient_stock_prevent_sale(self):
+        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'})
+
+        # Try selling out of stock product
+        response = self.client.post('/sales/create', data={
+            'customer_id': 1,
+            'product_id': 2,
+            'quantity': 1,
+            'selling_price': 1000.0,
+            'discount': 0.0,
+            'payment_status': 'Paid',
+            'sale_date': date.today().isoformat()
+        }, follow_redirects=True)
+        self.assertIn(b'Insufficient stock', response.data)
 
 if __name__ == '__main__':
     unittest.main()
