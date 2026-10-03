@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Dashboard - Service Business System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Welcome Header -->
+    <div class="card glass-card border-0 mb-4 p-4 text-white">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-light text-primary rounded-pill px-3 py-1 fw-semibold mb-2">Customer Dashboard</span>
+                <h2 class="fw-bold mb-1">Welcome back, {{ customer.name }}!</h2>
+                <p class="text-light opacity-90 small mb-0"><i class="bi bi-envelope me-1"></i>{{ customer.email }} | <i class="bi bi-telephone me-1"></i>{{ customer.phone }}</p>
+            </div>
+            <div>
+                <a href="{{ url_for('book_service') }}" class="btn btn-raspberry rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Book New Service
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card stat-card border-0 rounded-4 shadow-sm text-center p-3">
+                <div class="stat-icon bg-primary-subtle text-primary mx-auto mb-2">
+                    <i class="bi bi-journal-check fs-3"></i>
+                </div>
+                <h3 class="fw-bold text-violet mb-0">{{ total_bookings }}</h3>
+                <span class="text-secondary small fw-medium">Total Bookings</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card stat-card border-0 rounded-4 shadow-sm text-center p-3">
+                <div class="stat-icon bg-warning-subtle text-warning mx-auto mb-2">
+                    <i class="bi bi-hourglass-split fs-3"></i>
+                </div>
+                <h3 class="fw-bold text-violet mb-0">{{ pending_bookings }}</h3>
+                <span class="text-secondary small fw-medium">Pending</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card stat-card border-0 rounded-4 shadow-sm text-center p-3">
+                <div class="stat-icon bg-info-subtle text-info mx-auto mb-2">
+                    <i class="bi bi-check-circle fs-3"></i>
+                </div>
+                <h3 class="fw-bold text-violet mb-0">{{ confirmed_bookings }}</h3>
+                <span class="text-secondary small fw-medium">Confirmed</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card stat-card border-0 rounded-4 shadow-sm text-center p-3">
+                <div class="stat-icon bg-success-subtle text-success mx-auto mb-2">
+                    <i class="bi bi-check-all fs-3"></i>
+                </div>
+                <h3 class="fw-bold text-violet mb-0">{{ completed_bookings }}</h3>
+                <span class="text-secondary small fw-medium">Completed</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bookings Table -->
+    <div class="card content-card border-0 shadow-lg p-3 p-md-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-violet mb-0"><i class="bi bi-clock-history text-primary me-2"></i>My Recent Service Bookings</h5>
+            <a href="{{ url_for('my_bookings') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View All Bookings &rarr;</a>
+        </div>
+
+        {% if recent_bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light rounded-3">
+                        <tr>
+                            <th>#ID</th>
+                            <th>Service Name</th>
+                            <th>Date & Time</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in recent_bookings %}
+                            <tr>
+                                <td class="fw-bold text-secondary">#{{ b.id }}</td>
+                                <td><span class="fw-semibold text-dark">{{ b.service.name }}</span></td>
+                                <td>
+                                    <div class="small text-dark fw-medium">{{ b.booking_date.strftime('%d %b %Y') }}</div>
+                                    <div class="extra-small text-muted"><i class="bi bi-clock me-1"></i>{{ b.booking_time }}</div>
+                                </td>
+                                <td class="fw-bold text-raspberry">${{ "%.2f"|format(b.service.price) }}</td>
+                                <td>
+                                    {% if b.status == 'Pending' %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1">Pending</span>
+                                    {% elif b.status == 'Confirmed' %}
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">Confirmed</span>
+                                    {% elif b.status == 'Completed' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-muted">{{ b.notes or '-' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <p class="text-secondary mb-3">You have not booked any services yet.</p>
+                <a href="{{ url_for('book_service') }}" class="btn btn-raspberry rounded-pill px-4">Book Your First Service</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

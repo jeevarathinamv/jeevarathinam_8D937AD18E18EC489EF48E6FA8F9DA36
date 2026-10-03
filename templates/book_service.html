@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Book Service - Service Business System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-7">
+            <div class="card content-card border-0 shadow-lg p-3 p-md-4">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="icon-circle mx-auto mb-3 bg-raspberry-subtle text-raspberry">
+                            <i class="bi bi-calendar-event-fill fs-2"></i>
+                        </div>
+                        <h3 class="fw-bold text-violet">Book Service Request</h3>
+                        <p class="text-secondary small">Fill out your preferred schedule and booking contact information</p>
+                    </div>
+
+                    <form action="{{ url_for('book_service') }}" method="POST">
+                        <!-- Service Selection -->
+                        <div class="mb-3">
+                            <label for="service_id" class="form-label fw-medium text-dark"><i class="bi bi-gear text-primary me-1"></i> Select Service</label>
+                            <select class="form-select form-select-lg rounded-3" id="service_id" name="service_id" required>
+                                <option value="" disabled {% if not selected_service %}selected{% endif %}>-- Choose an available service --</option>
+                                {% for srv in available_services %}
+                                    <option value="{{ srv.id }}" {% if selected_service and selected_service.id == srv.id %}selected{% endif %}>
+                                        {{ srv.name }} - ${{ "%.2f"|format(srv.price) }} ({{ srv.duration }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Date & Time Row -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="preferred_date" class="form-label fw-medium text-dark"><i class="bi bi-calendar-date text-primary me-1"></i> Preferred Date</label>
+                                <input type="date" class="form-control form-control-lg rounded-3" id="preferred_date" name="preferred_date" min="{{ today }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="preferred_time" class="form-label fw-medium text-dark"><i class="bi bi-clock text-primary me-1"></i> Preferred Time Slot</label>
+                                <select class="form-select form-select-lg rounded-3" id="preferred_time" name="preferred_time" required>
+                                    <option value="" disabled selected>-- Select time slot --</option>
+                                    <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                                    <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                                    <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                                    <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                                    <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
+                                    <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Customer Details Row -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="customer_name" class="form-label fw-medium text-dark"><i class="bi bi-person text-primary me-1"></i> Customer Name</label>
+                                <input type="text" class="form-control form-control-lg rounded-3" id="customer_name" name="customer_name" value="{{ session.get('customer_name', '') }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customer_phone" class="form-label fw-medium text-dark"><i class="bi bi-telephone text-primary me-1"></i> Phone Number</label>
+                                <input type="tel" class="form-control form-control-lg rounded-3" id="customer_phone" name="customer_phone" value="{{ session.get('customer_phone', '') }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Special Notes -->
+                        <div class="mb-4">
+                            <label for="notes" class="form-label fw-medium text-dark"><i class="bi bi-pencil-square text-primary me-1"></i> Additional Instructions / Notes (Optional)</label>
+                            <textarea class="form-control rounded-3" id="notes" name="notes" rows="3" placeholder="Specify address details, access notes, or special requirements..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('services') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-raspberry btn-lg flex-grow-1 rounded-pill shadow-sm fw-semibold">
+                                <i class="bi bi-check-circle me-1"></i> Confirm & Submit Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

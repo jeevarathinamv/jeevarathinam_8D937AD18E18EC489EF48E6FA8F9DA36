@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Bookings - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-receipt text-primary me-2"></i>Booking Management</h2>
+            <p class="text-white-50 small mb-0">View customer requests, filter by parameters, and manage booking statuses.</p>
+        </div>
+    </div>
+
+    <!-- Filter & Search Card -->
+    <div class="card content-card border-0 shadow-lg p-3 p-md-4 mb-4">
+        <form action="{{ url_for('manage_bookings') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4 col-lg-4">
+                <label for="service_id" class="form-label fw-medium text-dark"><i class="bi bi-tools text-primary me-1"></i> Filter by Service</label>
+                <select class="form-select rounded-3" id="service_id" name="service_id">
+                    <option value="">All Services</option>
+                    {% for srv in services %}
+                        <option value="{{ srv.id }}" {% if selected_service_id == srv.id %}selected{% endif %}>{{ srv.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3 col-lg-3">
+                <label for="booking_date" class="form-label fw-medium text-dark"><i class="bi bi-calendar-event text-primary me-1"></i> Booking Date</label>
+                <input type="date" class="form-control rounded-3" id="booking_date" name="booking_date" value="{{ selected_date }}">
+            </div>
+
+            <div class="col-md-3 col-lg-3">
+                <label for="status" class="form-label fw-medium text-dark"><i class="bi bi-flag text-primary me-1"></i> Status</label>
+                <select class="form-select rounded-3" id="status" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Confirmed" {% if selected_status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="Completed" {% if selected_status == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Cancelled" {% if selected_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 col-lg-2 d-flex gap-1">
+                <button type="submit" class="btn btn-raspberry w-100 rounded-pill"><i class="bi bi-filter me-1"></i> Filter</button>
+                {% if selected_service_id or selected_date or selected_status %}
+                    <a href="{{ url_for('manage_bookings') }}" class="btn btn-outline-secondary rounded-circle" title="Reset Filters"><i class="bi bi-x-lg"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Bookings Listing Table -->
+    <div class="card content-card border-0 shadow-lg p-3 p-md-4">
+        {% if bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#ID</th>
+                            <th>Customer Name & Phone</th>
+                            <th>Service</th>
+                            <th>Date & Time</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                            <tr>
+                                <td class="fw-bold text-secondary">#{{ b.id }}</td>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ b.customer_name }}</div>
+                                    <div class="extra-small text-muted"><i class="bi bi-telephone me-1"></i>{{ b.customer_phone }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-violet">{{ b.service.name }}</div>
+                                </td>
+                                <td>
+                                    <div class="small fw-medium text-dark">{{ b.booking_date.strftime('%d %b %Y') }}</div>
+                                    <div class="extra-small text-muted"><i class="bi bi-clock me-1"></i>{{ b.booking_time }}</div>
+                                </td>
+                                <td class="fw-bold text-raspberry">${{ "%.2f"|format(b.service.price) }}</td>
+                                <td>
+                                    {% if b.status == 'Pending' %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1">Pending</span>
+                                    {% elif b.status == 'Confirmed' %}
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">Confirmed</span>
+                                    {% elif b.status == 'Completed' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="dropdown d-inline-block">
+                                        <a href="{{ url_for('booking_details', booking_id=b.id) }}" class="btn btn-sm btn-outline-info rounded-pill px-3 me-1">
+                                            <i class="bi bi-eye me-1"></i> View
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-secondary rounded-circle dropdown-toggle no-arrow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                            {% if b.status == 'Pending' %}
+                                                <li>
+                                                    <form action="{{ url_for('confirm_booking', booking_id=b.id) }}" method="POST">
+                                                        <button class="dropdown-item text-info" type="submit"><i class="bi bi-check-circle me-2"></i>Confirm Booking</button>
+                                                    </form>
+                                                </li>
+                                            {% endif %}
+
+                                            {% if b.status in ['Pending', 'Confirmed'] %}
+                                                <li>
+                                                    <form action="{{ url_for('complete_booking', booking_id=b.id) }}" method="POST">
+                                                        <button class="dropdown-item text-success" type="submit"><i class="bi bi-check-all me-2"></i>Mark Completed</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="{{ url_for('cancel_booking', booking_id=b.id) }}" method="POST">
+                                                        <button class="dropdown-item text-warning" type="submit"><i class="bi bi-x-circle me-2"></i>Cancel Booking</button>
+                                                    </form>
+                                                </li>
+                                            {% endif %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ url_for('delete_booking', booking_id=b.id) }}" method="POST" onsubmit="return confirm('Delete booking #{{ b.id }} permanently?');">
+                                                    <button class="dropdown-item text-danger" type="submit"><i class="bi bi-trash me-2"></i>Delete Booking</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <p class="text-secondary mb-0">No booking requests matching the filter criteria were found.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

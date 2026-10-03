@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Details #{{ booking.id }} - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+            <div class="card content-card border-0 shadow-lg p-3 p-md-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                        <div>
+                            <span class="badge bg-light text-secondary rounded-pill px-3 py-1 mb-1">Booking Details</span>
+                            <h3 class="fw-bold text-violet mb-0">Booking #{{ booking.id }}</h3>
+                        </div>
+                        <div>
+                            {% if booking.status == 'Pending' %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2 fs-6">Pending</span>
+                            {% elif booking.status == 'Confirmed' %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2 fs-6">Confirmed</span>
+                            {% elif booking.status == 'Completed' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fs-6">Completed</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 fs-6">Cancelled</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Customer Information Section -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-violet mb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i>Customer Information</h5>
+                        <div class="row g-3 bg-light p-3 rounded-3">
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Customer Name</span>
+                                <strong class="text-dark">{{ booking.customer_name }}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Phone Number</span>
+                                <strong class="text-dark">{{ booking.customer_phone }}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Account Email</span>
+                                <strong class="text-dark">{{ booking.customer.email if booking.customer else 'N/A' }}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Registration Date</span>
+                                <strong class="text-dark">{{ booking.created_at.strftime('%d %b %Y, %H:%M') }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Details Section -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-violet mb-3"><i class="bi bi-tools text-primary me-2"></i>Service Details</h5>
+                        <div class="row g-3 bg-light p-3 rounded-3">
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Service Name</span>
+                                <strong class="text-dark fs-5">{{ booking.service.name }}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Price</span>
+                                <strong class="text-raspberry fs-4">${{ "%.2f"|format(booking.service.price) }}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Scheduled Date</span>
+                                <strong class="text-dark">{{ booking.booking_date.strftime('%A, %d %B %Y') }}</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted extra-small d-block">Time Slot</span>
+                                <strong class="text-dark">{{ booking.booking_time }}</strong>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted extra-small d-block">Service Description</span>
+                                <p class="text-dark small mb-0">{{ booking.service.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Notes Section -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-violet mb-2"><i class="bi bi-chat-left-text text-primary me-2"></i>Special Instructions / Notes</h5>
+                        <div class="bg-light p-3 rounded-3 text-secondary small">
+                            {{ booking.notes if booking.notes else 'No additional notes provided by customer.' }}
+                        </div>
+                    </div>
+
+                    <!-- Admin Action Buttons -->
+                    <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                        <a href="{{ url_for('manage_bookings') }}" class="btn btn-outline-secondary rounded-pill px-4 me-auto">
+                            &larr; Back to Bookings
+                        </a>
+
+                        {% if booking.status == 'Pending' %}
+                            <form action="{{ url_for('confirm_booking', booking_id=booking.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-info text-white rounded-pill px-4">
+                                    <i class="bi bi-check-circle me-1"></i> Confirm Booking
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        {% if booking.status in ['Pending', 'Confirmed'] %}
+                            <form action="{{ url_for('complete_booking', booking_id=booking.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-success rounded-pill px-4">
+                                    <i class="bi bi-check-all me-1"></i> Mark as Completed
+                                </button>
+                            </form>
+
+                            <form action="{{ url_for('cancel_booking', booking_id=booking.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-warning text-dark rounded-pill px-4">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel Booking
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form action="{{ url_for('delete_booking', booking_id=booking.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this booking record permanently?');">
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-3">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

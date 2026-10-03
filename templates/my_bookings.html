@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings - Service Business System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-journal-bookmark text-primary me-2"></i>My Service Bookings</h2>
+            <p class="text-white-50 small mb-0">Track and view all your booked service requests and their live status.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('book_service') }}" class="btn btn-raspberry rounded-pill px-4 shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i>Book New Service
+            </a>
+        </div>
+    </div>
+
+    <!-- Bookings Table Card -->
+    <div class="card content-card border-0 shadow-lg p-3 p-md-4">
+        {% if bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#ID</th>
+                            <th>Service Name</th>
+                            <th>Booking Date & Time</th>
+                            <th>Price</th>
+                            <th>Contact Phone</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                            <tr>
+                                <td class="fw-bold text-secondary">#{{ b.id }}</td>
+                                <td>
+                                    <div class="fw-bold text-violet">{{ b.service.name }}</div>
+                                    <div class="extra-small text-muted"><i class="bi bi-clock me-1"></i>Duration: {{ b.service.duration }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-medium text-dark"><i class="bi bi-calendar-event text-primary me-1"></i>{{ b.booking_date.strftime('%a, %d %b %Y') }}</div>
+                                    <div class="small text-muted"><i class="bi bi-clock text-primary me-1"></i>{{ b.booking_time }}</div>
+                                </td>
+                                <td class="fw-bold text-raspberry">${{ "%.2f"|format(b.service.price) }}</td>
+                                <td><span class="small text-dark">{{ b.customer_phone }}</span></td>
+                                <td>
+                                    {% if b.status == 'Pending' %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1">Pending</span>
+                                    {% elif b.status == 'Confirmed' %}
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-1">Confirmed</span>
+                                    {% elif b.status == 'Completed' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="small text-muted">{{ b.notes or '-' }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="icon-circle mx-auto mb-3 bg-primary-subtle text-primary">
+                    <i class="bi bi-journal-x fs-2"></i>
+                </div>
+                <h5 class="fw-bold text-violet mb-2">No Service Bookings Found</h5>
+                <p class="text-secondary small mb-4">You have not created any bookings yet. Choose a service and schedule your first appointment.</p>
+                <a href="{{ url_for('book_service') }}" class="btn btn-raspberry rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-calendar-plus me-1"></i> Book a Service Now
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
