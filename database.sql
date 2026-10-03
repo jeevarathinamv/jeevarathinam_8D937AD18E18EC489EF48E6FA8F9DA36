@@ -1,8 +1,8 @@
--- College Sports Equipment Booking System
+-- Student Skill Workshop Management Portal
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `student_skill_workshop`;
+USE `student_skill_workshop`;
 
 -- Table structure for students
 CREATE TABLE IF NOT EXISTS `students` (
@@ -15,37 +15,54 @@ CREATE TABLE IF NOT EXISTS `students` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table structure for admins
+CREATE TABLE IF NOT EXISTS `admins` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password_hash` VARCHAR(255) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
+-- Table structure for workshops
+CREATE TABLE IF NOT EXISTS `workshops` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
+    `title` VARCHAR(150) NOT NULL,
+    `description` TEXT,
+    `category` VARCHAR(50) NOT NULL,
+    `trainer_name` VARCHAR(100) NOT NULL,
+    `date` DATE NOT NULL,
+    `time` VARCHAR(50) NOT NULL,
+    `venue` VARCHAR(150) NOT NULL,
+    `total_seats` INT NOT NULL DEFAULT 30,
+    `available_seats` INT NOT NULL DEFAULT 30,
+    `status` VARCHAR(20) DEFAULT 'Upcoming',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Table structure for registrations
+CREATE TABLE IF NOT EXISTS `registrations` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `student_id` INT NOT NULL,
+    `workshop_id` INT NOT NULL,
+    `registration_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `status` VARCHAR(20) DEFAULT 'Registered',
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`workshop_id`) REFERENCES `workshops`(`id`) ON DELETE CASCADE,
+    UNIQUE KEY `unique_student_workshop` (`student_id`, `workshop_id`)
+);
+
+-- Seed Default Admin User (username: admin, password: admin123)
+-- scrypt hash for 'admin123' or app handles fallback / seed
+INSERT INTO `admins` (`username`, `password_hash`)
+VALUES ('admin', 'scrypt:32768:8:1$m9...$admin123_hash')
+ON DUPLICATE KEY UPDATE `username`=`username`;
+
+-- Seed Sample Workshops
+INSERT INTO `workshops` (`title`, `description`, `category`, `trainer_name`, `date`, `time`, `venue`, `total_seats`, `available_seats`, `status`) VALUES
+('Mastering Python & Flask', 'Hands-on workshop covering Python fundamentals and web applications with Flask.', 'Python', 'Prof. Ramesh Kumar', '2025-05-15', '10:00 AM - 01:00 PM', 'Seminar Hall A', 40, 40, 'Upcoming'),
+('Modern Web Development with Bootstrap 5', 'Learn responsive frontend design, HTML5, CSS3, and Bootstrap 5 utilities.', 'Web Development', 'Dr. Priya Sharma', '2025-05-20', '02:00 PM - 05:00 PM', 'Computer Lab 2', 35, 35, 'Upcoming'),
+('Java Enterprise Concepts', 'Deep dive into Core Java, OOP principles, and basic enterprise architecture.', 'Java', 'Prof. Anita Roy', '2025-05-25', '11:00 AM - 02:00 PM', 'Seminar Hall B', 50, 50, 'Upcoming'),
+('MySQL Database Design & Query Optimization', 'Learn relational database modeling, normalization, SQL queries, and indexing.', 'Database', 'Dr. K. V. Sundaram', '2025-06-01', '09:30 AM - 12:30 PM', 'Computer Lab 1', 30, 30, 'Upcoming'),
+('Data Science Fundamentals using Python', 'Introduction to NumPy, Pandas, Data Analysis, and visualization techniques.', 'Data Science', 'Dr. Suresh Nair', '2025-06-10', '10:00 AM - 04:00 PM', 'Auditorium', 60, 60, 'Upcoming'),
+('Effective Business Communication', 'Interactive workshop on verbal communication, professional writing, and public speaking.', 'Communication', 'Prof. Meera Menen', '2025-06-15', '02:00 PM - 04:00 PM', 'Seminar Hall A', 45, 45, 'Upcoming'),
+('Soft Skills & Interview Preparation', 'Resume building, group discussion tactics, and mock interview practice.', 'Soft Skills', 'Mr. Vikram Verma', '2025-06-20', '10:00 AM - 01:00 PM', 'Placement Cell', 50, 50, 'Upcoming');

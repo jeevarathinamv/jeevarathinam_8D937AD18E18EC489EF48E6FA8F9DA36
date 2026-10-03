@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Management - Skill Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <span class="section-pill bg-indigo-subtle text-indigo mb-1">Admin Panel</span>
+            <h2 class="fw-bold text-dark mb-0">Student Management</h2>
+        </div>
+        <div>
+            <span class="badge bg-indigo-subtle text-indigo rounded-pill px-3 py-2 fw-semibold">
+                <i class="bi bi-people-fill me-1"></i> Total Enrolled Students: {{ students|length }}
+            </span>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-custom rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Student Name</th>
+                        <th>Register Number</th>
+                        <th>Department</th>
+                        <th>Email Address</th>
+                        <th>Total Registrations</th>
+                        <th class="pe-4">Joined Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-indigo-subtle text-indigo rounded-circle d-inline-flex align-items-center justify-content-center me-2" style="width:32px; height:32px; font-size:0.85rem;">
+                                        {{ student.name[0]|upper }}
+                                    </span>
+                                    <span>{{ student.name }}</span>
+                                </div>
+                            </td>
+                            <td class="fw-semibold text-secondary small">{{ student.register_number }}</td>
+                            <td>{{ student.department }}</td>
+                            <td class="text-indigo small">{{ student.email }}</td>
+                            <td>
+                                <span class="badge bg-mint-subtle text-mint rounded-pill px-3 py-1">
+                                    {{ student.registrations|length }} Registrations
+                                </span>
+                            </td>
+                            <td class="pe-4 small text-muted">
+                                {{ student.created_at.strftime('%b %d, %Y') if student.created_at else 'N/A' }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                No students registered in the platform yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

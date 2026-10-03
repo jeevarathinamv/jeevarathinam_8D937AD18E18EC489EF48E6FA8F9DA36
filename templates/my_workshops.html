@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}My Workshops - Skill Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <span class="section-pill bg-indigo-subtle text-indigo mb-1">My Account</span>
+            <h2 class="fw-bold text-dark mb-0">My Registered Workshops</h2>
+        </div>
+        <a href="{{ url_for('workshops') }}" class="btn btn-mint rounded-pill px-4 fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i> Register New Workshop
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-custom rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Workshop Title</th>
+                        <th>Category</th>
+                        <th>Date & Time</th>
+                        <th>Venue</th>
+                        <th>Registration Date</th>
+                        <th>Registration Status</th>
+                        <th>Timeline Status</th>
+                        <th class="pe-4 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                        {% set ws = reg.workshop %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">
+                                <a href="{{ url_for('workshop_details', workshop_id=ws.id) }}" class="text-decoration-none text-dark">
+                                    {{ ws.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-indigo-subtle text-indigo rounded-pill px-3 py-1">
+                                    {{ ws.category }}
+                                </span>
+                            </td>
+                            <td class="small">
+                                <div><i class="bi bi-calendar-event text-indigo me-1"></i>{{ ws.date.strftime('%b %d, %Y') }}</div>
+                                <div class="text-muted"><i class="bi bi-clock me-1"></i>{{ ws.time }}</div>
+                            </td>
+                            <td class="small text-secondary">
+                                <i class="bi bi-geo-alt text-indigo me-1"></i>{{ ws.venue }}
+                            </td>
+                            <td class="small text-muted">
+                                {{ reg.registration_date.strftime('%b %d, %Y') }}
+                            </td>
+                            <td>
+                                {% if reg.status == 'Registered' %}
+                                    <span class="badge bg-mint-subtle text-mint rounded-pill px-3 py-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Registered
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">
+                                        <i class="bi bi-x-circle-fill me-1"></i> Cancelled
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ws.date < today_date or ws.status == 'Completed' %}
+                                    <span class="badge bg-secondary rounded-pill px-3 py-1">
+                                        <i class="bi bi-check2-all me-1"></i> Completed
+                                    </span>
+                                {% elif ws.status == 'Cancelled' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">
+                                        Cancelled
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1">
+                                        <i class="bi bi-hourglass-split me-1"></i> Upcoming
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="pe-4 text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ url_for('workshop_details', workshop_id=ws.id) }}" class="btn btn-outline-indigo btn-sm rounded-pill">
+                                        View
+                                    </a>
+                                    {% if reg.status == 'Registered' and ws.date >= today_date and ws.status == 'Upcoming' %}
+                                        <form action="{{ url_for('cancel_workshop_registration', workshop_id=ws.id) }}" method="POST" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" onclick="return confirm('Cancel registration for {{ ws.title }}?');">
+                                                Cancel
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="bi bi-journal-x display-4 text-muted"></i>
+                                <p class="text-muted mt-2">You have not registered for any workshops yet.</p>
+                                <a href="{{ url_for('workshops') }}" class="btn btn-indigo btn-sm rounded-pill px-4">Explore Available Workshops</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

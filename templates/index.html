@@ -1,75 +1,124 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Student Skill Workshop Management Portal{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+<div class="container py-4">
+    <!-- Hero Banner -->
+    <div class="hero-section mb-5 shadow-custom">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-mint-subtle text-mint rounded-pill px-3 py-2 mb-3 fw-semibold">
+                    <i class="bi bi-stars me-1"></i> Elevate Your Academic & Professional Skills
+                </span>
+                <h1 class="display-5 fw-bold mb-3">Student Skill Workshop Management Portal</h1>
+                <p class="lead text-white-80 mb-4">
+                    Discover, register, and attend specialized technical and soft skill workshops organized by expert trainers to boost your career.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('workshops') }}" class="btn btn-mint btn-lg px-4 shadow-sm">
+                        <i class="bi bi-search me-1"></i> Explore Workshops
+                    </a>
+                    {% if not session.get('user_type') %}
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="bi bi-person-plus me-1"></i> Register as Student
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <i class="bi bi-laptop display-1 text-mint opacity-75"></i>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+    <!-- Stats Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-custom p-3 bg-white h-100">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-indigo-subtle me-3">
+                        <i class="bi bi-people-fill text-indigo"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0 text-dark">{{ total_students }}</h3>
+                        <span class="text-muted small">Enrolled Students</span>
+                    </div>
+                </div>
+            </div>
         </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-custom p-3 bg-white h-100">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-mint-subtle me-3">
+                        <i class="bi bi-journal-check text-mint"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0 text-dark">{{ total_workshops }}</h3>
+                        <span class="text-muted small">Total Skill Workshops</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-custom p-3 bg-white h-100">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning bg-opacity-10 me-3">
+                        <i class="bi bi-card-checklist text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0 text-dark">{{ total_registrations }}</h3>
+                        <span class="text-muted small">Active Registrations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Workshops Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="section-pill bg-indigo-subtle text-indigo mb-1">Upcoming Opportunities</span>
+            <h2 class="fw-bold text-dark mb-0">Featured Skill Workshops</h2>
+        </div>
+        <a href="{{ url_for('workshops') }}" class="btn btn-link text-indigo text-decoration-none fw-semibold">
+            View All <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
 
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+        {% for ws in workshops %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-custom card-hover-effect">
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-indigo-subtle text-indigo rounded-pill px-3 py-1">
+                                {{ ws.category }}
+                            </span>
+                            <span class="badge {% if ws.available_seats > 0 %}bg-mint-subtle text-mint{% else %}bg-danger bg-opacity-10 text-danger{% endif %} rounded-pill px-2.5 py-1 small">
+                                <i class="bi bi-person-workspace me-1"></i>{{ ws.available_seats }} Seats Left
+                            </span>
+                        </div>
+                        <h5 class="card-title fw-bold text-dark mt-2 mb-2">{{ ws.title }}</h5>
+                        <p class="card-text text-muted small flex-grow-1">
+                            {{ ws.description[:100] }}{% if ws.description and ws.description|length > 100 %}...{% endif %}
+                        </p>
+                        <div class="border-top pt-3 mt-3 text-muted small">
+                            <div class="mb-1"><i class="bi bi-person text-indigo me-2"></i><strong>Trainer:</strong> {{ ws.trainer_name }}</div>
+                            <div class="mb-1"><i class="bi bi-calendar-event text-indigo me-2"></i><strong>Date:</strong> {{ ws.date.strftime('%b %d, %Y') }}</div>
+                            <div class="mb-2"><i class="bi bi-geo-alt text-indigo me-2"></i><strong>Venue:</strong> {{ ws.venue }}</div>
+                        </div>
+                        <a href="{{ url_for('workshop_details', workshop_id=ws.id) }}" class="btn btn-outline-indigo w-100 mt-2 rounded-pill btn-indigo">
+                            View Details <i class="bi bi-arrow-right-short ms-1"></i>
+                        </a>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">No workshops available right now.</p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

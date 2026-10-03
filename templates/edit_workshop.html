@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Workshop - Skill Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-3">
+        <a href="{{ url_for('manage_workshops') }}" class="text-indigo text-decoration-none fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Manage Workshops
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-custom p-4 p-md-5 rounded-4">
+                <div class="mb-4 border-bottom pb-3">
+                    <h3 class="fw-bold text-dark mb-1"><i class="bi bi-pencil-square text-indigo me-2"></i>Edit Workshop</h3>
+                    <p class="text-muted small mb-0">Update information for "{{ workshop.title }}"</p>
+                </div>
+
+                <form action="{{ url_for('edit_workshop', workshop_id=workshop.id) }}" method="POST" class="needs-validation" novalidate>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-8">
+                            <label for="title" class="form-label fw-semibold">Workshop Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ workshop.title }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="category" class="form-label fw-semibold">Skill Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}" {% if workshop.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ workshop.description }}</textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="trainer_name" class="form-label fw-semibold">Trainer Name</label>
+                            <input type="text" class="form-control" id="trainer_name" name="trainer_name" value="{{ workshop.trainer_name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="venue" class="form-label fw-semibold">Venue / Location</label>
+                            <input type="text" class="form-control" id="venue" name="venue" value="{{ workshop.venue }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="date" class="form-label fw-semibold">Workshop Date</label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ workshop.date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="time" class="form-label fw-semibold">Time Schedule</label>
+                            <input type="text" class="form-control" id="time" name="time" value="{{ workshop.time }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="total_seats" class="form-label fw-semibold">Total Seats</label>
+                            <input type="number" class="form-control" id="total_seats" name="total_seats" value="{{ workshop.total_seats }}" min="1" required>
+                            <div class="form-text small">Currently {{ workshop.available_seats }} available.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="status" class="form-label fw-semibold">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Upcoming" {% if workshop.status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                            <option value="Completed" {% if workshop.status == 'Completed' %}selected{% endif %}>Completed</option>
+                            <option value="Cancelled" {% if workshop.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-indigo px-4 py-2 fw-semibold rounded-pill">
+                            <i class="bi bi-save me-1"></i> Save Changes
+                        </button>
+                        <a href="{{ url_for('manage_workshops') }}" class="btn btn-outline-secondary px-4 py-2 rounded-pill">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
