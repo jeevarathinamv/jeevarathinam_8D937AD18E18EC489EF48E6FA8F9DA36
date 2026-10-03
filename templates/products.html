@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Business Supplier & Purchase Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom border-light border-opacity-25">
+        <div>
+            <h2 class="page-header-title mb-1">
+                <i class="bi bi-box-seam me-2 text-warning"></i>Product Catalog & Inventory
+            </h2>
+            <p class="text-white-50 mb-0">Manage product items, stock levels, and minimum stock alerts</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ url_for('add_product') }}" class="btn btn-mint fw-semibold">
+                <i class="bi bi-plus-circle me-1"></i> Add New Product
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Box Card -->
+    <div class="card card-custom p-3 mb-4">
+        <form action="{{ url_for('products') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-9 col-lg-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Search by product name, product code or category..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-indigo w-100 fw-semibold">Search</button>
+                {% if search_query %}
+                    <a href="{{ url_for('products') }}" class="btn btn-outline-secondary" title="Reset Search"><i class="bi bi-x-circle-fill"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Table Card -->
+    <div class="card card-custom overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product Code</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Purchase Price</th>
+                            <th>Current Stock</th>
+                            <th>Min Stock Level</th>
+                            <th>Stock Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if products %}
+                            {% for p in products %}
+                                <tr>
+                                    <td class="text-muted fw-semibold">{{ loop.index }}</td>
+                                    <td><code>{{ p.product_code }}</code></td>
+                                    <td class="fw-bold text-dark">{{ p.product_name }}</td>
+                                    <td><span class="badge bg-indigo-subtle text-indigo px-2 py-1">{{ p.category }}</span></td>
+                                    <td class="fw-semibold">₹{{ "%.2f"|format(p.purchase_price) }}</td>
+                                    <td class="fw-bold fs-6">{{ p.current_stock }}</td>
+                                    <td class="text-muted">{{ p.min_stock_level }}</td>
+                                    <td>
+                                        {% if p.stock_status == 'Out of Stock' %}
+                                            <span class="badge badge-status badge-out-of-stock">
+                                                <i class="bi bi-x-circle-fill me-1"></i>Out of Stock
+                                            </span>
+                                        {% elif p.stock_status == 'Low Stock' %}
+                                            <span class="badge badge-status badge-low-stock">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Low Stock
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-status badge-in-stock">
+                                                <i class="bi bi-check-circle-fill me-1"></i>In Stock
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('edit_product', id=p.id) }}" class="btn btn-indigo px-2" title="Edit Product">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </a>
+                                            <form action="{{ url_for('delete_product', id=p.id) }}" method="POST" class="d-inline delete-confirm-form" data-item-name="{{ p.product_name }}">
+                                                <button type="submit" class="btn btn-peach px-2" title="Delete Product">
+                                                    <i class="bi bi-trash-fill"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center py-5 text-muted">
+                                    <i class="bi bi-box fs-1 mb-2 d-block text-secondary"></i>
+                                    No products found. {% if search_query %}Try clearing your search query.{% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

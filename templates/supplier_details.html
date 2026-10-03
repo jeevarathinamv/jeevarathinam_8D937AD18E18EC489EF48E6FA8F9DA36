@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Supplier Details - {{ supplier.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom border-light border-opacity-25">
+        <div>
+            <h2 class="page-header-title mb-1">
+                <i class="bi bi-building me-2 text-warning"></i>Supplier Profile
+            </h2>
+            <p class="text-white-50 mb-0">Detailed view and purchase history for {{ supplier.company_name }}</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{{ url_for('edit_supplier', id=supplier.id) }}" class="btn btn-indigo fw-semibold">
+                <i class="bi bi-pencil-square me-1"></i> Edit Supplier
+            </a>
+            <a href="{{ url_for('suppliers') }}" class="btn btn-outline-light rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Supplier Overview Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Supplier Details Card -->
+        <div class="col-lg-7">
+            <div class="card card-custom h-100 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="fw-bold text-dark mb-0">{{ supplier.company_name }}</h4>
+                    {% if supplier.status == 'Active' %}
+                        <span class="badge badge-status badge-active px-3 py-2">Active Supplier</span>
+                    {% else %}
+                        <span class="badge badge-status badge-inactive px-3 py-2">Inactive Supplier</span>
+                    {% endif %}
+                </div>
+                <hr class="my-2">
+                <div class="row g-3 mt-1">
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Contact Person</span>
+                        <strong class="text-dark fs-6"><i class="bi bi-person me-1 text-primary"></i>{{ supplier.supplier_name }}</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Phone Number</span>
+                        <strong class="text-dark fs-6"><i class="bi bi-telephone me-1 text-primary"></i>{{ supplier.phone }}</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Email Address</span>
+                        <strong class="text-dark fs-6"><i class="bi bi-envelope me-1 text-primary"></i>{{ supplier.email }}</strong>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Member Since</span>
+                        <strong class="text-dark fs-6"><i class="bi bi-calendar3 me-1 text-primary"></i>{{ supplier.created_at.strftime('%d %b %Y') }}</strong>
+                    </div>
+                    <div class="col-12">
+                        <span class="text-muted small d-block">Business Address</span>
+                        <span class="text-dark"><i class="bi bi-geo-alt me-1 text-primary"></i>{{ supplier.address or 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supplier Purchase Metrics Cards -->
+        <div class="col-lg-5">
+            <div class="row g-3 h-100">
+                <div class="col-12">
+                    <div class="card card-peach p-4 text-center">
+                        <span class="text-uppercase text-muted fw-bold small mb-1">Total Purchases Count</span>
+                        <h2 class="fw-bold text-indigo mb-0">{{ total_purchases_count }}</h2>
+                        <span class="text-muted x-small">Orders placed with this supplier</span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="card card-custom p-4 text-center bg-mint-subtle">
+                        <span class="text-uppercase text-muted fw-bold small mb-1">Total Purchase Expenditure</span>
+                        <h2 class="fw-bold text-success mb-0">₹{{ "%.2f"|format(total_purchase_amount) }}</h2>
+                        <span class="text-muted x-small">Total financial volume</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier Purchase History Table -->
+    <div class="card card-custom overflow-hidden">
+        <div class="card-header card-indigo-header py-3 px-4">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-clock-history me-2 text-warning"></i>Purchase History for {{ supplier.company_name }}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Purchase #</th>
+                            <th>Date</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if purchases %}
+                            {% for p in purchases %}
+                                <tr>
+                                    <td class="fw-bold text-indigo">{{ p.purchase_number }}</td>
+                                    <td>{{ p.purchase_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if p.items %}
+                                            {{ p.items[0].product.product_name }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if p.items %}
+                                            {{ p.items[0].quantity }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if p.items %}
+                                            ₹{{ "%.2f"|format(p.items[0].purchase_price) }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold">₹{{ "%.2f"|format(p.total_amount) }}</td>
+                                    <td>
+                                        <span class="badge badge-status badge-{{ p.status|lower }}">
+                                            {{ p.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('purchase_details', id=p.id) }}" class="btn btn-sm btn-indigo px-2">
+                                            <i class="bi bi-eye-fill"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    No purchase history available for this supplier.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
