@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Attendance - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="header-steel-blue mb-4 d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-patch-check-fill text-mint me-2"></i> Attendance Management</h3>
+            <p class="text-light opacity-90 small mb-0">Record and update student attendance status (Present / Absent) for workshops</p>
+        </div>
+    </div>
+
+    <!-- Search & Workshop Filter Form -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form action="{{ url_for('admin_attendance') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <select name="workshop_id" class="form-select">
+                    <option value="">Filter by Workshop</option>
+                    {% for ws in workshops %}
+                        <option value="{{ ws.id }}" {% if selected_workshop_id == ws.id %}selected{% endif %}>
+                            {{ ws.title }} ({{ ws.date }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-5">
+                <input type="text" name="search" class="form-control" placeholder="Search Student Name or Registration ID..." value="{{ search_query if search_query else '' }}">
+            </div>
+
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-magenta rounded-3">
+                    <i class="bi bi-filter me-1"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Attendance Table -->
+    {% if registrations %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-custom">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Registration ID</th>
+                            <th>Student Name</th>
+                            <th>Reg Number</th>
+                            <th>Workshop Title</th>
+                            <th>Workshop Date</th>
+                            <th>Current Attendance</th>
+                            <th class="pe-4 text-end">Mark Attendance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in registrations %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-steel-blue">
+                                    <code>{{ reg.registration_id }}</code>
+                                </td>
+                                <td class="fw-bold text-steel-blue">{{ reg.student.name }}</td>
+                                <td><code>{{ reg.student.register_number }}</code></td>
+                                <td class="fw-semibold">{{ reg.workshop.title }}</td>
+                                <td class="small"><i class="bi bi-calendar3 me-1"></i>{{ reg.workshop.date }}</td>
+                                <td>
+                                    {% if reg.attendance %}
+                                        <span class="badge {% if reg.attendance.status == 'Present' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-1">
+                                            <i class="bi {% if reg.attendance.status == 'Present' %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %} me-1"></i>
+                                            {{ reg.attendance.status }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary rounded-pill px-3 py-1">Not Marked</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <form action="{{ url_for('mark_attendance', registration_id=reg.id) }}" method="POST" class="d-inline-flex gap-1">
+                                        <button type="submit" name="status" value="Present" class="btn btn-sm btn-success rounded-pill px-3 {% if reg.attendance and reg.attendance.status == 'Present' %}active fw-bold{% endif %}">
+                                            <i class="bi bi-check-lg me-1"></i> Present
+                                        </button>
+                                        <button type="submit" name="status" value="Absent" class="btn btn-sm btn-outline-danger rounded-pill px-3 {% if reg.attendance and reg.attendance.status == 'Absent' %}active fw-bold{% endif %}">
+                                            <i class="bi bi-x-lg me-1"></i> Absent
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <i class="bi bi-patch-exclamation display-3 text-muted mb-3"></i>
+            <h5 class="fw-bold text-steel-blue">No Registration Records Available for Attendance</h5>
+            <p class="text-muted">Only active registrations (status = Registered or Attended) are eligible for attendance marking.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

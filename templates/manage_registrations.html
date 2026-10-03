@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Registrations - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="header-steel-blue mb-4 d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-card-checklist text-mint me-2"></i> Registration Management</h3>
+            <p class="text-light opacity-90 small mb-0">View all student registrations, filter applications, and update status</p>
+        </div>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form action="{{ url_for('manage_registrations') }}" method="GET" class="row g-2 align-items-center">
+
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-steel-blue"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search Student Name, Reg No, or Workshop..." value="{{ search_query if search_query else '' }}">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Registration Statuses</option>
+                    <option value="Registered" {% if selected_status == 'Registered' %}selected{% endif %}>Registered</option>
+                    <option value="Cancelled" {% if selected_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    <option value="Attended" {% if selected_status == 'Attended' %}selected{% endif %}>Attended</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-grid">
+                <button type="submit" class="btn btn-magenta rounded-3">
+                    <i class="bi bi-filter me-1"></i> Apply Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Registrations Table -->
+    {% if registrations %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-custom">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Registration ID</th>
+                            <th>Student Name</th>
+                            <th>Reg Number</th>
+                            <th>Department</th>
+                            <th>Workshop Title</th>
+                            <th>Workshop Date</th>
+                            <th>Reg Date</th>
+                            <th>Status</th>
+                            <th class="pe-4 text-end">Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in registrations %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-steel-blue">
+                                    <code>{{ reg.registration_id }}</code>
+                                </td>
+                                <td class="fw-semibold text-steel-blue">{{ reg.student.name }}</td>
+                                <td><code>{{ reg.student.register_number }}</code></td>
+                                <td class="small">{{ reg.student.department }}</td>
+                                <td class="fw-semibold">{{ reg.workshop.title }}</td>
+                                <td class="small"><i class="bi bi-calendar3 me-1"></i>{{ reg.workshop.date }}</td>
+                                <td class="small text-muted">{{ reg.registration_date.strftime('%Y-%m-%d') if reg.registration_date else '' }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if reg.status == 'Registered' %}badge-registered
+                                        {% elif reg.status == 'Attended' %}badge-attended
+                                        {% else %}badge-cancelled{% endif %} px-2 py-1 rounded-pill">
+                                        {{ reg.status }}
+                                    </span>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <form action="{{ url_for('update_registration_status', registration_id=reg.id) }}" method="POST" class="d-inline-flex gap-1 align-items-center">
+                                        <select name="status" class="form-select form-select-sm py-1" style="width: 130px;">
+                                            <option value="Registered" {% if reg.status == 'Registered' %}selected{% endif %}>Registered</option>
+                                            <option value="Attended" {% if reg.status == 'Attended' %}selected{% endif %}>Attended</option>
+                                            <option value="Cancelled" {% if reg.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-magenta px-2 py-1 rounded-3">Set</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <i class="bi bi-card-heading display-3 text-muted mb-3"></i>
+            <h5 class="fw-bold text-steel-blue">No Registration Records Found</h5>
+            <p class="text-muted">No student registrations match your search criteria.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

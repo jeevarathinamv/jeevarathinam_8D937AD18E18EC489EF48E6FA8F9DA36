@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}All Workshops - Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="header-steel-blue mb-4 text-center text-md-start d-flex flex-wrap align-items-center justify-content-between">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-journal-bookmark-fill text-mint me-2"></i> Explore Available Workshops</h3>
+            <p class="text-light opacity-90 small mb-0">Browse through our academic, technical, and professional development sessions</p>
+        </div>
+        {% if session.get('user_type') == 'student' %}
+            <a href="{{ url_for('my_workshops') }}" class="btn btn-mint rounded-pill px-3 mt-3 mt-md-0">
+                <i class="bi bi-journal-check me-1"></i> My Registrations
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white">
+        <form action="{{ url_for('workshops') }}" method="GET" class="row g-2 align-items-center">
+
+            <!-- Search Text -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-steel-blue"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search Title or Trainer..." value="{{ search_query if search_query else '' }}">
+                </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Upcoming" {% if selected_status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                    <option value="Ongoing" {% if selected_status == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                    <option value="Completed" {% if selected_status == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Cancelled" {% if selected_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="col-md-2">
+                <input type="date" name="date" class="form-control" value="{{ selected_date if selected_date else '' }}" placeholder="Filter Date">
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="col-md-1 d-grid gap-1">
+                <button type="submit" class="btn btn-magenta rounded-3" title="Search">
+                    <i class="bi bi-filter"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Workshop Cards Grid -->
+    <div class="row g-4">
+        {% if workshops %}
+            {% for workshop in workshops %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 card-hover shadow-sm">
+                        <div class="card-body d-flex flex-column p-4">
+
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge badge-category px-3 py-1 rounded-pill">{{ workshop.category }}</span>
+                                <span class="badge
+                                    {% if workshop.status == 'Upcoming' %}badge-upcoming
+                                    {% elif workshop.status == 'Ongoing' %}badge-ongoing
+                                    {% elif workshop.status == 'Completed' %}badge-completed
+                                    {% else %}badge-cancelled{% endif %} px-2 py-1 rounded-pill">
+                                    {{ workshop.status }}
+                                </span>
+                            </div>
+
+                            <h5 class="card-title fw-bold text-steel-blue mt-2 mb-2">{{ workshop.title }}</h5>
+                            <p class="card-text text-muted small flex-grow-1">
+                                {{ workshop.description[:110] }}{% if workshop.description|length > 110 %}...{% endif %}
+                            </p>
+
+                            <div class="bg-light p-3 rounded-3 my-3 small border">
+                                <div class="mb-1"><i class="bi bi-person-fill text-magenta me-2"></i><strong>Trainer:</strong> {{ workshop.trainer_name }}</div>
+                                <div class="mb-1"><i class="bi bi-calendar3 text-steel-blue me-2"></i><strong>Date:</strong> {{ workshop.date }}</div>
+                                <div class="mb-1"><i class="bi bi-clock text-steel-blue me-2"></i><strong>Time:</strong> {{ workshop.start_time.strftime('%I:%M %p') if workshop.start_time else '' }} - {{ workshop.end_time.strftime('%I:%M %p') if workshop.end_time else '' }}</div>
+                                <div class="mb-1"><i class="bi bi-geo-alt-fill text-danger me-2"></i><strong>Venue:</strong> {{ workshop.venue }}</div>
+                                <div>
+                                    <i class="bi bi-people-fill text-mint me-2"></i><strong>Available Seats:</strong>
+                                    <span class="fw-bold {% if workshop.available_seats == 0 %}text-danger{% else %}text-success{% endif %}">
+                                        {{ workshop.available_seats }} / {{ workshop.total_seats }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <a href="{{ url_for('workshop_details', workshop_id=workshop.id) }}" class="btn btn-magenta w-100 rounded-pill">
+                                    <i class="bi bi-eye-fill me-1"></i> View Details
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="card border-0 shadow-sm p-5 rounded-4 bg-white">
+                    <i class="bi bi-search display-3 text-muted mb-3"></i>
+                    <h5 class="fw-bold text-steel-blue">No workshops found</h5>
+                    <p class="text-muted">Try adjusting your search criteria or filters.</p>
+                    <a href="{{ url_for('workshops') }}" class="btn btn-outline-primary rounded-pill px-4 mx-auto">Reset Filters</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

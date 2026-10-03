@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Workshop History - Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Page Header -->
+    <div class="header-steel-blue mb-4 d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-clock-history text-mint me-2"></i> Workshop Participation History</h3>
+            <p class="text-light opacity-90 small mb-0">View completed workshops and verified attendance history</p>
+        </div>
+        <span class="badge bg-mint-light text-steel-blue px-3 py-2 rounded-pill fw-semibold mt-2 mt-md-0">
+            <i class="bi bi-person-fill text-magenta me-1"></i> {{ session.get('user_name') }}
+        </span>
+    </div>
+
+    <!-- History Table -->
+    {% if history_items %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-custom">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Registration ID</th>
+                            {% if session.get('user_type') == 'admin' %}
+                                <th>Student Name</th>
+                                <th>Reg Number</th>
+                            {% endif %}
+                            <th>Workshop Title</th>
+                            <th>Category</th>
+                            <th>Workshop Date</th>
+                            <th>Registration Date</th>
+                            <th>Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history_items %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-steel-blue">
+                                    <code>{{ item.registration_id }}</code>
+                                </td>
+                                {% if session.get('user_type') == 'admin' %}
+                                    <td class="fw-semibold text-steel-blue">{{ item.student.name }}</td>
+                                    <td><code>{{ item.student.register_number }}</code></td>
+                                {% endif %}
+                                <td>
+                                    <a href="{{ url_for('workshop_details', workshop_id=item.workshop.id) }}" class="fw-bold text-decoration-none text-steel-blue">
+                                        {{ item.workshop.title }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge badge-category px-2 py-1 rounded-pill">{{ item.workshop.category }}</span>
+                                </td>
+                                <td>
+                                    <i class="bi bi-calendar3 text-steel-blue me-1"></i> {{ item.workshop.date }}
+                                </td>
+                                <td class="small text-muted">
+                                    {{ item.registration_date.strftime('%Y-%m-%d') if item.registration_date else '' }}
+                                </td>
+                                <td>
+                                    {% if item.attendance %}
+                                        <span class="badge {% if item.attendance.status == 'Present' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-3 py-1">
+                                            <i class="bi {% if item.attendance.status == 'Present' %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %} me-1"></i>
+                                            {{ item.attendance.status }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary rounded-pill px-3 py-1">Not Marked</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <i class="bi bi-clock display-3 text-muted mb-3"></i>
+            <h5 class="fw-bold text-steel-blue">No Completed Workshop History Found</h5>
+            <p class="text-muted">Completed workshop registrations and attendance logs will appear here.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
