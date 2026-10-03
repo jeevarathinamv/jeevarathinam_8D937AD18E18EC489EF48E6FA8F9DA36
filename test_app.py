@@ -1,8 +1,9 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+import io
+import os
+from app import app, db, Student, Admin, Project, seed_default_data
 
-class SportsBookingTestCase(unittest.TestCase):
+class StudentProjectShowcaseTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,11 +12,7 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
-            db.session.commit()
+            seed_default_data()
 
     def tearDown(self):
         with app.app_context():
@@ -25,92 +22,184 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
+            'name': 'Anita Roy',
+            'register_number': 'MCA202402',
             'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'email': 'anita@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
-        # Login student
-        response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+        # Try duplicate registration
+        response = self.client.post('/register', data={
+            'name': 'Anita Roy Duplicate',
+            'register_number': 'MCA202402',
+            'department': 'MCA',
+            'email': 'anita@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'already exists', response.data)
+
+        # Login student with Register Number
+        response = self.client.post('/login', data={
+            'login_input': 'MCA202402',
+            'password': 'password123'
+        }, follow_redirects=True)
+        self.assertIn(b'Welcome back, Anita Roy!', response.data)
+
+        # Logout
+        response = self.client.get('/logout', follow_redirects=True)
+        self.assertIn(b'logged out', response.data)
+
+        # Login student with Email
+        response = self.client.post('/login', data={
+            'login_input': 'anita@college.edu',
+            'password': 'password123'
+        }, follow_redirects=True)
+        self.assertIn(b'Welcome back, Anita Roy!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        # Invalid credentials
+        response = self.client.post('/admin/login', data={
+            'username': 'admin',
+            'password': 'wrongpassword'
+        }, follow_redirects=True)
+        self.assertIn(b'Invalid Admin Username or Password', response.data)
+
+        # Valid credentials
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_project_submission_and_showcase_filtering(self):
+        # Register Student 1
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
+            'name': 'Vijay Kumar',
+            'register_number': 'MCA202403',
+            'department': 'Computer Applications (MCA)',
+            'email': 'vijay@college.edu',
             'password': 'pass'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
+            'login_input': 'vijay@college.edu',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # Submit a project
+        response = self.client.post('/student/add_project', data={
+            'title': 'Smart Attendance System',
+            'category': 'Python',
+            'technologies': 'Python, OpenCV, Flask, MySQL',
+            'description': 'Facial recognition attendance system for college classrooms.',
+            'project_link': 'https://github.com/example/smart-attendance',
+            'project_image': (io.BytesIO(b"fake image data"), "test.png")
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn(b'submitted successfully', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        # Check My Projects
+        response = self.client.get('/student/my_projects')
+        self.assertIn(b'Smart Attendance System', response.data)
+        self.assertIn(b'Pending', response.data)
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # Verify project is NOT in Public Showcase yet (since it is Pending)
+        response = self.client.get('/showcase')
+        self.assertNotIn(b'Smart Attendance System', response.data)
 
-        # Admin login and approval
+        # Admin Login and Approve
         self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'})
+
+        response = self.client.post('/admin/project/approve/1', data={
+            'admin_remark': 'Excellent project concept!'
+        }, follow_redirects=True)
+        self.assertIn(b'has been Approved', response.data)
+
+        # Verify project IS NOW in Public Showcase
+        response = self.client.get('/showcase')
+        self.assertIn(b'Smart Attendance System', response.data)
+
+    def test_ownership_security_prevention(self):
+        # Register Student A
+        self.client.post('/register', data={
+            'name': 'Student A',
+            'register_number': 'REG_A',
+            'department': 'MCA',
+            'email': 'studenta@college.edu',
+            'password': 'pass'
         })
+        self.client.post('/login', data={'login_input': 'REG_A', 'password': 'pass'})
+        self.client.post('/student/add_project', data={
+            'title': 'Project A',
+            'category': 'Java',
+            'technologies': 'Java, Spring Boot',
+            'description': 'Student A Project Description'
+        })
+        self.client.get('/logout')
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        # Register Student B
+        self.client.post('/register', data={
+            'name': 'Student B',
+            'register_number': 'REG_B',
+            'department': 'MCA',
+            'email': 'studentb@college.edu',
+            'password': 'pass'
+        })
+        self.client.post('/login', data={'login_input': 'REG_B', 'password': 'pass'})
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+        # Student B attempts to edit Student A's project (#1)
+        response = self.client.post('/student/edit_project/1', data={
+            'title': 'Hacked Title',
+            'category': 'Java',
+            'technologies': 'Java',
+            'description': 'Malicious Edit'
+        }, follow_redirects=True)
+        self.assertIn(b'Access denied', response.data)
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+        # Student B attempts to delete Student A's project (#1)
+        response = self.client.post('/student/delete_project/1', follow_redirects=True)
+        self.assertIn(b'Access denied', response.data)
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+    def test_admin_rejection_and_student_management(self):
+        # Register Student
+        self.client.post('/register', data={
+            'name': 'Priya Ramesh',
+            'register_number': 'MCA202404',
+            'department': 'Computer Applications',
+            'email': 'priya@college.edu',
+            'password': 'pass'
+        })
+        self.client.post('/login', data={'login_input': 'priya@college.edu', 'password': 'pass'})
+        self.client.post('/student/add_project', data={
+            'title': 'Data Mining Framework',
+            'category': 'Data Science',
+            'technologies': 'Python, Pandas, Scikit-learn',
+            'description': 'Data mining algorithms visualizer.'
+        })
+        self.client.get('/logout')
+
+        # Admin login & reject project
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'})
+        response = self.client.post('/admin/project/reject/1', data={
+            'admin_remark': 'Please add dataset details to description.'
+        }, follow_redirects=True)
+        self.assertIn(b'has been Rejected', response.data)
+
+        # Student views remark in My Projects
+        self.client.get('/logout')
+        self.client.post('/login', data={'login_input': 'priya@college.edu', 'password': 'pass'})
+        response = self.client.get('/student/my_projects')
+        self.assertIn(b'Please add dataset details to description', response.data)
+
+        # Admin views manage students & deletes student
+        self.client.get('/logout')
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'})
+        response = self.client.get('/admin/manage_students')
+        self.assertIn(b'Priya Ramesh', response.data)
+
+        response = self.client.post('/admin/student/delete/1', follow_redirects=True)
+        self.assertIn(b'deleted', response.data)
 
 if __name__ == '__main__':
     unittest.main()

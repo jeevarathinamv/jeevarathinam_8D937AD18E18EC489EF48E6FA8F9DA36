@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Project - Student Project Showcase Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4 p-md-5 shadow-sm border-0">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="rounded-circle p-3 me-3" style="background-color: var(--periwinkle-light);">
+                        <i class="bi bi-pencil-square fs-2" style="color: var(--periwinkle-dark);"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0">Edit Project</h3>
+                        <p class="text-muted small mb-0">Update your project information. Note: Editing will reset project status to 'Pending' for admin re-review.</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('edit_project', project_id=project.id) }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-medium"><i class="bi bi-type-h1 me-1 text-primary"></i> Project Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-lg" id="title" name="title" value="{{ project.title }}" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="category" class="form-label fw-medium"><i class="bi bi-tags-fill me-1 text-primary"></i> Project Category <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-lg" id="category" name="category" required>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}" {% if project.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="technologies" class="form-label fw-medium"><i class="bi bi-cpu-fill me-1 text-primary"></i> Technologies Used <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg" id="technologies" name="technologies" value="{{ project.technologies }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-medium"><i class="bi bi-card-text me-1 text-primary"></i> Project Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="5" required>{{ project.description }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="project_link" class="form-label fw-medium"><i class="bi bi-github me-1 text-primary"></i> GitHub / Project Link</label>
+                        <input type="url" class="form-control form-control-lg" id="project_link" name="project_link" value="{{ project.project_link or '' }}">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="project_image" class="form-label fw-medium"><i class="bi bi-image-fill me-1 text-primary"></i> Update Project Image / Screenshot</label>
+                        <input type="file" class="form-control form-control-lg" id="project_image" name="project_image" accept="image/*">
+                        <small class="text-muted d-block mt-1">Leave empty to keep current image.</small>
+
+                        {% if project.image_path %}
+                            <div class="mt-3">
+                                <p class="small text-muted mb-1">Current Image:</p>
+                                <img src="{{ url_for('static', filename=project.image_path) }}" class="img-thumbnail rounded shadow-sm" style="max-height: 150px;" alt="Current Image">
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-3 text-center">
+                            <img id="image_preview" src="#" alt="Preview" class="img-fluid rounded shadow-sm d-none" style="max-height: 200px;">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{{ url_for('my_projects') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-periwinkle btn-lg rounded-pill px-5 fw-semibold">
+                            <i class="bi bi-save-fill me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
