@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Lab Fault Reporter{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card custom-card shadow-sm border-0">
+            <div class="card-header bg-dark text-white text-center py-3 rounded-top">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-shield-lock-fill me-2 text-warning"></i> Admin Portal Login</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('admin_login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold"><i class="bi bi-person-fill me-1"></i> Admin Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter Admin Username" required autofocus>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold"><i class="bi bi-key-fill me-1"></i> Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter Admin Password" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-teal btn-lg fw-bold">
+                            <i class="bi bi-shield-check me-1"></i> Login as Admin
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3 bg-light">
+                <p class="mb-0 text-muted small">Default Admin Credentials: <strong>Username:</strong> admin | <strong>Password:</strong> admin123</p>
+                <div class="mt-2">
+                    <a href="{{ url_for('login') }}" class="text-decoration-none small text-primary fw-semibold">
+                        <i class="bi bi-person me-1"></i> Switch to Student Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

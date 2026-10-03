@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Students - Lab Fault Reporter{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-12">
+        <h2 class="fw-bold mb-1"><i class="bi bi-people text-primary me-2"></i> Registered Students Management</h2>
+        <p class="text-muted">View student profiles and manage registrations.</p>
+    </div>
+</div>
+
+<div class="card custom-card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if students %}
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th># ID</th>
+                            <th>Student Name</th>
+                            <th>Register Number</th>
+                            <th>Department</th>
+                            <th>Email Address</th>
+                            <th>Total Reports</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                            <tr>
+                                <td><code>#{{ student.id }}</code></td>
+                                <td>
+                                    <strong class="text-dark">{{ student.student_name }}</strong>
+                                </td>
+                                <td><span class="badge bg-light text-dark border fw-bold">{{ student.register_number }}</span></td>
+                                <td>{{ student.department }}</td>
+                                <td><a href="mailto:{{ student.email }}" class="text-decoration-none">{{ student.email }}</a></td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">{{ student.fault_reports|length }}</span>
+                                </td>
+                                <td>
+                                    <form action="{{ url_for('delete_student', student_id=student.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-confirm-delete" data-confirm-message="Are you sure you want to delete student {{ student.student_name }}? All associated reports will also be removed.">
+                                            <i class="bi bi-trash-fill me-1"></i> Delete Student
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-person-x display-4 text-muted d-block mb-3"></i>
+                <h5>No Registered Students</h5>
+                <p class="text-muted mb-0">Student registrations will appear here.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

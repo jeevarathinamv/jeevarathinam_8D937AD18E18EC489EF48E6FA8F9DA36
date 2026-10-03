@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Computers - Lab Fault Reporter{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1"><i class="bi bi-cpu text-teal me-2"></i> Lab Computers Management</h2>
+        <p class="text-muted">Add, view, edit, or delete computers registered in college laboratories.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{{ url_for('add_computer') }}" class="btn btn-teal fw-bold">
+            <i class="bi bi-plus-lg me-1"></i> Add New Computer
+        </a>
+    </div>
+</div>
+
+<div class="card custom-card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if computers %}
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Comp Number</th>
+                            <th>Lab Name</th>
+                            <th>Computer Model / Name</th>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comp in computers %}
+                            <tr>
+                                <td><span class="fw-bold text-primary">{{ comp.computer_number }}</span></td>
+                                <td><i class="bi bi-building me-1 text-muted"></i> {{ comp.lab_name }}</td>
+                                <td>{{ comp.computer_name }}</td>
+                                <td><code>{{ comp.ip_address }}</code></td>
+                                <td>
+                                    {% if comp.status == 'Working' %}
+                                        <span class="badge badge-working px-2 py-1">Working</span>
+                                    {% elif comp.status == 'Faulty' %}
+                                        <span class="badge badge-faulty px-2 py-1">Faulty</span>
+                                    {% else %}
+                                        <span class="badge badge-maintenance px-2 py-1">Under Maintenance</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('edit_computer', computer_id=comp.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <form action="{{ url_for('delete_computer', computer_id=comp.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-confirm-delete" data-confirm-message="Are you sure you want to delete computer {{ comp.computer_number }}?">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-pc display-4 text-muted d-block mb-3"></i>
+                <h5>No Computers Found</h5>
+                <p class="text-muted mb-3">Click below to register the first lab computer.</p>
+                <a href="{{ url_for('add_computer') }}" class="btn btn-teal fw-bold">
+                    <i class="bi bi-plus-circle me-1"></i> Add Computer
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Fault Reports - Lab Fault Reporter{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-1"><i class="bi bi-tools text-primary me-2"></i> Manage Computer Fault Reports</h2>
+        <p class="text-muted">Search, filter, review, and update complaint status and remarks.</p>
+    </div>
+</div>
+
+<!-- Search and Filter Form -->
+<div class="card custom-card p-3 mb-4 border-0 shadow-sm">
+    <form action="{{ url_for('manage_reports') }}" method="GET" class="row g-3 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control" placeholder="Search by Complaint ID, Computer No, Lab, or Fault Type" value="{{ search_query }}">
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <select name="status" class="form-select">
+                <option value="">-- All Statuses --</option>
+                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Resolved" {% if status_filter == 'Resolved' %}selected{% endif %}>Resolved</option>
+                <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-semibold w-100">
+                <i class="bi bi-funnel-fill me-1"></i> Filter
+            </button>
+            {% if search_query or status_filter %}
+                <a href="{{ url_for('manage_reports') }}" class="btn btn-outline-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Fault Reports Table -->
+<div class="card custom-card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Student Details</th>
+                            <th>Lab & Comp No</th>
+                            <th>Fault Type</th>
+                            <th>Report Date</th>
+                            <th>Status</th>
+                            <th>Admin Remarks</th>
+                            <th>Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('fault_details', report_id=report.id) }}" class="fw-bold text-primary text-decoration-none">
+                                        {{ report.complaint_id }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <strong>{{ report.student.student_name }}</strong>
+                                    <div class="small text-muted">{{ report.student.register_number }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ report.lab_name }}</div>
+                                    <span class="badge bg-light text-dark border">{{ report.computer_number }}</span>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ report.fault_type }}</span></td>
+                                <td><small>{{ report.report_date.strftime('%Y-%m-%d') }}</small></td>
+                                <td>
+                                    {% if report.status == 'Pending' %}
+                                        <span class="badge badge-pending px-2 py-1">Pending</span>
+                                    {% elif report.status == 'In Progress' %}
+                                        <span class="badge badge-in-progress px-2 py-1">In Progress</span>
+                                    {% elif report.status == 'Resolved' %}
+                                        <span class="badge badge-resolved px-2 py-1">Resolved</span>
+                                    {% else %}
+                                        <span class="badge badge-rejected px-2 py-1">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if report.admin_remarks %}
+                                        <small class="text-dark">{{ report.admin_remarks }}</small>
+                                    {% else %}
+                                        <small class="text-muted">None</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <!-- Quick Inline Action Modal Trigger or Form -->
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updateModal{{ report.id }}">
+                                        <i class="bi bi-pencil"></i> Update
+                                    </button>
+                                    <a href="{{ url_for('fault_details', report_id=report.id) }}" class="btn btn-sm btn-outline-info" title="View Full Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <!-- Update Status Modal -->
+                                    <div class="modal fade" id="updateModal{{ report.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-title fw-bold">Update Complaint: {{ report.complaint_id }}</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('update_report', report_id=report.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3 text-start">
+                                                            <label class="form-label fw-semibold">Complaint Status</label>
+                                                            <select name="status" class="form-select" required>
+                                                                <option value="Pending" {% if report.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                                <option value="In Progress" {% if report.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                                                <option value="Resolved" {% if report.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                                                <option value="Rejected" {% if report.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3 text-start">
+                                                            <label class="form-label fw-semibold">Admin Remarks</label>
+                                                            <textarea name="admin_remarks" class="form-control" rows="3" placeholder="Enter resolution remarks or status update notes...">{{ report.admin_remarks or '' }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-warning fw-bold text-dark">Save Update</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-search-heart text-muted display-4 d-block mb-3"></i>
+                <h5>No Fault Reports Match Your Filter Criteria</h5>
+                <p class="text-muted">Try clearing the search query or status filter.</p>
+                <a href="{{ url_for('manage_reports') }}" class="btn btn-outline-primary">Reset Filters</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

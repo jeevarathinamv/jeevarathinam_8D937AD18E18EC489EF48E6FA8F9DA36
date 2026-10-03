@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Computer - Lab Fault Reporter{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-7 col-lg-6">
+        <div class="card custom-card shadow-sm border-0">
+            <div class="card-header bg-teal text-white py-3 rounded-top text-center">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-pc-display me-2"></i> Add New Computer</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('add_computer') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="computer_number" class="form-label fw-semibold"><i class="bi bi-tag me-1"></i> Computer Number</label>
+                        <input type="text" class="form-control" id="computer_number" name="computer_number" placeholder="e.g. COMP-101 or PC-05" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lab_name" class="form-label fw-semibold"><i class="bi bi-building me-1"></i> Lab Name</label>
+                        <input type="text" class="form-control" id="lab_name" name="lab_name" placeholder="e.g. Computer Lab 1 or MCA Programming Lab" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="computer_name" class="form-label fw-semibold"><i class="bi bi-cpu me-1"></i> Computer Model / Specification</label>
+                        <input type="text" class="form-control" id="computer_name" name="computer_name" placeholder="e.g. Dell OptiPlex 3080 i5 16GB" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label fw-semibold"><i class="bi bi-hdd-network me-1"></i> IP Address</label>
+                        <input type="text" class="form-control" id="ip_address" name="ip_address" placeholder="e.g. 192.168.1.101" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="status" class="form-label fw-semibold"><i class="bi bi-info-circle me-1"></i> Initial Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Working" selected>Working</option>
+                            <option value="Faulty">Faulty</option>
+                            <option value="Under Maintenance">Under Maintenance</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-teal btn-lg fw-bold">
+                            <i class="bi bi-check-circle-fill me-1"></i> Save Computer
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer bg-light py-3 text-center">
+                <a href="{{ url_for('manage_computers') }}" class="text-secondary text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Computers List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

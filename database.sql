@@ -1,51 +1,63 @@
--- College Sports Equipment Booking System
+-- Lab Computer Fault Reporting System
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `lab_computer_fault_db`;
+USE `lab_computer_fault_db`;
 
--- Table structure for students
+-- Table 1: Admins
+CREATE TABLE IF NOT EXISTS `admins` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password` VARCHAR(255) NOT NULL
+);
+
+-- Table 2: Students
 CREATE TABLE IF NOT EXISTS `students` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
+    `student_name` VARCHAR(100) NOT NULL,
     `register_number` VARCHAR(50) UNIQUE NOT NULL,
     `department` VARCHAR(100) NOT NULL,
     `email` VARCHAR(120) UNIQUE NOT NULL,
-    `password_hash` VARCHAR(255) NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+    `password` VARCHAR(255) NOT NULL
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table 3: Computers
+CREATE TABLE IF NOT EXISTS `computers` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+    `computer_number` VARCHAR(50) NOT NULL,
+    `lab_name` VARCHAR(100) NOT NULL,
+    `computer_name` VARCHAR(100) NOT NULL,
+    `ip_address` VARCHAR(50) NOT NULL,
+    `status` VARCHAR(50) DEFAULT 'Working'
 );
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
+-- Table 4: Fault Reports
+CREATE TABLE IF NOT EXISTS `fault_reports` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `complaint_id` VARCHAR(50) UNIQUE NOT NULL,
     `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `computer_id` INT DEFAULT NULL,
+    `lab_name` VARCHAR(100) NOT NULL,
+    `computer_number` VARCHAR(50) NOT NULL,
+    `fault_type` VARCHAR(100) NOT NULL,
+    `problem_description` TEXT NOT NULL,
+    `report_date` DATE NOT NULL,
+    `status` VARCHAR(50) DEFAULT 'Pending',
+    `admin_remarks` TEXT DEFAULT NULL,
+    `resolved_date` DATE DEFAULT NULL,
     FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`computer_id`) REFERENCES `computers`(`id`) ON DELETE SET NULL
 );
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Insert Default Admin (Username: admin, Password: admin123 hashed using werkzeug PBKDF2 SHA256)
+INSERT INTO `admins` (`username`, `password`)
+VALUES ('admin', 'scrypt:32768:8:1$uB0GvL8e0iK6a60z$b5f3a0937a07727ff0360a8ea1110f2df98c3619db3dbd394b9f29ee87ef0aa4c330f81d11ff982b6bce75c74384bf3df4aaec2f854beecdd1643c5bdf150824')
+ON DUPLICATE KEY UPDATE `username`=`username`;
+
+-- Seed sample computers
+INSERT INTO `computers` (`computer_number`, `lab_name`, `computer_name`, `ip_address`, `status`) VALUES
+('COMP-101', 'Computer Lab 1', 'Dell OptiPlex 3080', '192.168.1.101', 'Working'),
+('COMP-102', 'Computer Lab 1', 'Dell OptiPlex 3080', '192.168.1.102', 'Working'),
+('COMP-103', 'Computer Lab 1', 'HP ProDesk 400', '192.168.1.103', 'Faulty'),
+('COMP-201', 'MCA Programming Lab', 'Lenovo ThinkCentre', '192.168.2.101', 'Working'),
+('COMP-202', 'MCA Programming Lab', 'Lenovo ThinkCentre', '192.168.2.102', 'Under Maintenance');

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}My Fault Reports - Lab Fault Reporter{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-list-check text-primary me-2"></i> My Submitted Fault Reports</h2>
+            <p class="text-muted">Track all computer fault reports submitted by you.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('report_fault') }}" class="btn btn-warning fw-bold text-dark">
+                <i class="bi bi-plus-circle-fill me-1"></i> New Fault Report
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card custom-card shadow-sm border-0">
+    <div class="card-body p-0">
+        {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Lab Name</th>
+                            <th>Comp No</th>
+                            <th>Fault Type</th>
+                            <th>Problem Description</th>
+                            <th>Report Date</th>
+                            <th>Status</th>
+                            <th>Admin Remarks</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-primary">{{ report.complaint_id }}</span>
+                                </td>
+                                <td>{{ report.lab_name }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ report.computer_number }}</span></td>
+                                <td><span class="badge bg-secondary">{{ report.fault_type }}</span></td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" title="{{ report.problem_description }}">
+                                        {{ report.problem_description }}
+                                    </div>
+                                </td>
+                                <td>{{ report.report_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if report.status == 'Pending' %}
+                                        <span class="badge badge-pending px-2 py-1">Pending</span>
+                                    {% elif report.status == 'In Progress' %}
+                                        <span class="badge badge-in-progress px-2 py-1">In Progress</span>
+                                    {% elif report.status == 'Resolved' %}
+                                        <span class="badge badge-resolved px-2 py-1">Resolved</span>
+                                    {% else %}
+                                        <span class="badge badge-rejected px-2 py-1">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if report.admin_remarks %}
+                                        <small class="text-dark fst-italic">{{ report.admin_remarks }}</small>
+                                    {% else %}
+                                        <small class="text-muted">N/A</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('fault_details', report_id=report.id) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye-fill"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-journal-x text-muted display-4 d-block mb-3"></i>
+                <h5>No Fault Reports Found</h5>
+                <p class="text-muted mb-4">You have not submitted any computer fault reports yet.</p>
+                <a href="{{ url_for('report_fault') }}" class="btn btn-warning fw-bold text-dark">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Submit Report Now
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
