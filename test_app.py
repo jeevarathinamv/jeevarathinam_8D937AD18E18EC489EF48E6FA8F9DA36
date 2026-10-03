@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Admin, Item, StockHistory
 
-class SportsBookingTestCase(unittest.TestCase):
+class LaboratoryStockTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +11,16 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Create test admin
+            admin = Admin(username='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+
+            # Create test items
+            item1 = Item(item_name='Arduino Uno', item_code='ELEC-001', category='Electronic Components', quantity=10, minimum_stock=5, unit='Pcs', location='Cabinet A')
+            item2 = Item(item_name='Desktop PC', item_code='COMP-001', category='Computer Equipment', quantity=2, minimum_stock=5, unit='Units', location='Lab 1')
+            item3 = Item(item_name='Oscilloscope', item_code='LAB-001', category='Laboratory Equipment', quantity=0, minimum_stock=2, unit='Units', location='Bay 1')
+            db.session.add_all([item1, item2, item3])
             db.session.commit()
 
     def tearDown(self):
@@ -22,95 +28,110 @@ class SportsBookingTestCase(unittest.TestCase):
             db.session.remove()
             db.drop_all()
 
-    def test_student_registration_and_login(self):
-        # Register student
-        response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
-            'password': 'password123'
+    def test_admin_login_logout(self):
+        # Invalid login
+        response = self.client.post('/admin/login', data={'username': 'admin', 'password': 'wrongpassword'}, follow_redirects=True)
+        self.assertIn(b'Invalid username or password', response.data)
+
+        # Valid login
+        response = self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        self.assertIn(b'Welcome back, admin!', response.data)
+
+        # Logout
+        response = self.client.get('/admin/logout', follow_redirects=True)
+        self.assertIn(b'logged out successfully', response.data)
+
+    def test_stock_status_calculation(self):
+        with app.app_context():
+            item1 = db.session.query(Item).filter_by(item_code='ELEC-001').first()
+            item2 = db.session.query(Item).filter_by(item_code='COMP-001').first()
+            item3 = db.session.query(Item).filter_by(item_code='LAB-001').first()
+
+            self.assertEqual(item1.stock_status, 'In Stock')
+            self.assertEqual(item2.stock_status, 'Low Stock')
+            self.assertEqual(item3.stock_status, 'Out of Stock')
+
+    def test_add_and_edit_item(self):
+        # Admin login
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'})
+
+        # Add item
+        response = self.client.post('/admin/items/add', data={
+            'item_name': 'Multimeter',
+            'item_code': 'LAB-002',
+            'category': 'Laboratory Equipment',
+            'quantity': 15,
+            'minimum_stock': 3,
+            'unit': 'Units',
+            'location': 'Testing Bench',
+            'added_date': date.today().isoformat()
         }, follow_redirects=True)
-        self.assertIn(b'Registration successful', response.data)
+        self.assertIn(b'added successfully', response.data)
 
-        # Login student
-        response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
-            'password': 'password123'
+        # Verify added item
+        with app.app_context():
+            item = db.session.query(Item).filter_by(item_code='LAB-002').first()
+            self.assertIsNotNone(item)
+            self.assertEqual(item.item_name, 'Multimeter')
+            self.assertEqual(item.quantity, 15)
+
+        # Edit item
+        response = self.client.post(f'/admin/items/edit/{item.id}', data={
+            'item_name': 'Digital Multimeter Pro',
+            'item_code': 'LAB-002',
+            'category': 'Laboratory Equipment',
+            'minimum_stock': 4,
+            'unit': 'Units',
+            'location': 'Testing Bench 2'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'updated successfully', response.data)
 
-    def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
+    def test_stock_update_addition_and_reduction(self):
+        # Admin login
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'})
+
+        # Add stock (+5)
+        response = self.client.post('/admin/stock/update', data={
+            'item_id': 1,
+            'transaction_type': 'Stock Added',
+            'quantity': 5,
+            'remarks': 'New batch received'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
-
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
-        self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
-        })
-        self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
-        })
-
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
-
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
-
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
-        })
-
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        self.assertIn(b'Stock updated successfully', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            item = db.session.get(Item, 1)
+            self.assertEqual(item.quantity, 15)  # 10 + 5
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+        # Reduce stock (-3)
+        response = self.client.post('/admin/stock/update', data={
+            'item_id': 1,
+            'transaction_type': 'Stock Used',
+            'quantity': 3,
+            'remarks': 'Issued to students'
+        }, follow_redirects=True)
+        self.assertIn(b'Stock updated successfully', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            item = db.session.get(Item, 1)
+            self.assertEqual(item.quantity, 12)  # 15 - 3
+
+    def test_prevent_negative_stock(self):
+        # Admin login
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'})
+
+        # Attempt to reduce stock by 50 when only 10 available
+        response = self.client.post('/admin/stock/update', data={
+            'item_id': 1,
+            'transaction_type': 'Stock Used',
+            'quantity': 50,
+            'remarks': 'Excess reduction attempt'
+        }, follow_redirects=True)
+        self.assertIn(b'Cannot reduce stock by 50', response.data)
+
+        with app.app_context():
+            item = db.session.get(Item, 1)
+            self.assertEqual(item.quantity, 10)  # Unchanged
 
 if __name__ == '__main__':
     unittest.main()

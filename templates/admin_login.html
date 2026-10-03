@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Laboratory Stock Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center my-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom p-4 border-0">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-teal text-white rounded-circle mb-3" style="width: 60px; height: 60px; background-color: var(--primary-teal);">
+                        <i class="bi bi-shield-lock-fill fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold text-teal">Admin Login</h3>
+                    <p class="text-muted small">Enter your credentials to access the management portal</p>
+                </div>
+
+                <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="e.g. admin" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-key"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="e.g. admin123" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-teal w-100 py-2 fw-bold shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Dashboard
+                    </button>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded text-center small border border-warning">
+                    <span class="fw-bold text-dark"><i class="bi bi-info-circle me-1 text-warning"></i> Default Admin Credentials:</span><br>
+                    Username: <code class="fw-bold">admin</code> | Password: <code class="fw-bold">admin123</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
