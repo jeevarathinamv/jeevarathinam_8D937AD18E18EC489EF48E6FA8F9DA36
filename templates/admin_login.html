@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - College Lab Consumables Inventory System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <!-- Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden card-custom">
+                <!-- Header -->
+                <div class="bg-navy p-4 text-center text-white position-relative">
+                    <div class="login-icon-box mx-auto mb-2 bg-navy-light rounded-circle text-mint d-inline-flex align-items-center justify-content-center p-3">
+                        <i class="bi bi-shield-lock-fill fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-white">Admin Portal</h3>
+                    <p class="text-white-50 small mb-0">College Lab Consumables Inventory System</p>
+                </div>
+
+                <!-- Form Body -->
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="POST" action="{{ url_for('admin_login') }}" class="needs-validation" novalidate>
+                        <!-- Username -->
+                        <div class="mb-4">
+                            <label for="username" class="form-label fw-semibold text-navy">
+                                <i class="bi bi-person-fill text-orange me-1"></i> Username
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-navy"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control bg-light border-start-0" id="username" name="username" placeholder="Enter admin username" required autofocus>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold text-navy">
+                                <i class="bi bi-key-fill text-orange me-1"></i> Password
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-navy"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control bg-light border-start-0" id="password" name="password" placeholder="Enter admin password" required>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-navy py-2 fw-bold text-white shadow-sm">
+                                <i class="bi bi-box-arrow-in-right me-2 text-mint"></i> Login to Dashboard
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Credentials Helper Box -->
+                    <div class="alert alert-navy-light border-mint-subtle rounded-3 p-3 mt-4 mb-0 text-navy">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill text-mint fs-4 me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-navy">Demo Login Credentials:</h6>
+                                <p class="mb-0 small text-muted">
+                                    Username: <code class="text-navy bg-light px-2 py-1 rounded">admin</code> |
+                                    Password: <code class="text-navy bg-light px-2 py-1 rounded">admin123</code>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('index') }}" class="text-decoration-none text-navy fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Home Page
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

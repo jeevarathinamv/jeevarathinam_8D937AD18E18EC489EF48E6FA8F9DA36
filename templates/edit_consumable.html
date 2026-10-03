@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Consumable - College Lab Consumables Inventory System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-navy text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-pencil-square text-mint me-2"></i> Edit Consumable</h3>
+                            <p class="text-white-50 small mb-0">Update item details for {{ consumable.consumable_name }} ({{ consumable.item_code }}).</p>
+                        </div>
+                        <a href="{{ url_for('consumables') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="POST" action="{{ url_for('edit_consumable', id=consumable.id) }}" class="needs-validation" novalidate>
+                        <div class="row g-3">
+
+                            <!-- Consumable Name -->
+                            <div class="col-md-8">
+                                <label for="consumable_name" class="form-label fw-semibold text-navy">
+                                    Consumable Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control bg-light" id="consumable_name" name="consumable_name" value="{{ consumable.consumable_name }}" required>
+                            </div>
+
+                            <!-- Item Code -->
+                            <div class="col-md-4">
+                                <label for="item_code" class="form-label fw-semibold text-navy">
+                                    Item Code <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control bg-light font-monospace text-uppercase" id="item_code" name="item_code" value="{{ consumable.item_code }}" required>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-md-6">
+                                <label for="category" class="form-label fw-semibold text-navy">
+                                    Category <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select bg-light" id="category" name="category" required>
+                                    {% for cat in categories %}
+                                        <option value="{{ cat }}" {% if consumable.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Lab Name -->
+                            <div class="col-md-6">
+                                <label for="lab_name" class="form-label fw-semibold text-navy">
+                                    Lab Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control bg-light" id="lab_name" name="lab_name" value="{{ consumable.lab_name }}" required>
+                            </div>
+
+                            <!-- Minimum Stock Level -->
+                            <div class="col-md-6">
+                                <label for="minimum_stock" class="form-label fw-semibold text-navy">
+                                    Minimum Stock Level <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" class="form-control bg-light" id="minimum_stock" name="minimum_stock" min="0" value="{{ consumable.minimum_stock }}" required>
+                            </div>
+
+                            <!-- Unit -->
+                            <div class="col-md-6">
+                                <label for="unit" class="form-label fw-semibold text-navy">
+                                    Unit <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control bg-light" id="unit" name="unit" value="{{ consumable.unit }}" required>
+                            </div>
+
+                            <!-- Note about quantity update -->
+                            <div class="col-12">
+                                <div class="alert alert-navy-light border-mint-subtle rounded-3 p-3 mb-0 text-navy d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill text-orange fs-4 me-3"></i>
+                                    <div>
+                                        <strong>Current Stock Quantity:</strong> {{ consumable.quantity }} {{ consumable.unit }}<br>
+                                        <small class="text-muted">To increase or deduct stock quantity, please use the <a href="{{ url_for('stock_update', consumable_id=consumable.id) }}" class="fw-bold text-navy text-decoration-underline">Stock Update Form</a> to maintain accurate audit transaction history.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a href="{{ url_for('consumables') }}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-navy text-white fw-bold rounded-pill px-4">
+                                <i class="bi bi-check-circle-fill text-mint me-2"></i> Update Consumable
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

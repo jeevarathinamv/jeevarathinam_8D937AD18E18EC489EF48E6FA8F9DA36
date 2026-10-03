@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Stock - College Lab Consumables Inventory System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-navy text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-arrow-down-up text-orange me-2"></i> Update Stock Quantity</h3>
+                            <p class="text-white-50 small mb-0">Record addition or usage of lab consumables with stock validation.</p>
+                        </div>
+                        <a href="{{ url_for('stock_history') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                            <i class="bi bi-clock-history me-1"></i> View History
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="POST" action="{{ url_for('stock_update') }}" class="needs-validation" novalidate>
+                        <div class="row g-4">
+
+                            <!-- Consumable Selector -->
+                            <div class="col-12">
+                                <label for="consumable_id" class="form-label fw-semibold text-navy">
+                                    <i class="bi bi-box-seam text-mint me-1"></i> Select Consumable Item <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg bg-light" id="consumable_id" name="consumable_id" required onchange="updateStockPreview()">
+                                    <option value="" disabled {% if not preselect_id %}selected{% endif %}>Choose consumable from list...</option>
+                                    {% for item in consumables %}
+                                        <option value="{{ item.id }}"
+                                                data-qty="{{ item.quantity }}"
+                                                data-unit="{{ item.unit }}"
+                                                data-code="{{ item.item_code }}"
+                                                data-status="{{ item.stock_status }}"
+                                                {% if preselect_id == item.id %}selected{% endif %}>
+                                            {{ item.consumable_name }} ({{ item.item_code }}) - Available: {{ item.quantity }} {{ item.unit }} [{{ item.stock_status }}]
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Live Stock Information Display Card -->
+                            <div class="col-12" id="stockPreviewBox" style="display: none;">
+                                <div class="p-3 bg-navy-light rounded-3 border border-mint-subtle text-navy d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="small text-muted d-block">Selected Item Info:</span>
+                                        <strong id="previewName" class="fs-6 text-navy">--</strong>
+                                        <span class="badge bg-navy text-white font-monospace ms-2" id="previewCode">--</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="small text-muted d-block">Current Available Stock:</span>
+                                        <span class="fs-5 fw-bold text-navy" id="previewQty">0</span> <span class="text-navy" id="previewUnit"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Type: Add vs Use -->
+                            <div class="col-12">
+                                <label class="form-label fw-semibold text-navy d-block">
+                                    <i class="bi bi-arrow-left-right text-orange me-1"></i> Transaction Type <span class="text-danger">*</span>
+                                </label>
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="action_type" id="action_add" value="add" checked>
+                                        <label class="btn btn-outline-mint btn-action-radio w-100 p-3 text-center rounded-3 fw-bold" for="action_add">
+                                            <i class="bi bi-plus-circle-fill fs-3 d-block mb-1"></i>
+                                            Add Stock (Restock)
+                                        </label>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="action_type" id="action_use" value="use">
+                                        <label class="btn btn-outline-orange btn-action-radio w-100 p-3 text-center rounded-3 fw-bold" for="action_use">
+                                            <i class="bi bi-dash-circle-fill fs-3 d-block mb-1"></i>
+                                            Use Stock (Deduct)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="col-md-6">
+                                <label for="quantity" class="form-label fw-semibold text-navy">
+                                    Quantity <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control form-control-lg bg-light" id="quantity" name="quantity" min="1" placeholder="Enter quantity" required>
+                                    <span class="input-group-text bg-light fw-bold text-navy" id="unitLabel">Units</span>
+                                </div>
+                                <small class="form-text text-muted">Must be a positive integer</small>
+                            </div>
+
+                            <!-- Date -->
+                            <div class="col-md-6">
+                                <label for="transaction_date" class="form-label fw-semibold text-navy">
+                                    Transaction Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control form-control-lg bg-light" id="transaction_date" name="transaction_date" value="{{ today }}" required>
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="col-12">
+                                <label for="remarks" class="form-label fw-semibold text-navy">
+                                    Remarks / Purpose
+                                </label>
+                                <textarea class="form-control bg-light" id="remarks" name="remarks" rows="3" placeholder="e.g. Purchased new batch from supplier / Dispensed for MCA Chemistry practical batch A"></textarea>
+                            </div>
+
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-navy text-white fw-bold rounded-pill px-4">
+                                <i class="bi bi-check-circle-fill text-mint me-2"></i> Submit Stock Update
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateStockPreview() {
+    const select = document.getElementById('consumable_id');
+    const selectedOption = select.options[select.selectedIndex];
+    const previewBox = document.getElementById('stockPreviewBox');
+    const unitLabel = document.getElementById('unitLabel');
+
+    if (selectedOption && selectedOption.value) {
+        const qty = selectedOption.getAttribute('data-qty');
+        const unit = selectedOption.getAttribute('data-unit');
+        const code = selectedOption.getAttribute('data-code');
+        const name = selectedOption.text.split('(')[0].trim();
+
+        document.getElementById('previewName').textContent = name;
+        document.getElementById('previewCode').textContent = code;
+        document.getElementById('previewQty').textContent = qty;
+        document.getElementById('previewUnit').textContent = unit;
+        unitLabel.textContent = unit;
+
+        previewBox.style.display = 'block';
+    } else {
+        previewBox.style.display = 'none';
+        unitLabel.textContent = 'Units';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', updateStockPreview);
+</script>
+{% endblock %}

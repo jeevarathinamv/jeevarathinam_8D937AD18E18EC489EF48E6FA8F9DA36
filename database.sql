@@ -1,51 +1,61 @@
--- College Sports Equipment Booking System
+-- College Lab Consumables Inventory System
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `lab_consumables_db`;
+USE `lab_consumables_db`;
 
--- Table structure for students
-CREATE TABLE IF NOT EXISTS `students` (
+-- Table 1: admins
+CREATE TABLE IF NOT EXISTS `admins` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `register_number` VARCHAR(50) UNIQUE NOT NULL,
-    `department` VARCHAR(100) NOT NULL,
-    `email` VARCHAR(120) UNIQUE NOT NULL,
-    `password_hash` VARCHAR(255) NOT NULL,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+    `username` VARCHAR(50) NOT NULL UNIQUE,
+    `password` VARCHAR(255) NOT NULL
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table 2: consumables
+CREATE TABLE IF NOT EXISTS `consumables` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
+    `consumable_name` VARCHAR(100) NOT NULL,
+    `item_code` VARCHAR(50) NOT NULL UNIQUE,
     `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+    `quantity` INT NOT NULL DEFAULT 0,
+    `minimum_stock` INT NOT NULL DEFAULT 0,
+    `unit` VARCHAR(20) NOT NULL,
+    `lab_name` VARCHAR(100) NOT NULL,
+    `added_date` DATE NOT NULL
 );
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
+-- Table 3: stock_history
+CREATE TABLE IF NOT EXISTS `stock_history` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
+    `consumable_id` INT NOT NULL,
+    `transaction_type` VARCHAR(20) NOT NULL,
+    `quantity` INT NOT NULL,
+    `transaction_date` DATE NOT NULL,
+    `remarks` VARCHAR(255),
+    FOREIGN KEY (`consumable_id`) REFERENCES `consumables`(`id`) ON DELETE CASCADE
 );
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Default Admin Seed (Username: admin, Password: admin123 hashed via Werkzeug)
+-- Password hash below corresponds to 'admin123'
+INSERT INTO `admins` (`username`, `password`)
+VALUES ('admin', 'scrypt:32768:8:1$u7xH2q9Y$5e3c7f99a5e88801d9f5832a8848d7c9a7eddfd482488812a64c4c16dd0a51e604471923e6b72a6a3e6f991fdf24385966cf1d29323730e7048701e6a695e2df')
+ON DUPLICATE KEY UPDATE `username`=`username`;
+
+-- Seed Sample Consumables
+INSERT INTO `consumables` (`consumable_name`, `item_code`, `category`, `quantity`, `minimum_stock`, `unit`, `lab_name`, `added_date`) VALUES
+('Sodium Hydroxide Pellets', 'CHEM-101', 'Chemicals', 25, 10, 'Kg', 'Chemistry Lab', '2025-01-10'),
+('Glass Beaker 250ml', 'GLAS-201', 'Glassware', 3, 10, 'Pieces', 'Chemistry Lab', '2025-01-12'),
+('A4 Printing Paper', 'STAT-301', 'Stationery', 0, 5, 'Reams', 'Computer Lab 1', '2025-01-15'),
+('Resistor Pack 10k Ohm', 'ELEC-401', 'Electronic Components', 100, 25, 'Packs', 'Electronics Lab', '2025-01-18'),
+('Ethanol 99% Pure', 'CHEM-102', 'Chemicals', 4, 5, 'Bottles', 'Chemistry Lab', '2025-01-20'),
+('Microfiber Cloth', 'CLEN-501', 'Cleaning Materials', 15, 5, 'Packs', 'Hardware Lab', '2025-01-22')
+ON DUPLICATE KEY UPDATE `item_code`=`item_code`;
+
+-- Seed Sample Stock History
+INSERT INTO `stock_history` (`consumable_id`, `transaction_type`, `quantity`, `transaction_date`, `remarks`) VALUES
+(1, 'Stock Added', 25, '2025-01-10', 'Initial stock purchase'),
+(2, 'Stock Added', 15, '2025-01-12', 'Initial stock purchase'),
+(2, 'Stock Used', 12, '2025-01-14', 'Used in Organic Chemistry experiment'),
+(3, 'Stock Added', 10, '2025-01-15', 'Monthly supply'),
+(3, 'Stock Used', 10, '2025-01-25', 'Exam paper printing'),
+(4, 'Stock Added', 100, '2025-01-18', 'Bulk purchase for lab practicals');

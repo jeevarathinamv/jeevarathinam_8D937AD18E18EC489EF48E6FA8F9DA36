@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}Consumables Management - College Lab Consumables Inventory System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-navy text-white p-4 rounded-4 shadow mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-white"><i class="bi bi-boxes text-mint me-2"></i> Consumables Management</h2>
+            <p class="text-white-50 mb-0">View, search, filter, and manage all lab consumables inventory records.</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ url_for('add_consumable') }}" class="btn btn-mint fw-bold text-navy px-4 py-2 rounded-pill shadow-sm">
+                <i class="bi bi-plus-circle-fill me-1"></i> Add New Consumable
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <form method="GET" action="{{ url_for('consumables') }}" class="row g-3 align-items-end">
+            <!-- Search Text -->
+            <div class="col-md-4">
+                <label for="search" class="form-label fw-semibold text-navy small">
+                    <i class="bi bi-search text-orange me-1"></i> Search Name or Item Code
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-navy"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control bg-light border-start-0" id="search" name="search" value="{{ search_query }}" placeholder="e.g. Sodium, CHEM-101...">
+                </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-md-3">
+                <label for="category" class="form-label fw-semibold text-navy small">
+                    <i class="bi bi-tag-fill text-mint me-1"></i> Category Filter
+                </label>
+                <select class="form-select bg-light" id="category" name="category">
+                    <option value="All" {% if category_filter == 'All' or not category_filter %}selected{% endif %}>All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-md-3">
+                <label for="status" class="form-label fw-semibold text-navy small">
+                    <i class="bi bi-activity text-orange me-1"></i> Stock Status
+                </label>
+                <select class="form-select bg-light" id="status" name="status">
+                    <option value="All" {% if status_filter == 'All' or not status_filter %}selected{% endif %}>All Statuses</option>
+                    <option value="In Stock" {% if status_filter == 'In Stock' %}selected{% endif %}>In Stock</option>
+                    <option value="Low Stock" {% if status_filter == 'Low Stock' %}selected{% endif %}>Low Stock</option>
+                    <option value="Out of Stock" {% if status_filter == 'Out of Stock' %}selected{% endif %}>Out of Stock</option>
+                </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-navy fw-bold w-100 text-white">
+                    <i class="bi bi-funnel-fill me-1 text-mint"></i> Filter
+                </button>
+                <a href="{{ url_for('consumables') }}" class="btn btn-outline-secondary fw-semibold" title="Reset Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Consumables Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-body p-0">
+            {% if consumables %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-navy text-white">
+                        <tr>
+                            <th class="ps-4">Item Code</th>
+                            <th>Consumable Name</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Min Stock Level</th>
+                            <th>Lab Name</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in consumables %}
+                        <tr>
+                            <td class="ps-4">
+                                <span class="badge bg-navy text-mint font-monospace border border-mint-subtle px-2 py-1 fs-6">
+                                    {{ item.item_code }}
+                                </span>
+                            </td>
+                            <td class="fw-bold text-navy">
+                                {{ item.consumable_name }}
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-navy border">
+                                    {{ item.category }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fw-bold fs-6 {% if item.quantity == 0 %}text-danger{% elif item.quantity <= item.minimum_stock %}text-warning{% else %}text-navy{% endif %}">
+                                    {{ item.quantity }}
+                                </span>
+                                <small class="text-muted">{{ item.unit }}</small>
+                            </td>
+                            <td class="text-muted">
+                                {{ item.minimum_stock }} {{ item.unit }}
+                            </td>
+                            <td class="small text-secondary">
+                                <i class="bi bi-building me-1"></i>{{ item.lab_name }}
+                            </td>
+                            <td>
+                                <span class="badge {{ item.badge_class }} px-3 py-2 rounded-pill fw-bold shadow-sm">
+                                    {% if item.stock_status == 'In Stock' %}
+                                        <i class="bi bi-check-circle-fill me-1"></i> In Stock
+                                    {% elif item.stock_status == 'Low Stock' %}
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Low Stock
+                                    {% else %}
+                                        <i class="bi bi-x-circle-fill me-1"></i> Out of Stock
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('stock_update', consumable_id=item.id) }}" class="btn btn-outline-orange text-navy fw-bold" title="Update Stock">
+                                        <i class="bi bi-arrow-down-up"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_consumable', id=item.id) }}" class="btn btn-outline-navy fw-bold" title="Edit Item">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ item.id }}" title="Delete Item">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Delete Modal -->
+                                <div class="modal fade text-start" id="deleteModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 rounded-4 shadow-lg">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4 text-navy">
+                                                <p>Are you sure you want to delete <strong>{{ item.consumable_name }}</strong> (<code>{{ item.item_code }}</code>)?</p>
+                                                <p class="small text-danger mb-0"><i class="bi bi-info-circle me-1"></i> This action will also delete all associated stock history records!</p>
+                                            </div>
+                                            <div class="modal-footer bg-light border-0">
+                                                <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                                                <form method="POST" action="{{ url_for('delete_consumable', id=item.id) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Delete Item</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-search fs-1 d-block text-secondary mb-2"></i>
+                <h5 class="fw-bold text-navy">No consumables found</h5>
+                <p class="mb-3">Try adjusting your search criteria or add a new consumable.</p>
+                <a href="{{ url_for('add_consumable') }}" class="btn btn-mint fw-bold text-navy rounded-pill px-4">
+                    <i class="bi bi-plus-lg me-1"></i> Add Consumable
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

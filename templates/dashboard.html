@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - College Lab Consumables Inventory System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-navy text-white p-4 rounded-4 shadow mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 text-white">
+                <i class="bi bi-speedometer2 text-mint me-2"></i> Admin Dashboard
+            </h2>
+            <p class="text-white-50 mb-0">Overview of lab consumables stock level, alerts, and recent transactions.</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('add_consumable') }}" class="btn btn-mint fw-bold text-navy btn-sm rounded-pill px-3">
+                <i class="bi bi-plus-circle-fill me-1"></i> Add Consumable
+            </a>
+            <a href="{{ url_for('stock_update') }}" class="btn btn-orange fw-bold text-navy btn-sm rounded-pill px-3">
+                <i class="bi bi-arrow-down-up me-1"></i> Update Stock
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div class="row g-4 mb-4">
+        <!-- Total Consumables -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 card-stat bg-navy text-white">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-white-50 small fw-bold text-uppercase tracking-wider">Total Consumables</span>
+                        <h2 class="display-6 fw-bold text-mint mb-0 mt-1">{{ total_consumables }}</h2>
+                        <small class="text-white-50"><i class="bi bi-layers-fill me-1 text-mint"></i> Registered items</small>
+                    </div>
+                    <div class="stat-icon bg-navy-light text-mint rounded-4 p-3 fs-2">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Stock Total -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 card-stat bg-mint-card text-navy">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-navy-50 small fw-bold text-uppercase tracking-wider">Available Units</span>
+                        <h2 class="display-6 fw-bold text-navy mb-0 mt-1">{{ available_stock }}</h2>
+                        <small class="text-navy-70"><i class="bi bi-check-circle-fill me-1"></i> Total unit quantity</small>
+                    </div>
+                    <div class="stat-icon bg-white text-navy rounded-4 p-3 fs-2 shadow-sm">
+                        <i class="bi bi-archive-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Items -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 card-stat bg-orange-card text-navy">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-navy-50 small fw-bold text-uppercase tracking-wider">Low Stock Items</span>
+                        <h2 class="display-6 fw-bold text-navy mb-0 mt-1">{{ low_stock_count }}</h2>
+                        <small class="text-navy-70"><i class="bi bi-exclamation-triangle-fill me-1"></i> Reorder required</small>
+                    </div>
+                    <div class="stat-icon bg-white text-orange rounded-4 p-3 fs-2 shadow-sm">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Out of Stock Items -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100 card-stat bg-danger text-white">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-white-50 small fw-bold text-uppercase tracking-wider">Out of Stock</span>
+                        <h2 class="display-6 fw-bold text-white mb-0 mt-1">{{ out_of_stock_count }}</h2>
+                        <small class="text-white-50"><i class="bi bi-x-circle-fill me-1 text-warning"></i> Zero quantity</small>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-20 text-white rounded-4 p-3 fs-2">
+                        <i class="bi bi-x-octagon-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation Shortcuts -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('consumables') }}" class="card border-0 shadow-sm rounded-3 p-3 text-decoration-none bg-white text-navy card-hover text-center">
+                <i class="bi bi-table text-navy fs-3 mb-1"></i>
+                <span class="fw-bold d-block">View All Items</span>
+                <small class="text-muted">Browse & filter list</small>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('add_consumable') }}" class="card border-0 shadow-sm rounded-3 p-3 text-decoration-none bg-white text-navy card-hover text-center">
+                <i class="bi bi-plus-square-fill text-mint fs-3 mb-1"></i>
+                <span class="fw-bold d-block">Add New Item</span>
+                <small class="text-muted">Register consumable</small>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('stock_update') }}" class="card border-0 shadow-sm rounded-3 p-3 text-decoration-none bg-white text-navy card-hover text-center">
+                <i class="bi bi-arrow-down-up text-orange fs-3 mb-1"></i>
+                <span class="fw-bold d-block">Update Stock</span>
+                <small class="text-muted">Add or use quantity</small>
+            </a>
+        </div>
+        <div class="col-md-3 col-6">
+            <a href="{{ url_for('stock_history') }}" class="card border-0 shadow-sm rounded-3 p-3 text-decoration-none bg-white text-navy card-hover text-center">
+                <i class="bi bi-clock-history text-primary fs-3 mb-1"></i>
+                <span class="fw-bold d-block">Stock History</span>
+                <small class="text-muted">Audit transaction logs</small>
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerts Section: Low Stock & Out of Stock -->
+    {% if low_stock_items or out_of_stock_items %}
+    <div class="row g-4 mb-4">
+        <!-- Out of Stock Alert Card -->
+        {% if out_of_stock_items %}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-danger text-white fw-bold py-3">
+                    <i class="bi bi-x-octagon-fill me-2"></i> Out of Stock Items ({{ out_of_stock_items|length }})
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item Code</th>
+                                    <th>Consumable Name</th>
+                                    <th>Category</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in out_of_stock_items %}
+                                <tr>
+                                    <td><span class="badge bg-navy text-white">{{ item.item_code }}</span></td>
+                                    <td class="fw-semibold text-navy">{{ item.consumable_name }}</td>
+                                    <td><span class="badge bg-light text-navy border">{{ item.category }}</span></td>
+                                    <td>
+                                        <a href="{{ url_for('stock_update', consumable_id=item.id) }}" class="btn btn-sm btn-orange fw-bold">
+                                            <i class="bi bi-plus-lg"></i> Add Stock
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Low Stock Alert Card -->
+        {% if low_stock_items %}
+        <div class="col-lg-{% if out_of_stock_items %}6{% else %}12{% endif %}">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-warning text-dark fw-bold py-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Low Stock Alerts ({{ low_stock_items|length }})
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item Code</th>
+                                    <th>Consumable Name</th>
+                                    <th>Qty / Min</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_stock_items %}
+                                <tr>
+                                    <td><span class="badge bg-navy text-white">{{ item.item_code }}</span></td>
+                                    <td class="fw-semibold text-navy">{{ item.consumable_name }}</td>
+                                    <td>
+                                        <span class="text-danger fw-bold">{{ item.quantity }}</span> /
+                                        <span class="text-muted">{{ item.minimum_stock }} {{ item.unit }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('stock_update', consumable_id=item.id) }}" class="btn btn-sm btn-mint fw-bold text-navy">
+                                            <i class="bi bi-plus-lg"></i> Restock
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Recent Stock Transactions -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-navy text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-white"><i class="bi bi-clock-history text-mint me-2"></i> Recent Transactions</h5>
+            <a href="{{ url_for('stock_history') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                View All History <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_history %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Consumable</th>
+                            <th>Item Code</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in recent_history %}
+                        <tr>
+                            <td class="small fw-semibold text-navy">{{ record.transaction_date.strftime('%Y-%m-%d') }}</td>
+                            <td class="fw-bold text-navy">{{ record.consumable.consumable_name }}</td>
+                            <td><span class="badge bg-navy text-white">{{ record.consumable.item_code }}</span></td>
+                            <td>
+                                {% if record.transaction_type == 'Stock Added' %}
+                                    <span class="badge bg-mint text-navy fw-bold"><i class="bi bi-plus-circle me-1"></i> Stock Added</span>
+                                {% else %}
+                                    <span class="badge bg-orange text-navy fw-bold"><i class="bi bi-dash-circle me-1"></i> Stock Used</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold text-navy">{{ record.quantity }} {{ record.consumable.unit }}</td>
+                            <td class="small text-muted">{{ record.remarks or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <p class="mb-0"><i class="bi bi-inbox fs-3 d-block mb-1"></i> No transactions recorded yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
