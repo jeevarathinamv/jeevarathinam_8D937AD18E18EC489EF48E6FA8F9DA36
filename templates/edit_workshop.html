@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Workshop - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header card-steel-header p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="bi bi-pencil-square text-warning me-2"></i> Edit Workshop Details</h4>
+                        <p class="small text-light opacity-75 mb-0">Update workshop information, seat capacities, and schedule</p>
+                    </div>
+                    <a href="{{ url_for('manage_workshops') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form action="{{ url_for('edit_workshop', workshop_id=workshop.id) }}" method="POST" class="needs-validation" novalidate>
+
+                        <div class="row g-3">
+                            <!-- Workshop Title -->
+                            <div class="col-md-8">
+                                <label for="title" class="form-label fw-semibold text-steel-blue">Workshop Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ workshop.title }}" required>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-md-4">
+                                <label for="category" class="form-label fw-semibold text-steel-blue">Category <span class="text-danger">*</span></label>
+                                <select class="form-select" id="category" name="category" required>
+                                    {% for cat in categories %}
+                                        <option value="{{ cat }}" {% if workshop.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-md-12">
+                                <label for="description" class="form-label fw-semibold text-steel-blue">Workshop Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="4" required>{{ workshop.description }}</textarea>
+                            </div>
+
+                            <!-- Trainer Name -->
+                            <div class="col-md-6">
+                                <label for="trainer_name" class="form-label fw-semibold text-steel-blue">Trainer Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="trainer_name" name="trainer_name" value="{{ workshop.trainer_name }}" required>
+                            </div>
+
+                            <!-- Venue -->
+                            <div class="col-md-6">
+                                <label for="venue" class="form-label fw-semibold text-steel-blue">Venue / Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="venue" name="venue" value="{{ workshop.venue }}" required>
+                            </div>
+
+                            <!-- Workshop Date -->
+                            <div class="col-md-4">
+                                <label for="date" class="form-label fw-semibold text-steel-blue">Workshop Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date" name="date" value="{{ workshop.date }}" required>
+                            </div>
+
+                            <!-- Start Time -->
+                            <div class="col-md-4">
+                                <label for="start_time" class="form-label fw-semibold text-steel-blue">Start Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" value="{{ workshop.start_time.strftime('%H:%M') if workshop.start_time else '' }}" required>
+                            </div>
+
+                            <!-- End Time -->
+                            <div class="col-md-4">
+                                <label for="end_time" class="form-label fw-semibold text-steel-blue">End Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="end_time" name="end_time" value="{{ workshop.end_time.strftime('%H:%M') if workshop.end_time else '' }}" required>
+                            </div>
+
+                            <!-- Total Seats -->
+                            <div class="col-md-4">
+                                <label for="total_seats" class="form-label fw-semibold text-steel-blue">Total Seats <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="total_seats" name="total_seats" min="1" value="{{ workshop.total_seats }}" required>
+                            </div>
+
+                            <!-- Registration Deadline -->
+                            <div class="col-md-4">
+                                <label for="registration_deadline" class="form-label fw-semibold text-steel-blue">Registration Deadline <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="registration_deadline" name="registration_deadline" value="{{ workshop.registration_deadline }}" required>
+                            </div>
+
+                            <!-- Workshop Status -->
+                            <div class="col-md-4">
+                                <label for="status" class="form-label fw-semibold text-steel-blue">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="Upcoming" {% if workshop.status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                                    <option value="Ongoing" {% if workshop.status == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                                    <option value="Completed" {% if workshop.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    <option value="Cancelled" {% if workshop.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-2 text-end">
+                            <button type="submit" class="btn btn-magenta rounded-pill px-5 py-2 shadow-sm">
+                                <i class="bi bi-save-fill me-1"></i> Update Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

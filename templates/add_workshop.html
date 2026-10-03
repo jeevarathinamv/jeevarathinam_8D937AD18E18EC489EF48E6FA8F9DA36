@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Workshop - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header card-steel-header p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="bi bi-plus-circle-fill text-mint me-2"></i> Add New Workshop</h4>
+                        <p class="small text-light opacity-75 mb-0">Fill in the details below to schedule a new workshop session</p>
+                    </div>
+                    <a href="{{ url_for('manage_workshops') }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form action="{{ url_for('add_workshop') }}" method="POST" class="needs-validation" novalidate>
+
+                        <div class="row g-3">
+                            <!-- Workshop Title -->
+                            <div class="col-md-8">
+                                <label for="title" class="form-label fw-semibold text-steel-blue">Workshop Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Masterclass in Python Web Development" required>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-md-4">
+                                <label for="category" class="form-label fw-semibold text-steel-blue">Category <span class="text-danger">*</span></label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="" selected disabled>Select Category</option>
+                                    {% for cat in categories %}
+                                        <option value="{{ cat }}">{{ cat }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-md-12">
+                                <label for="description" class="form-label fw-semibold text-steel-blue">Workshop Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Detailed description of topics covered, prerequisites, learning outcomes..." required></textarea>
+                            </div>
+
+                            <!-- Trainer Name -->
+                            <div class="col-md-6">
+                                <label for="trainer_name" class="form-label fw-semibold text-steel-blue">Trainer Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="trainer_name" name="trainer_name" placeholder="e.g. Dr. Jane Smith" required>
+                            </div>
+
+                            <!-- Venue -->
+                            <div class="col-md-6">
+                                <label for="venue" class="form-label fw-semibold text-steel-blue">Venue / Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="venue" name="venue" placeholder="e.g. Auditorium / Computer Lab 2" required>
+                            </div>
+
+                            <!-- Workshop Date -->
+                            <div class="col-md-4">
+                                <label for="date" class="form-label fw-semibold text-steel-blue">Workshop Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date" name="date" required>
+                            </div>
+
+                            <!-- Start Time -->
+                            <div class="col-md-4">
+                                <label for="start_time" class="form-label fw-semibold text-steel-blue">Start Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="start_time" name="start_time" required>
+                            </div>
+
+                            <!-- End Time -->
+                            <div class="col-md-4">
+                                <label for="end_time" class="form-label fw-semibold text-steel-blue">End Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="end_time" name="end_time" required>
+                            </div>
+
+                            <!-- Total Seats -->
+                            <div class="col-md-4">
+                                <label for="total_seats" class="form-label fw-semibold text-steel-blue">Total Seats <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="total_seats" name="total_seats" min="1" placeholder="e.g. 50" required>
+                            </div>
+
+                            <!-- Registration Deadline -->
+                            <div class="col-md-4">
+                                <label for="registration_deadline" class="form-label fw-semibold text-steel-blue">Registration Deadline <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="registration_deadline" name="registration_deadline" required>
+                            </div>
+
+                            <!-- Workshop Status -->
+                            <div class="col-md-4">
+                                <label for="status" class="form-label fw-semibold text-steel-blue">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="Upcoming" selected>Upcoming</option>
+                                    <option value="Ongoing">Ongoing</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-2 text-end">
+                            <button type="submit" class="btn btn-magenta rounded-pill px-5 py-2 shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i> Save Workshop
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

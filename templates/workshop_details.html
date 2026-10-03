@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ workshop.title }} - Workshop Details{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-steel-blue">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('workshops') }}" class="text-steel-blue">Workshops</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ workshop.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Main Details Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header card-steel-header p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge badge-category px-3 py-1 rounded-pill">{{ workshop.category }}</span>
+                        <span class="badge
+                            {% if workshop.status == 'Upcoming' %}badge-upcoming
+                            {% elif workshop.status == 'Ongoing' %}badge-ongoing
+                            {% elif workshop.status == 'Completed' %}badge-completed
+                            {% else %}badge-cancelled{% endif %} px-3 py-1 rounded-pill">
+                            {{ workshop.status }}
+                        </span>
+                    </div>
+                    <h2 class="fw-bold text-white mb-0">{{ workshop.title }}</h2>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <h5 class="fw-bold text-steel-blue mb-3"><i class="bi bi-file-text-fill text-magenta me-2"></i> Workshop Overview & Description</h5>
+                    <p class="text-secondary lh-lg mb-4" style="font-size: 1.05rem;">
+                        {{ workshop.description }}
+                    </p>
+
+                    <hr class="my-4 text-muted">
+
+                    <h5 class="fw-bold text-steel-blue mb-3"><i class="bi bi-info-circle-fill text-mint me-2"></i> Session Schedule & Venue Details</h5>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small fw-semibold mb-1"><i class="bi bi-person-circle text-magenta me-1"></i> Trainer Name</div>
+                                <div class="fw-bold text-steel-blue fs-6">{{ workshop.trainer_name }}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small fw-semibold mb-1"><i class="bi bi-calendar-event text-primary me-1"></i> Workshop Date</div>
+                                <div class="fw-bold text-steel-blue fs-6">{{ workshop.date }}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small fw-semibold mb-1"><i class="bi bi-clock text-warning me-1"></i> Workshop Timing</div>
+                                <div class="fw-bold text-steel-blue fs-6">
+                                    {{ workshop.start_time.strftime('%I:%M %p') if workshop.start_time else '' }} to {{ workshop.end_time.strftime('%I:%M %p') if workshop.end_time else '' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small fw-semibold mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Venue / Location</div>
+                                <div class="fw-bold text-steel-blue fs-6">{{ workshop.venue }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Column / Registration Card -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top" style="top: 90px;">
+                <div class="card-header card-mint-header p-4 text-center">
+                    <h5 class="fw-bold text-steel-blue mb-0"><i class="bi bi-ticket-perforated-fill text-magenta me-2"></i> Registration Info</h5>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-3">
+                            <span class="text-muted"><i class="bi bi-people me-2"></i> Total Seats:</span>
+                            <span class="fw-bold text-steel-blue">{{ workshop.total_seats }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-3">
+                            <span class="text-muted"><i class="bi bi-person-check me-2"></i> Available Seats:</span>
+                            <span class="fw-bold {% if workshop.available_seats == 0 %}text-danger{% else %}text-success{% endif %} fs-5">
+                                {{ workshop.available_seats }}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-3">
+                            <span class="text-muted"><i class="bi bi-hourglass-split me-2"></i> Deadline:</span>
+                            <span class="fw-bold text-danger">{{ workshop.registration_deadline }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-3">
+                            <span class="text-muted"><i class="bi bi-activity me-2"></i> Status:</span>
+                            <span class="badge
+                                {% if workshop.status == 'Upcoming' %}badge-upcoming
+                                {% elif workshop.status == 'Ongoing' %}badge-ongoing
+                                {% elif workshop.status == 'Completed' %}badge-completed
+                                {% else %}badge-cancelled{% endif %} rounded-pill">
+                                {{ workshop.status }}
+                            </span>
+                        </li>
+                    </ul>
+
+                    {% if session.get('user_type') == 'student' %}
+                        {% if is_registered %}
+                            <div class="alert alert-success text-center rounded-3 mb-0">
+                                <i class="bi bi-check-circle-fill fs-3 d-block mb-1"></i>
+                                <strong>You are registered!</strong>
+                                <p class="small mb-2 mt-1">Registration ID: <code>{{ existing_registration.registration_id }}</code></p>
+                                <a href="{{ url_for('my_workshops') }}" class="btn btn-sm btn-outline-success rounded-pill px-3">View My Workshops</a>
+                            </div>
+                        {% elif workshop.status != 'Upcoming' %}
+                            <div class="alert alert-warning text-center rounded-3 mb-0">
+                                <i class="bi bi-exclamation-triangle-fill d-block fs-4 mb-1"></i>
+                                Registration is closed for {{ workshop.status.lower() }} workshops.
+                            </div>
+                        {% elif workshop.available_seats <= 0 %}
+                            <div class="alert alert-danger text-center rounded-3 mb-0">
+                                <i class="bi bi-x-circle-fill d-block fs-4 mb-1"></i>
+                                Registration Full! All seats have been filled.
+                            </div>
+                        {% else %}
+                            <form action="{{ url_for('register_workshop', workshop_id=workshop.id) }}" method="POST">
+                                <button type="submit" class="btn btn-magenta w-100 py-3 rounded-pill fw-bold shadow">
+                                    <i class="bi bi-pencil-square me-2"></i> Register Now
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% elif session.get('user_type') == 'admin' %}
+                        <a href="{{ url_for('edit_workshop', workshop_id=workshop.id) }}" class="btn btn-warning w-100 py-2 rounded-pill fw-semibold">
+                            <i class="bi bi-pencil-fill me-1"></i> Edit Workshop (Admin)
+                        </a>
+                    {% else %}
+                        <div class="text-center">
+                            <p class="text-muted small mb-2">Please login as a student to register for this workshop.</p>
+                            <a href="{{ url_for('login') }}" class="btn btn-magenta w-100 py-2 rounded-pill">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Login to Register
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}My Registered Workshops - Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Page Header -->
+    <div class="header-steel-blue mb-4 d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-calendar-check-fill text-mint me-2"></i> My Workshop Registrations</h3>
+            <p class="text-light opacity-90 small mb-0">Track your registered workshops, attendance records, and status</p>
+        </div>
+        <a href="{{ url_for('workshops') }}" class="btn btn-magenta rounded-pill px-3 mt-3 mt-md-0">
+            <i class="bi bi-plus-lg me-1"></i> Browse More Workshops
+        </a>
+    </div>
+
+    <!-- Registrations List Table / Cards -->
+    {% if registrations %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-custom">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Registration ID</th>
+                            <th>Workshop Title</th>
+                            <th>Category</th>
+                            <th>Workshop Date</th>
+                            <th>Venue</th>
+                            <th>Registration Date</th>
+                            <th>Status</th>
+                            <th>Attendance</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in registrations %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-steel-blue">
+                                    <code>{{ reg.registration_id }}</code>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('workshop_details', workshop_id=reg.workshop.id) }}" class="fw-bold text-decoration-none text-steel-blue">
+                                        {{ reg.workshop.title }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge badge-category px-2 py-1 rounded-pill">{{ reg.workshop.category }}</span>
+                                </td>
+                                <td>
+                                    <i class="bi bi-calendar3 text-steel-blue me-1"></i> {{ reg.workshop.date }}
+                                </td>
+                                <td>
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ reg.workshop.venue }}
+                                </td>
+                                <td class="small text-muted">
+                                    {{ reg.registration_date.strftime('%Y-%m-%d %I:%M %p') if reg.registration_date else '' }}
+                                </td>
+                                <td>
+                                    <span class="badge
+                                        {% if reg.status == 'Registered' %}badge-registered
+                                        {% elif reg.status == 'Attended' %}badge-attended
+                                        {% else %}badge-cancelled{% endif %} px-2 py-1 rounded-pill">
+                                        {{ reg.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if reg.attendance %}
+                                        <span class="badge {% if reg.attendance.status == 'Present' %}bg-success{% else %}bg-danger{% endif %} rounded-pill px-2 py-1">
+                                            <i class="bi {% if reg.attendance.status == 'Present' %}bi-check-circle{% else %}bi-x-circle{% endif %} me-1"></i>
+                                            {{ reg.attendance.status }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary rounded-pill px-2 py-1">Not Marked</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('workshop_details', workshop_id=reg.workshop.id) }}" class="btn btn-sm btn-outline-primary rounded-pill me-1" title="Details">
+                                            <i class="bi bi-eye-fill"></i> Details
+                                        </a>
+
+                                        {% if reg.status == 'Registered' and reg.workshop.status == 'Upcoming' %}
+                                            <form action="{{ url_for('cancel_registration', registration_id=reg.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this workshop registration?');" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                                    <i class="bi bi-x-lg me-1"></i> Cancel
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <i class="bi bi-journal-x display-3 text-muted mb-3"></i>
+            <h5 class="fw-bold text-steel-blue">No Workshop Registrations Yet</h5>
+            <p class="text-muted">You haven't registered for any workshops. Browse our available workshops and sign up!</p>
+            <a href="{{ url_for('workshops') }}" class="btn btn-magenta rounded-pill px-4 mx-auto">
+                <i class="bi bi-journal-bookmark me-1"></i> View All Workshops
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
