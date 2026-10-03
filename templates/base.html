@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}College Sports Equipment Booking System{% endblock %}</title>
+    <title>{% block title %}Business Supplier & Purchase Management System{% endblock %}</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -13,53 +13,63 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="d-flex flex-column min-vh-100 bg-light">
+<body class="d-flex flex-column min-vh-100">
 
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-bold" href="{{ url_for('index') }}">
-                <i class="bi bi-trophy-fill me-2 fs-4 text-warning"></i>
-                <span>College Sports Hub</span>
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="{{ url_for('dashboard') if session.get('admin_logged_in') else url_for('login') }}">
+                <span class="p-2 bg-mint-subtle rounded-3 me-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="bi bi-box-seam-fill text-success fs-5"></i>
+                </span>
+                <span>Supplier & Purchase System</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-row navbar-nav ms-auto align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="{{ url_for('index') }}"><i class="bi bi-house-door-fill me-1"></i> Home</a>
-                    </li>
-                    {% if session.get('user_type') == 'student' %}
+                <ul class="navbar-nav ms-auto align-items-center gap-1 mt-2 mt-lg-0">
+                    {% if session.get('admin_logged_in') %}
                         <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ url_for('student_dashboard') }}"><i class="bi bi-grid-fill me-1"></i> Student Dashboard</a>
+                            <a class="nav-link px-3 {% if request.endpoint == 'dashboard' %}active fw-bold{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            </a>
                         </li>
-                        <li class="nav-item ms-lg-2">
-                            <span class="navbar-text text-white bg-white bg-opacity-20 px-3 py-1 rounded-pill border border-white border-opacity-25 me-2">
-                                <i class="bi bi-person-fill me-1"></i> {{ session.get('user_name') }}
+                        <li class="nav-item">
+                            <a class="nav-link px-3 {% if 'supplier' in request.endpoint %}active fw-bold{% endif %}" href="{{ url_for('suppliers') }}">
+                                <i class="bi bi-truck me-1"></i> Suppliers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 {% if 'product' in request.endpoint %}active fw-bold{% endif %}" href="{{ url_for('products') }}">
+                                <i class="bi bi-box-seam me-1"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 {% if request.endpoint == 'purchases' or request.endpoint == 'add_purchase' or request.endpoint == 'edit_purchase' or request.endpoint == 'purchase_details' %}active fw-bold{% endif %}" href="{{ url_for('purchases') }}">
+                                <i class="bi bi-cart-check me-1"></i> Purchases
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 {% if request.endpoint == 'purchase_history' %}active fw-bold{% endif %}" href="{{ url_for('purchase_history') }}">
+                                <i class="bi bi-clock-history me-1"></i> Purchase History
+                            </a>
+                        </li>
+                        <li class="nav-item ms-lg-3">
+                            <span class="badge bg-mint-subtle text-success px-3 py-2 rounded-pill fw-semibold border border-success border-opacity-25">
+                                <i class="bi bi-person-circle me-1"></i> {{ session.get('admin_username', 'Admin') }}
                             </span>
                         </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm rounded-pill px-3 ms-lg-1" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
-                        </li>
-                    {% elif session.get('user_type') == 'admin' %}
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-speedometer2 me-1"></i> Admin Dashboard</a>
-                        </li>
-                        <li class="nav-item ms-lg-2">
-                            <span class="navbar-text text-white bg-white bg-opacity-20 px-3 py-1 rounded-pill border border-white border-opacity-25 me-2">
-                                <i class="bi bi-shield-lock-fill me-1"></i> Administrator
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm rounded-pill px-3 ms-lg-1" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
+                        <li class="nav-item ms-lg-1">
+                            <a class="btn btn-peach btn-sm rounded-pill px-3" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right me-1"></i> Logout
+                            </a>
                         </li>
                     {% else %}
-                        <li class="nav-item ms-lg-2">
-                            <a class="btn btn-light btn-sm text-primary fw-semibold rounded-pill px-3 me-2" href="{{ url_for('login') }}"><i class="bi bi-box-arrow-in-right me-1"></i> Login</a>
-                        </li>
                         <li class="nav-item">
-                            <a class="btn btn-warning btn-sm fw-semibold rounded-pill px-3 text-dark" href="{{ url_for('register') }}"><i class="bi bi-person-plus-fill me-1"></i> Register</a>
+                            <a class="btn btn-mint btn-sm rounded-pill px-4" href="{{ url_for('login') }}">
+                                <i class="bi bi-shield-lock me-1"></i> Admin Login
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
@@ -67,18 +77,16 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
+    <!-- Flash Messages Container -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-3" role="alert">
-                        <i class="bi
-                            {% if category == 'success' %}bi-check-circle-fill text-success
-                            {% elif category == 'danger' %}bi-exclamation-triangle-fill text-danger
-                            {% elif category == 'warning' %}bi-exclamation-circle-fill text-warning
-                            {% else %}bi-info-circle-fill text-info{% endif %} me-2"></i>
-                        {{ message }}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 rounded-4 mb-3" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi {% if category == 'success' %}bi-check-circle-fill text-success{% elif category == 'danger' %}bi-exclamation-octagon-fill text-danger{% elif category == 'warning' %}bi-exclamation-triangle-fill text-warning{% else %}bi-info-circle-fill text-info{% endif %} fs-4 me-3"></i>
+                            <div>{{ message }}</div>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
@@ -86,21 +94,27 @@
         {% endwith %}
     </div>
 
-    <!-- Main Body Content -->
-    <main class="flex-grow-1">
+    <!-- Main Content -->
+    <main class="flex-grow-1 py-4">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4 mt-5 border-top border-secondary">
+    <footer class="mt-auto py-3 text-center text-white-50 border-top border-light border-opacity-10" style="background: rgba(26, 35, 126, 0.9);">
         <div class="container">
-            <p class="mb-1 fw-medium"><i class="bi bi-trophy text-warning me-1"></i> College Sports Equipment Booking System</p>
-            <p class="small text-white-50 mb-0">MCA Mini Project Demo &bull; Built with Flask, Bootstrap 5 & MySQL</p>
+            <p class="mb-1 text-white fw-medium">
+                <i class="bi bi-box-seam me-1 text-warning"></i> Business Supplier & Purchase Management System
+            </p>
+            <p class="small text-white-50 mb-0">
+                MCA Project &bull; Built with Python Flask, Bootstrap 5 & MySQL
+            </p>
         </div>
     </footer>
 
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

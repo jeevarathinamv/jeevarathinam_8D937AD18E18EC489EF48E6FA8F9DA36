@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Business Supplier & Purchase Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom border-light border-opacity-25">
+        <div>
+            <h2 class="page-header-title mb-1">
+                <i class="bi bi-speedometer2 me-2 text-warning"></i>Admin Dashboard
+            </h2>
+            <p class="text-white-50 mb-0">Overview of suppliers, products, inventory, and purchase metrics</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{{ url_for('add_purchase') }}" class="btn btn-mint fw-semibold">
+                <i class="bi bi-plus-circle me-1"></i> New Purchase Record
+            </a>
+            <a href="{{ url_for('add_product') }}" class="btn btn-peach fw-semibold">
+                <i class="bi bi-box-seam me-1"></i> Add Product
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards Grid (6 Summary Indicators) -->
+    <div class="row g-3 mb-4">
+        <!-- Total Suppliers -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Suppliers</span>
+                    <div class="stat-icon bg-indigo-subtle">
+                        <i class="bi bi-truck text-primary"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0 text-dark">{{ total_suppliers }}</h3>
+                <span class="text-muted x-small">Registered</span>
+            </div>
+        </div>
+
+        <!-- Total Products -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Products</span>
+                    <div class="stat-icon bg-indigo-subtle">
+                        <i class="bi bi-box-seam text-indigo"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0 text-dark">{{ total_products }}</h3>
+                <span class="text-muted x-small">In Catalog</span>
+            </div>
+        </div>
+
+        <!-- Total Purchases -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Purchases</span>
+                    <div class="stat-icon bg-mint-subtle">
+                        <i class="bi bi-cart-check text-success"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0 text-dark">{{ total_purchases }}</h3>
+                <span class="text-muted x-small">Total Orders</span>
+            </div>
+        </div>
+
+        <!-- Pending Purchases -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Pending</span>
+                    <div class="stat-icon bg-peach-subtle">
+                        <i class="bi bi-hourglass-split text-warning"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0 text-dark">{{ pending_purchases }}</h3>
+                <span class="text-muted x-small">Awaiting Receive</span>
+            </div>
+        </div>
+
+        <!-- Completed Purchases -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Completed</span>
+                    <div class="stat-icon bg-mint-subtle">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0 text-dark">{{ completed_purchases }}</h3>
+                <span class="text-muted x-small">Received Goods</span>
+            </div>
+        </div>
+
+        <!-- Total Purchase Amount -->
+        <div class="col-sm-6 col-md-4 col-lg-2">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Total Cost</span>
+                    <div class="stat-icon bg-peach-subtle">
+                        <i class="bi bi-currency-rupee text-danger"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0 text-dark">₹{{ "%.2f"|format(total_purchase_amount) }}</h3>
+                <span class="text-muted x-small">Expenditure</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <div class="row g-4">
+        <!-- Recent Purchases List -->
+        <div class="col-lg-8">
+            <div class="card card-custom h-100 overflow-hidden">
+                <div class="card-header card-indigo-header d-flex justify-content-between align-items-center py-3 px-4">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-clock-history me-2 text-warning"></i>Recent Purchase Orders
+                    </h5>
+                    <a href="{{ url_for('purchases') }}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                        View All <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Purchase #</th>
+                                    <th>Supplier</th>
+                                    <th>Date</th>
+                                    <th>Total Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_purchases %}
+                                    {% for p in recent_purchases %}
+                                        <tr>
+                                            <td class="fw-bold text-indigo">{{ p.purchase_number }}</td>
+                                            <td>{{ p.supplier.company_name }}</td>
+                                            <td>{{ p.purchase_date.strftime('%Y-%m-%d') }}</td>
+                                            <td class="fw-semibold">₹{{ "%.2f"|format(p.total_amount) }}</td>
+                                            <td>
+                                                <span class="badge badge-status badge-{{ p.status|lower }}">
+                                                    {{ p.status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('purchase_details', id=p.id) }}" class="btn btn-sm btn-indigo px-2 py-1">
+                                                    <i class="bi bi-eye-fill"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">No purchase records found.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Low Stock Alerts -->
+        <div class="col-lg-4">
+            <div class="card card-custom h-100">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center py-3 px-4 border-0 rounded-top-4">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>Low Stock Alerts
+                    </h5>
+                    <span class="badge bg-danger rounded-pill px-2 py-1">{{ low_stock_products|length }}</span>
+                </div>
+                <div class="card-body p-3">
+                    {% if low_stock_products %}
+                        <div class="list-group list-group-flush">
+                            {% for prod in low_stock_products %}
+                                <div class="list-group-item bg-transparent px-2 py-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark">{{ prod.product_name }}</strong>
+                                        {% if prod.current_stock == 0 %}
+                                            <span class="badge badge-status badge-out-of-stock">Out of Stock</span>
+                                        {% else %}
+                                            <span class="badge badge-status badge-low-stock">Low Stock</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <span>Code: <code>{{ prod.product_code }}</code></span>
+                                        <span>Stock: <strong class="text-danger">{{ prod.current_stock }}</strong> / Min: {{ prod.min_stock_level }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-check-circle-fill text-success fs-1 mb-2 d-block"></i>
+                            <p class="mb-0 fw-semibold">All products are well stocked!</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                    <a href="{{ url_for('products') }}" class="btn btn-sm btn-indigo rounded-pill px-4">
+                        Manage Inventory <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
