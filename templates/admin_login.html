@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Student Project Showcase Portal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card p-4 p-md-5 shadow-sm border-0">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background-color: var(--periwinkle-light);">
+                        <i class="bi bi-shield-lock-fill fs-2" style="color: var(--periwinkle-dark);"></i>
+                    </div>
+                    <h3 class="fw-bold">Admin Login</h3>
+                    <p class="text-muted small">Faculty and Administrator Management Portal</p>
+                </div>
+
+                <form action="{{ url_for('admin_login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-medium"><i class="bi bi-person-fill me-1"></i> Admin Username</label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="e.g. admin" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-medium"><i class="bi bi-lock me-1"></i> Password</label>
+                        <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Enter admin password" required>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-periwinkle btn-lg fw-semibold rounded-pill">
+                            <i class="bi bi-shield-check me-1"></i> Admin Sign In
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-muted small mb-0">
+                            Looking for Student Login? <a href="{{ url_for('login') }}" class="fw-bold text-decoration-none" style="color: var(--teal);">Student Login</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

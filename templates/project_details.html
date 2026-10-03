@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - Project Details{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-3">
+        <a href="{{ url_for('showcase') }}" class="btn btn-outline-secondary rounded-pill btn-sm px-3">
+            <i class="bi bi-arrow-left me-1"></i> Back to Showcase
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Project Info Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm overflow-hidden mb-4">
+                <div class="bg-light text-center p-3 border-bottom">
+                    {% if project.image_path %}
+                        <img src="{{ url_for('static', filename=project.image_path) }}" class="img-fluid rounded shadow-sm" style="max-height: 380px; object-fit: contain;" alt="{{ project.title }}">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='uploads/default_project.svg') }}" class="img-fluid rounded shadow-sm" style="max-height: 300px;" alt="Default Image">
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <span class="badge badge-category fs-6 px-3 py-2">{{ project.category }}</span>
+                        <div>
+                            {% if project.status == 'Approved' %}
+                                <span class="badge badge-approved fs-6 px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
+                            {% elif project.status == 'Rejected' %}
+                                <span class="badge badge-rejected fs-6 px-3 py-2"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                            {% else %}
+                                <span class="badge badge-pending fs-6 px-3 py-2"><i class="bi bi-hourglass-split me-1"></i> Pending Review</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-3">{{ project.title }}</h2>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-card-text me-2 text-primary"></i> Project Description</h5>
+                        <p class="text-secondary lh-lg mb-0" style="white-space: pre-line;">{{ project.description }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-cpu-fill me-2 text-primary"></i> Technologies Used</h5>
+                        <div>
+                            {% for tech in project.technologies.split(',') %}
+                                <span class="badge bg-light text-dark border px-3 py-2 fs-6 me-1 mb-1 font-monospace">{{ tech.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if project.project_link %}
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-link-45deg me-2 text-primary"></i> External Link / Repository</h5>
+                            <a href="{{ project.project_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary rounded-pill px-4">
+                                <i class="bi bi-github me-1"></i> View Code Repository <i class="bi bi-box-arrow-up-right ms-1"></i>
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if project.admin_remark %}
+                        <div class="alert alert-warning border-0 p-3 rounded-3 mt-4">
+                            <h6 class="fw-bold mb-1"><i class="bi bi-chat-left-dots-fill me-2"></i> Faculty / Admin Remark:</h6>
+                            <p class="mb-0 text-dark">{{ project.admin_remark }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Details & Actions Column -->
+        <div class="col-lg-4">
+            <!-- Student Metadata Card -->
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-person-badge-fill me-2 text-teal"></i> Student Info</h5>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item bg-transparent px-0 py-2">
+                        <span class="text-muted d-block">Student Name:</span>
+                        <strong class="fs-6 text-dark">{{ project.student.name }}</strong>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2">
+                        <span class="text-muted d-block">Register Number:</span>
+                        <strong class="text-dark">{{ project.student.register_number }}</strong>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2">
+                        <span class="text-muted d-block">Department:</span>
+                        <strong class="text-dark">{{ project.student.department }}</strong>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2">
+                        <span class="text-muted d-block">Submission Date:</span>
+                        <strong class="text-dark">{{ project.created_at.strftime('%B %d, %Y') }}</strong>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Owner Controls -->
+            {% if is_owner %}
+                <div class="card border-0 shadow-sm p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-sliders me-2 text-primary"></i> Owner Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-periwinkle rounded-pill">
+                            <i class="bi bi-pencil-fill me-1"></i> Edit Project
+                        </a>
+                        <button type="button" class="btn btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteOwnerModal">
+                            <i class="bi bi-trash-fill me-1"></i> Delete Project
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Delete Owner Modal -->
+                <div class="modal fade" id="deleteOwnerModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title fw-bold">Delete Project</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete this project?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                <form action="{{ url_for('delete_project', project_id=project.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Admin Controls -->
+            {% if is_admin %}
+                <div class="card border-0 shadow-sm p-4 mb-4 border-start border-4 border-warning">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-check me-2 text-warning"></i> Admin Controls</h5>
+                    <p class="small text-muted mb-3">Review status and publish or reject this student submission.</p>
+
+                    <div class="d-grid gap-2">
+                        {% if project.status != 'Approved' %}
+                            <button type="button" class="btn btn-teal rounded-pill" data-bs-toggle="modal" data-bs-target="#approveModal">
+                                <i class="bi bi-check-circle-fill me-1"></i> Approve & Publish
+                            </button>
+                        {% endif %}
+
+                        {% if project.status != 'Rejected' %}
+                            <button type="button" class="btn btn-coral rounded-pill text-white" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                <i class="bi bi-x-circle-fill me-1"></i> Reject Submission
+                            </button>
+                        {% endif %}
+
+                        <form action="{{ url_for('admin_delete_project', project_id=project.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project as admin?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill mt-2">
+                                <i class="bi bi-trash me-1"></i> Admin Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Approve Modal -->
+                <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <form action="{{ url_for('approve_project', project_id=project.id) }}" method="POST">
+                                <div class="modal-header bg-teal text-white">
+                                    <h5 class="modal-title fw-bold"><i class="bi bi-check-circle me-1"></i> Approve Project</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Approving this project will publish it directly to the <strong>Public Project Showcase</strong>.</p>
+                                    <div class="mb-3">
+                                        <label for="approve_remark" class="form-label fw-medium">Admin Remark (Optional)</label>
+                                        <textarea class="form-control" id="approve_remark" name="admin_remark" rows="3" placeholder="e.g. Excellent work and clear UI design."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-teal rounded-pill px-4">Approve & Publish</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reject Modal -->
+                <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <form action="{{ url_for('reject_project', project_id=project.id) }}" method="POST">
+                                <div class="modal-header bg-coral text-white">
+                                    <h5 class="modal-title fw-bold"><i class="bi bi-x-circle me-1"></i> Reject Project</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Please provide a remark explaining why this project is being rejected so the student can update it.</p>
+                                    <div class="mb-3">
+                                        <label for="reject_remark" class="form-label fw-medium">Admin Remark <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="reject_remark" name="admin_remark" rows="3" placeholder="e.g. Please add a screenshot and clarify system requirements." required></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-coral text-white rounded-pill px-4">Confirm Rejection</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

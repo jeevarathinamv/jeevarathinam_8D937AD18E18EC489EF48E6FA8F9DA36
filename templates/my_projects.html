@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}My Projects - Student Project Showcase Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-folder-fill me-2 text-primary"></i> My Submitted Projects</h3>
+            <p class="text-muted mb-0">View, manage, edit or check status for your submitted projects</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ url_for('add_project') }}" class="btn btn-coral rounded-pill px-4 shadow-sm fw-semibold">
+                <i class="bi bi-plus-circle-fill me-1"></i> Submit New Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Search Input -->
+    <div class="card p-3 mb-4 shadow-sm border-0">
+        <div class="input-group">
+            <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" id="clientSearchInput" class="form-control border-0 bg-light" placeholder="Search my projects by title or category...">
+        </div>
+    </div>
+
+    {% if projects %}
+        <div class="row g-4">
+            {% for project in projects %}
+                <div class="col-md-6 col-lg-4 project-card-item">
+                    <div class="card h-100 card-hover border-0 shadow-sm">
+                        <div class="project-img-container">
+                            {% if project.image_path %}
+                                <img src="{{ url_for('static', filename=project.image_path) }}" class="project-img" alt="{{ project.title }}">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='uploads/default_project.svg') }}" class="project-img" alt="Default Image">
+                            {% endif %}
+
+                            <span class="position-absolute top-0 start-0 m-2">
+                                {% if project.status == 'Approved' %}
+                                    <span class="badge badge-approved shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
+                                {% elif project.status == 'Rejected' %}
+                                    <span class="badge badge-rejected shadow-sm"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-pending shadow-sm"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                                {% endif %}
+                            </span>
+
+                            <span class="position-absolute top-0 end-0 m-2 badge badge-category shadow-sm">
+                                {{ project.category }}
+                            </span>
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-dark mb-2">{{ project.title }}</h5>
+                            <p class="card-text text-muted small mb-3 flex-grow-1">
+                                {{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}
+                            </p>
+
+                            {% if project.admin_remark %}
+                                <div class="alert alert-warning py-2 px-3 small border-0 mb-3">
+                                    <strong><i class="bi bi-chat-left-text me-1"></i> Admin Remark:</strong> {{ project.admin_remark }}
+                                </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1"><i class="bi bi-cpu me-1"></i> Tech Stack:</small>
+                                <div>
+                                    {% for tech in project.technologies.split(',') %}
+                                        <span class="tech-tag">{{ tech.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="border-top pt-3 mt-auto d-flex justify-content-between align-items-center">
+                                <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ project.created_at.strftime('%b %d, %Y') }}</small>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('project_details', project_id=project.id) }}" class="btn btn-outline-secondary" title="View Details">
+                                        <i class="bi bi-eye-fill"></i> View
+                                    </a>
+                                    <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil-fill"></i> Edit
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ project.id }}" title="Delete">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Confirmation Modal -->
+                <div class="modal fade" id="deleteModal{{ project.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete the project <strong>"{{ project.title }}"</strong>? This action cannot be undone.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                                <form action="{{ url_for('delete_project', project_id=project.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger rounded-pill px-4">Delete Project</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card p-5 text-center bg-light border-0">
+            <i class="bi bi-folder-plus fs-1 text-muted mb-2"></i>
+            <h5 class="fw-semibold text-secondary">No projects submitted yet</h5>
+            <p class="text-muted mb-3">Submit your academic project to get featured on the showcase portal.</p>
+            <div>
+                <a href="{{ url_for('add_project') }}" class="btn btn-coral rounded-pill px-4">
+                    <i class="bi bi-plus-circle me-1"></i> Submit Project Now
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

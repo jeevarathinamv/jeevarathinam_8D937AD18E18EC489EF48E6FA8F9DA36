@@ -1,75 +1,143 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Student Project Showcase Portal{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
+<section class="hero-section text-center">
     <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-2 fw-medium mb-3">
+                    <i class="bi bi-stars me-1 text-warning"></i> MCA Student Innovation Hub
+                </span>
+                <h1 class="display-4 fw-bold mb-3">Student Project Showcase Portal</h1>
+                <p class="lead mb-4 opacity-90">
+                    A centralized platform for students to present their technical innovations, Web apps, Mobile apps, and Data Science research projects.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{{ url_for('showcase') }}" class="btn btn-coral btn-lg rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-compass-fill me-2"></i> Explore Projects
+                    </a>
+                    {% if not session.get('user_type') %}
+                        <a href="{{ url_for('register') }}" class="btn btn-light text-dark btn-lg rounded-pill px-4 shadow-sm fw-semibold">
+                            <i class="bi bi-person-plus-fill me-2"></i> Student Register
+                        </a>
+                    {% elif session.get('user_type') == 'student' %}
+                        <a href="{{ url_for('add_project') }}" class="btn btn-light text-dark btn-lg rounded-pill px-4 shadow-sm fw-semibold">
+                            <i class="bi bi-plus-circle-fill me-2"></i> Submit New Project
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Overview -->
+<div class="container my-5">
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 card-hover">
+                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-upload fs-2" style="color: var(--periwinkle);"></i>
+                </div>
+                <h4 class="fw-bold">Easy Submission</h4>
+                <p class="text-muted mb-0">Students can easily upload project details, tech stacks, repository links, and screenshots.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 card-hover">
+                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-patch-check-fill fs-2" style="color: var(--teal);"></i>
+                </div>
+                <h4 class="fw-bold">Faculty Review</h4>
+                <p class="text-muted mb-0">Administrators review and verify project quality before publishing them to the public showcase.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 card-hover">
+                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-globe2 fs-2" style="color: var(--coral);"></i>
+                </div>
+                <h4 class="fw-bold">Public Portfolio</h4>
+                <p class="text-muted mb-0">Anyone can browse approved projects, inspect tech stacks, and view GitHub repository links.</p>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
+<!-- Featured Approved Projects -->
 <div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-rocket-takeoff text-teal me-2"></i> Featured Projects</h2>
+            <p class="text-muted mb-0">Latest approved student projects from various departments</p>
         </div>
+        <a href="{{ url_for('showcase') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            View All Showcase <i class="bi bi-arrow-right ms-1"></i>
+        </a>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
-            </div>
-        </div>
+    {% if projects %}
+        <div class="row g-4">
+            {% for project in projects %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 card-hover">
+                        <div class="project-img-container">
+                            {% if project.image_path %}
+                                <img src="{{ url_for('static', filename=project.image_path) }}" class="project-img" alt="{{ project.title }}">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='uploads/default_project.svg') }}" class="project-img" alt="Default Project Image">
+                            {% endif %}
+                            <span class="position-absolute top-0 end-0 m-2 badge badge-category shadow-sm">
+                                {{ project.category }}
+                            </span>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-dark mb-2">{{ project.title }}</h5>
+                            <p class="card-text text-muted small mb-3 flex-grow-1">
+                                {{ project.description[:110] }}{% if project.description|length > 110 %}...{% endif %}
+                            </p>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
-            </div>
-        </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1"><i class="bi bi-cpu me-1"></i> Technologies:</small>
+                                <div>
+                                    {% for tech in project.technologies.split(',') %}
+                                        <span class="tech-tag">{{ tech.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+                            <div class="border-top pt-2 mt-auto d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="fw-semibold d-block text-dark"><i class="bi bi-person-fill text-primary me-1"></i> {{ project.student.name }}</small>
+                                    <small class="text-muted"><i class="bi bi-building me-1"></i> {{ project.student.department }}</small>
+                                </div>
+                                <a href="{{ url_for('project_details', project_id=project.id) }}" class="btn btn-teal btn-sm rounded-pill px-3">
+                                    View Project
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
-            </div>
+            {% endfor %}
         </div>
-    </div>
+    {% else %}
+        <div class="card p-5 text-center bg-light border-0">
+            <i class="bi bi-folder-x fs-1 text-muted mb-2"></i>
+            <h5 class="fw-semibold text-secondary">No approved projects found yet</h5>
+            <p class="text-muted mb-3">Be the first student to submit a project!</p>
+            {% if session.get('user_type') == 'student' %}
+                <div>
+                    <a href="{{ url_for('add_project') }}" class="btn btn-coral rounded-pill px-4">Submit Project</a>
+                </div>
+            {% else %}
+                <div>
+                    <a href="{{ url_for('register') }}" class="btn btn-periwinkle rounded-pill px-4">Register as Student</a>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
