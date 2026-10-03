@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Freelance Profile - Student Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-md-8">
+        <div class="card glass-card p-4 p-md-5">
+            <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-4">
+                <div class="bg-primary text-white p-3 rounded-circle text-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-person-circle fs-2"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">{{ student.name }}</h3>
+                    <p class="text-muted mb-0">{{ student.department }} | Reg: {{ student.register_number }}</p>
+                </div>
+            </div>
+
+            <form action="{{ url_for('profile') }}" method="POST">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label font-weight-bold">Student Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ student.name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="department" class="form-label font-weight-bold">Department</label>
+                        <input type="text" class="form-control" id="department" name="department" value="{{ student.department }}" required>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="contact_email" class="form-label font-weight-bold">Contact Email</label>
+                        <input type="email" class="form-control" id="contact_email" name="contact_email" value="{{ profile.contact_email or student.email }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="portfolio_link" class="form-label font-weight-bold">Portfolio / GitHub Link</label>
+                        <input type="url" class="form-control" id="portfolio_link" name="portfolio_link" value="{{ profile.portfolio_link or '' }}" placeholder="https://github.com/username">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="skills" class="form-label font-weight-bold">Technical Skills</label>
+                    <input type="text" class="form-control" id="skills" name="skills" value="{{ profile.skills or '' }}" placeholder="Python, Flask, MySQL, HTML, Bootstrap 5">
+                    <div class="form-text">Comma-separated list of your technical skills.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="experience" class="form-label font-weight-bold">Experience & Qualifications</label>
+                    <textarea class="form-control" id="experience" name="experience" rows="3" placeholder="e.g. 1 year of web development experience, completed 5 client projects">{{ profile.experience or '' }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="bio" class="form-label font-weight-bold">Short Bio</label>
+                    <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="Brief summary about yourself for potential clients">{{ profile.bio or '' }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-cobalt px-4 py-2">
+                    <i class="bi bi-save me-1"></i> Save Profile Changes
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

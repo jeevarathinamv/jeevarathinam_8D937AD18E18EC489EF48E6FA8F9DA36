@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Client Management - Student Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="text-white fw-bold mb-1"><i class="bi bi-people me-2"></i> Client Management</h2>
+        <p class="text-white-50 mb-0">Manage contact information and details for your freelance clients</p>
+    </div>
+    <div>
+        <a href="{{ url_for('add_client') }}" class="btn btn-orange shadow-sm"><i class="bi bi-person-plus me-1"></i> Add New Client</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% if clients %}
+        {% for client in clients %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card glass-card h-100 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                                <i class="bi bi-building fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-0">{{ client.name }}</h5>
+                                <small class="text-muted">{{ client.company_name or 'Individual Client' }}</small>
+                            </div>
+                        </div>
+
+                        <ul class="list-unstyled text-muted small mb-3">
+                            <li class="mb-2"><i class="bi bi-telephone text-primary me-2"></i> {{ client.phone or 'N/A' }}</li>
+                            <li class="mb-2"><i class="bi bi-envelope text-primary me-2"></i> {{ client.email or 'N/A' }}</li>
+                            <li class="mb-2"><i class="bi bi-geo-alt text-primary me-2"></i> {{ client.address or 'N/A' }}</li>
+                            {% if client.notes %}
+                                <li class="mt-2 p-2 bg-light rounded text-dark border"><strong>Note:</strong> {{ client.notes }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="bi bi-folder me-1"></i> {{ client.projects|length }} Projects</small>
+                        <div class="d-flex gap-1">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editClientModal{{ client.id }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form action="{{ url_for('delete_client', client_id=client.id) }}" method="POST" onsubmit="return confirm('Delete this client?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Client Modal -->
+            <div class="modal fade" id="editClientModal{{ client.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content rounded-4">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2"></i> Edit Client</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ url_for('edit_client', client_id=client.id) }}" method="POST">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold">Client Name *</label>
+                                    <input type="text" class="form-control" name="name" value="{{ client.name }}" required>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label font-weight-bold">Phone Number</label>
+                                        <input type="text" class="form-control" name="phone" value="{{ client.phone or '' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label font-weight-bold">Email</label>
+                                        <input type="email" class="form-control" name="email" value="{{ client.email or '' }}">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold">Company Name</label>
+                                    <input type="text" class="form-control" name="company_name" value="{{ client.company_name or '' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold">Address</label>
+                                    <textarea class="form-control" name="address" rows="2">{{ client.address or '' }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-weight-bold">Notes</label>
+                                    <textarea class="form-control" name="notes" rows="2">{{ client.notes or '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-cobalt">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card glass-card p-5 text-center">
+                <i class="bi bi-people-fill fs-1 text-muted mb-3"></i>
+                <h4 class="fw-bold text-dark">No Clients Added Yet</h4>
+                <p class="text-muted">Keep track of your client contact info and companies!</p>
+                <div>
+                    <a href="{{ url_for('add_client') }}" class="btn btn-orange px-4 py-2 mt-2"><i class="bi bi-person-plus me-1"></i> Add Client</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

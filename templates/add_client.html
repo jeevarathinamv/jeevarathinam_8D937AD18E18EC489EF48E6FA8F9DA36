@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Client - Student Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-md-7">
+        <div class="card glass-card p-4 p-md-5">
+            <div class="d-flex align-items-center gap-2 border-bottom pb-3 mb-4">
+                <i class="bi bi-person-plus-fill fs-2 text-primary"></i>
+                <h3 class="fw-bold text-dark mb-0">Add New Client</h3>
+            </div>
+
+            <form action="{{ url_for('add_client') }}" method="POST">
+                <div class="mb-3">
+                    <label for="name" class="form-label font-weight-bold">Client Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Client or Contact Person Name" required>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label font-weight-bold">Phone Number</label>
+                        <input type="text" class="form-control" id="phone" name="phone" placeholder="+91 9876543210">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label font-weight-bold">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="client@company.com">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="company_name" class="form-label font-weight-bold">Company Name</label>
+                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Company / Organization Name">
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label font-weight-bold">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="2" placeholder="Office location or address..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="notes" class="form-label font-weight-bold">Notes</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Additional notes about client preferences..."></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-cobalt px-4 py-2"><i class="bi bi-check-circle me-1"></i> Save Client</button>
+                    <a href="{{ url_for('clients') }}" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

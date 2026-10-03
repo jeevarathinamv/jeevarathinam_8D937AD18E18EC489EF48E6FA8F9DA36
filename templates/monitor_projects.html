@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Monitor Projects - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="text-white fw-bold mb-1"><i class="bi bi-kanban me-2"></i> Monitor Projects</h2>
+        <p class="text-white-50 mb-0">Overview of all student freelance projects, deadlines, and budgets</p>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="card glass-card p-3 mb-4">
+    <form action="{{ url_for('monitor_projects') }}" method="GET" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" name="search" placeholder="Search project title, client, or student name..." value="{{ search }}">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" name="status" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option value="New" {% if status_filter == 'New' %}selected{% endif %}>New</option>
+                <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="On Hold" {% if status_filter == 'On Hold' %}selected{% endif %}>On Hold</option>
+                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-cobalt w-100">Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- All Projects Table -->
+<div class="card glass-card p-4">
+    {% if projects %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Project Title</th>
+                        <th>Client Name</th>
+                        <th>Budget</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                        <tr>
+                            <td>
+                                <strong><a href="{{ url_for('view_student_profile', student_id=project.student.id) }}" class="text-dark text-decoration-none">{{ project.student.name }}</a></strong>
+                                <small class="d-block text-muted">{{ project.student.register_number }}</small>
+                            </td>
+                            <td><strong>{{ project.title }}</strong></td>
+                            <td>{{ project.client_name }}</td>
+                            <td class="text-success font-weight-bold">₹ {{ "{:,.2f}".format(project.budget) }}</td>
+                            <td class="small">{{ project.deadline or 'N/A' }}</td>
+                            <td>
+                                {% if project.status == 'New' %}
+                                    <span class="badge badge-status badge-new">New</span>
+                                {% elif project.status == 'In Progress' %}
+                                    <span class="badge badge-status badge-in-progress">In Progress</span>
+                                {% elif project.status == 'On Hold' %}
+                                    <span class="badge badge-status badge-on-hold">On Hold</span>
+                                {% elif project.status == 'Completed' %}
+                                    <span class="badge badge-status badge-completed">Completed</span>
+                                {% elif project.status == 'Cancelled' %}
+                                    <span class="badge badge-status badge-cancelled">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td style="min-width: 120px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar progress-bar-cobalt" role="progressbar" style="width: {{ project.progress_percentage }}%;"></div>
+                                    </div>
+                                    <span class="small fw-bold">{{ project.progress_percentage }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-folder-x fs-1 text-muted mb-2 d-block"></i>
+            <p class="text-muted">No projects found matching criteria.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

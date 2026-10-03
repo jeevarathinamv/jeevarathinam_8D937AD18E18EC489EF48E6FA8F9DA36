@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Tracking - Student Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="text-white fw-bold mb-1"><i class="bi bi-cash-stack me-2"></i> Payment Tracking</h2>
+        <p class="text-white-50 mb-0">Track payments received and pending invoices for your projects</p>
+    </div>
+    <div>
+        <button type="button" class="btn btn-orange shadow-sm" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+            <i class="bi bi-plus-circle me-1"></i> Record Payment
+        </button>
+    </div>
+</div>
+
+<div class="card glass-card p-4">
+    {% if payments %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Client</th>
+                        <th>Amount</th>
+                        <th>Payment Date</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pay in payments %}
+                        <tr>
+                            <td><strong>{{ pay.project.title }}</strong></td>
+                            <td>{{ pay.client_name }}</td>
+                            <td><strong class="text-success">₹ {{ "{:,.2f}".format(pay.amount) }}</strong></td>
+                            <td class="small">{{ pay.payment_date }}</td>
+                            <td>
+                                <form action="{{ url_for('update_payment_status', payment_id=pay.id) }}" method="POST" class="d-inline">
+                                    <select name="status" class="form-select form-select-sm border-0 fw-bold {% if pay.status == 'Paid' %}text-success bg-light{% elif pay.status == 'Partially Paid' %}text-warning bg-light{% else %}text-danger bg-light{% endif %}" onchange="this.form.submit()">
+                                        <option value="Pending" {% if pay.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="Partially Paid" {% if pay.status == 'Partially Paid' %}selected{% endif %}>Partially Paid</option>
+                                        <option value="Paid" {% if pay.status == 'Paid' %}selected{% endif %}>Paid</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td class="small text-muted">{{ pay.notes or '-' }}</td>
+                            <td>
+                                <form action="{{ url_for('delete_payment', payment_id=pay.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete payment record?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-wallet2 fs-1 text-muted mb-2 d-block"></i>
+            <p class="text-muted">No payment records found. Click "Record Payment" to add one!</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-cash-coin text-success me-2"></i> Record New Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('payments') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="project_id" class="form-label font-weight-bold">Select Project *</label>
+                        <select class="form-select" id="project_id" name="project_id" required>
+                            <option value="">-- Select Project --</option>
+                            {% for proj in projects %}
+                                <option value="{{ proj.id }}">{{ proj.title }} (Client: {{ proj.client_name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="client_name" class="form-label font-weight-bold">Client Name</label>
+                        <input type="text" class="form-control" id="client_name" name="client_name" placeholder="Client Name (autofills if left empty)">
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label for="amount" class="form-label font-weight-bold">Amount (₹) *</label>
+                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="payment_date" class="form-label font-weight-bold">Payment Date *</label>
+                            <input type="date" class="form-control" id="payment_date" name="payment_date" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label font-weight-bold">Payment Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="Pending" selected>Pending</option>
+                            <option value="Partially Paid">Partially Paid</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label font-weight-bold">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="e.g. 50% advance received via Bank Transfer"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-mint text-white font-weight-bold"><i class="bi bi-check-circle me-1"></i> Save Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

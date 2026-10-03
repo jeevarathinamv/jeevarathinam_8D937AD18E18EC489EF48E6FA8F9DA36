@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Admin, Project, Task, Client, Payment, StudentProfile
 
-class SportsBookingTestCase(unittest.TestCase):
+class FreelancePortalTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,11 +11,6 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
-            db.session.commit()
 
     def tearDown(self):
         with app.app_context():
@@ -25,92 +20,132 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'name': 'Rahul Sharma',
+            'register_number': 'MCA2025001',
+            'department': 'Master of Computer Applications',
+            'email': 'rahul@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Registration successful', response.data)
+        self.assertIn('Registration successful', response.data.decode('utf-8'))
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'rahul@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn('Welcome back, Rahul Sharma!', response.data.decode('utf-8'))
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
+        self.assertIn('Logged in successfully as Admin', response.data.decode('utf-8'))
 
-    def test_booking_workflow_and_stock_validation(self):
+    def test_student_profile_update(self):
         # Register and login student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
+            'name': 'Anita Roy',
+            'register_number': 'MCA2025002',
             'department': 'MCA',
-            'email': 'sam@college.edu',
+            'email': 'anita@college.edu',
             'password': 'pass'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
+            'email_or_reg': 'anita@college.edu',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # Update profile
+        response = self.client.post('/student/profile', data={
+            'name': 'Anita Roy Updated',
+            'department': 'MCA',
+            'contact_email': 'anita.contact@gmail.com',
+            'skills': 'Python, Flask, Bootstrap',
+            'experience': '1 year freelance experience',
+            'bio': 'Full-stack student freelancer',
+            'portfolio_link': 'https://github.com/anita'
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn('Profile updated successfully', response.data.decode('utf-8'))
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
-
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
-        self.client.get('/logout')
+    def test_project_task_client_payment_workflow(self):
+        # Register and login
+        self.client.post('/register', data={
+            'name': 'John Doe',
+            'register_number': 'MCA2025003',
+            'department': 'MCA',
+            'email': 'john@college.edu',
+            'password': 'pass'
+        })
         self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
+            'email_or_reg': 'john@college.edu',
+            'password': 'pass'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        # Add Client
+        response = self.client.post('/student/clients/add', data={
+            'name': 'Acme Corp',
+            'phone': '9876543210',
+            'email': 'client@acme.com',
+            'company_name': 'Acme Inc',
+            'address': 'Tech Park',
+            'notes': 'Important client'
+        }, follow_redirects=True)
+        html = response.data.decode('utf-8')
+        self.assertTrue('Client "Acme Corp" added successfully' in html or 'Acme Corp' in html)
+
+        # Add Project
+        response = self.client.post('/student/projects/add', data={
+            'title': 'Corporate Web Portal',
+            'client_id': 1,
+            'category': 'Web Development',
+            'budget': '15000',
+            'start_date': date.today().isoformat(),
+            'deadline': date.today().isoformat(),
+            'status': 'In Progress',
+            'progress_percentage': 25,
+            'description': 'Building Flask web portal'
+        }, follow_redirects=True)
+        html = response.data.decode('utf-8')
+        self.assertTrue('Project "Corporate Web Portal" added successfully' in html or 'Corporate Web Portal' in html)
+
+        # Add Task
+        response = self.client.post('/student/tasks', data={
+            'project_id': 1,
+            'title': 'Design Landing Page',
+            'priority': 'High',
+            'due_date': date.today().isoformat(),
+            'status': 'Pending',
+            'description': 'Create Bootstrap 5 HTML landing page'
+        }, follow_redirects=True)
+        html = response.data.decode('utf-8')
+        self.assertTrue('Task added successfully' in html or 'Design Landing Page' in html)
+
+        # Add Payment
+        response = self.client.post('/student/payments', data={
+            'project_id': 1,
+            'client_name': 'Acme Corp',
+            'amount': '5000',
+            'payment_date': date.today().isoformat(),
+            'status': 'Paid',
+            'notes': 'Advance payment'
+        }, follow_redirects=True)
+        html = response.data.decode('utf-8')
+        self.assertTrue('Payment record added successfully' in html or 'Advance payment' in html)
+
+        # Update Project Progress
+        response = self.client.post('/student/projects/update_progress/1', data={
+            'progress_percentage': 100,
+            'status': 'Completed',
+            'progress_notes': 'All deliverables completed!'
+        }, follow_redirects=True)
+        html = response.data.decode('utf-8')
+        self.assertTrue('Project progress updated successfully' in html or '100%' in html)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
-
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            p = db.session.get(Project, 1)
+            self.assertEqual(p.progress_percentage, 100)
+            self.assertEqual(p.status, 'Completed')
 
 if __name__ == '__main__':
     unittest.main()
