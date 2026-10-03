@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Assignment - {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+            <div class="card card-theme p-4 p-md-5">
+                <!-- Header -->
+                <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                    <div>
+                        <span class="badge purple-badge px-3 py-1 rounded-pill mb-2 fw-semibold">
+                            {{ assignment.subject }}
+                        </span>
+                        <h3 class="fw-bold text-dark mb-0">{{ assignment.title }}</h3>
+                    </div>
+                    <a href="{{ url_for('student_assignments') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Assignments
+                    </a>
+                </div>
+
+                <!-- Assignment Overview Box -->
+                <div class="p-3 rounded-3 bg-light border mb-4">
+                    <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-card-text me-1"></i> Assignment Details</h6>
+                    <p class="text-dark small mb-3" style="line-height: 1.6;">{{ assignment.description }}</p>
+                    <div class="row g-2 small text-muted border-top pt-2">
+                        <div class="col-6 col-sm-4">
+                            <strong>Given Date:</strong> {{ assignment.given_date.strftime('%d %b %Y') }}
+                        </div>
+                        <div class="col-6 col-sm-4">
+                            <strong>Deadline:</strong> <span class="text-danger fw-bold">{{ assignment.deadline_date.strftime('%d %b %Y') }}</span>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            {% set d_status = get_deadline_status(assignment.deadline_date) %}
+                            <strong>Status:</strong>
+                            <span class="badge bg-{{ d_status.class }} text-dark px-2 py-1">
+                                {{ d_status.label }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing Submission Alert if present -->
+                {% if existing_submission %}
+                    <div class="alert alert-peach border-0 rounded-3 mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill fs-4 me-2"></i>
+                            <div>
+                                <strong>Previous Submission Detected:</strong> Submitted on {{ existing_submission.submission_date.strftime('%d %b %Y, %I:%M %p') }}
+                                <span class="badge {% if existing_submission.status == 'Late' %}bg-warning text-dark{% else %}bg-success text-white{% endif %} ms-2">
+                                    {{ existing_submission.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Submission Form -->
+                <form method="POST" action="{{ url_for('submit_assignment', assignment_id=assignment.id) }}">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Student Name</label>
+                            <input type="text" class="form-control bg-light" value="{{ student.name }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Register Number</label>
+                            <input type="text" class="form-control bg-light" value="{{ student.register_number }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="submission_text" class="form-label fw-semibold text-secondary">
+                            <i class="bi bi-file-earmark-code text-info me-1"></i> Assignment Answer / Solution / Repository Link
+                        </label>
+                        <textarea class="form-control rounded-3" id="submission_text" name="submission_text" rows="6" placeholder="Type your answer, solution code, or project link (e.g. GitHub link, Drive link, written explanation)..." required>{% if existing_submission %}{{ existing_submission.submission_text }}{% endif %}</textarea>
+                        <div class="form-text text-muted">
+                            <i class="bi bi-lightbulb me-1"></i> You can write your complete answer or paste links to your project files.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-cyan btn-lg fw-bold">
+                            <i class="bi bi-send-fill me-1"></i> {% if existing_submission %}Update Submission{% else %}Submit Assignment{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

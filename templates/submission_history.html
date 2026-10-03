@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Submission History - Assignment Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Header Banner -->
+    <div class="header-card mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="bi bi-clock-history text-info me-2"></i> Submission History
+                </h2>
+                <p class="mb-0 text-white-50">Review all your submitted assignments and status logs.</p>
+            </div>
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-light rounded-pill btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Submissions Table Card -->
+    <div class="card card-theme p-4">
+        {% if submissions %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-custom">
+                    <thead>
+                        <tr>
+                            <th>Assignment Title</th>
+                            <th>Subject</th>
+                            <th>Deadline Date</th>
+                            <th>Submitted On</th>
+                            <th>Submission Status</th>
+                            <th>Submission Answer / Content</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in submissions %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ sub.assignment.title }}</td>
+                                <td>
+                                    <span class="badge purple-badge px-2 py-1 rounded-pill">{{ sub.assignment.subject }}</span>
+                                </td>
+                                <td class="small text-muted">{{ sub.assignment.deadline_date.strftime('%Y-%m-%d') }}</td>
+                                <td class="fw-medium text-dark small">{{ sub.submission_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                                <td>
+                                    {% if sub.status == 'Late' %}
+                                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i> Submitted Late
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Submitted
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="small text-muted text-truncate" style="max-width: 250px;">
+                                        {{ sub.submission_text }}
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('submit_assignment', assignment_id=sub.assignment_id) }}" class="btn btn-cyan btn-sm">
+                                        <i class="bi bi-pencil-square me-1"></i> Edit / Resubmit
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                <h5 class="text-muted">You have not submitted any assignments yet.</h5>
+                <a href="{{ url_for('student_assignments') }}" class="btn btn-cyan mt-3 fw-semibold">
+                    <i class="bi bi-file-earmark-text me-1"></i> View Available Assignments
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

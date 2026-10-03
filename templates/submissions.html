@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}All Student Submissions - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Header Banner -->
+    <div class="header-card mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="bi bi-folder-check text-info me-2"></i> Student Submissions
+                </h2>
+                <p class="mb-0 text-white-50">Review submitted work, register numbers, and submission timestamps.</p>
+            </div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light rounded-pill btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Submissions Table Card -->
+    <div class="card card-theme p-4">
+        {% if submissions %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-custom">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Register Number</th>
+                            <th>Assignment Title</th>
+                            <th>Subject</th>
+                            <th>Submitted Date & Time</th>
+                            <th>Status</th>
+                            <th>Submission Content</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in submissions %}
+                            <tr>
+                                <td class="fw-bold text-dark">
+                                    <i class="bi bi-person-circle text-info me-1"></i> {{ sub.student.name }}
+                                </td>
+                                <td><span class="badge bg-light text-dark border fw-semibold">{{ sub.student_register_number }}</span></td>
+                                <td class="fw-semibold text-dark">{{ sub.assignment.title }}</td>
+                                <td>
+                                    <span class="badge purple-badge px-2 py-1 rounded-pill">{{ sub.assignment.subject }}</span>
+                                </td>
+                                <td class="small text-muted">{{ sub.submission_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                                <td>
+                                    {% if sub.status == 'Late' %}
+                                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
+                                            <i class="bi bi-clock-history me-1"></i> Late
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Submitted
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-outline-info btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#viewModal{{ sub.id }}">
+                                        <i class="bi bi-eye-fill me-1"></i> View Solution
+                                    </button>
+
+                                    <!-- View Content Modal -->
+                                    <div class="modal fade" id="viewModal{{ sub.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ sub.id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                                            <div class="modal-content rounded-4 border-0">
+                                                <div class="modal-header header-gradient text-white rounded-top-4">
+                                                    <h5 class="modal-title fw-bold" id="viewModalLabel{{ sub.id }}">
+                                                        <i class="bi bi-file-earmark-text me-2"></i> Submission Details - {{ sub.student.name }}
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body p-4">
+                                                    <div class="row g-3 mb-3 bg-light p-3 rounded-3 border">
+                                                        <div class="col-md-6">
+                                                            <strong>Student:</strong> {{ sub.student.name }} ({{ sub.student_register_number }})
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <strong>Assignment:</strong> {{ sub.assignment.title }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <strong>Submitted Date:</strong> {{ sub.submission_date.strftime('%Y-%m-%d %I:%M %p') }}
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <strong>Status:</strong>
+                                                            <span class="badge {% if sub.status == 'Late' %}bg-warning text-dark{% else %}bg-success text-white{% endif %}">
+                                                                {{ sub.status }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <h6 class="fw-bold text-secondary mb-2">Submitted Answer / Content:</h6>
+                                                    <div class="p-3 bg-white rounded-3 border text-dark" style="white-space: pre-wrap; font-family: monospace; font-size: 0.95rem;">{{ sub.submission_text }}</div>
+                                                </div>
+                                                <div class="modal-footer bg-light rounded-bottom-4">
+                                                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+                <h5 class="text-muted">No student submissions recorded yet.</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
