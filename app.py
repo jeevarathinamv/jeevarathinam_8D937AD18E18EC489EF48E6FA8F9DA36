@@ -1,4 +1,6 @@
 import os
+import random
+import string
 from datetime import datetime, date
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -6,15 +8,15 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'small_business_enquiry_secret_key_2025')
 
 # Admin Hardcoded Credentials
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
-# Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+# Database configuration: Default to MySQL URI, fallback to SQLite when USE_SQLITE=1
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/small_business_db')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'small_business.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,17 +24,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-class Student(db.Model):
-    __tablename__ = 'students'
+# Database Models
+class Admin(db.Model):
+    __tablename__ = 'admins'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    register_number = db.Column(db.String(50), unique=True, nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='student', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,347 +38,473 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+class Enquiry(db.Model):
+    __tablename__ = 'enquiries'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
+    ref_num = db.Column(db.String(20), unique=True, nullable=False)
+    customer_name = db.Column(db.String(100), nullable=False)
+    phone_number = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    subject = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    enquiry_date = db.Column(db.Date, nullable=False, default=date.today)
+    status = db.Column(db.String(20), nullable=False, default='New') # New, In Progress, Responded, Closed
+    admin_response = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
+    leads = db.relationship('Lead', backref='enquiry', lazy=True)
 
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+class Lead(db.Model):
+    __tablename__ = 'leads'
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    enquiry_id = db.Column(db.Integer, db.ForeignKey('enquiries.id', ondelete='SET NULL'), nullable=True)
+    customer_name = db.Column(db.String(100), nullable=False)
+    phone_number = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    requirement = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(30), nullable=False, default='New Lead') # New Lead, Contacted, Follow-up, Converted, Lost
+    follow_up_date = db.Column(db.Date, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    followups = db.relationship('FollowUp', backref='lead', lazy=True, cascade="all, delete-orphan")
+
+class FollowUp(db.Model):
+    __tablename__ = 'followups'
+    id = db.Column(db.Integer, primary_key=True)
+    lead_id = db.Column(db.Integer, db.ForeignKey('leads.id', ondelete='CASCADE'), nullable=False)
+    follow_up_date = db.Column(db.Date, nullable=False)
+    notes = db.Column(db.Text, nullable=False)
+    status_at_time = db.Column(db.String(30), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+def generate_ref_num():
+    """Generates unique reference number for customer enquiries (e.g., ENQ-1001)"""
+    last_enquiry = Enquiry.query.order_by(Enquiry.id.desc()).first()
+    if last_enquiry and last_enquiry.id:
+        next_id = last_enquiry.id + 1001
+    else:
+        next_id = 1001
+    return f"ENQ-{next_id}"
 
 def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
+    """Seeds initial database with admin user and sample enquiries & leads if empty."""
+    if Admin.query.count() == 0:
+        admin = Admin(username=ADMIN_USERNAME)
+        admin.set_password(ADMIN_PASSWORD)
+        db.session.add(admin)
+
+    if Enquiry.query.count() == 0:
+        eq1 = Enquiry(
+            ref_num='ENQ-1001',
+            customer_name='John Doe',
+            phone_number='9876543210',
+            email='john@example.com',
+            subject='Web Development Services',
+            message='Looking for a custom business website for our retail shop.',
+            enquiry_date=date.today(),
+            status='New'
+        )
+        eq2 = Enquiry(
+            ref_num='ENQ-1002',
+            customer_name='Sarah Smith',
+            phone_number='9876543211',
+            email='sarah@techcorp.com',
+            subject='SEO & Marketing Package',
+            message='Need consultation regarding digital marketing and lead generation.',
+            enquiry_date=date.today(),
+            status='In Progress',
+            admin_response='Scheduled initial discussion call for tomorrow.'
+        )
+        eq3 = Enquiry(
+            ref_num='ENQ-1003',
+            customer_name='Michael Brown',
+            phone_number='9876543212',
+            email='michael@designstudio.com',
+            subject='Software Maintenance',
+            message='Inquiring about annual maintenance contract for existing CRM.',
+            enquiry_date=date.today(),
+            status='Responded',
+            admin_response='Sent quotation details via email.'
+        )
+        db.session.add_all([eq1, eq2, eq3])
         db.session.commit()
 
-# Auth Decorators
-def student_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'student':
-            flash('Please log in as a student to access this page.', 'warning')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+        lead1 = Lead(
+            enquiry_id=eq1.id,
+            customer_name='John Doe',
+            phone_number='9876543210',
+            email='john@example.com',
+            requirement='Custom business website with e-commerce features.',
+            status='New Lead',
+            follow_up_date=date.today(),
+            notes='Customer requested proposal by weekend.'
+        )
+        lead2 = Lead(
+            enquiry_id=eq2.id,
+            customer_name='Sarah Smith',
+            phone_number='9876543211',
+            email='sarah@techcorp.com',
+            requirement='Full digital marketing setup and SEO audit.',
+            status='Follow-up',
+            follow_up_date=date.today(),
+            notes='Follow up regarding budget approval.'
+        )
+        db.session.add_all([lead1, lead2])
+        db.session.commit()
 
+        f1 = FollowUp(
+            lead_id=lead2.id,
+            follow_up_date=date.today(),
+            notes='Called Sarah to review proposal draft.',
+            status_at_time='Follow-up'
+        )
+        db.session.add(f1)
+        db.session.commit()
+
+# Admin Auth Decorator
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'admin':
-            flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+        if not session.get('admin_logged_in'):
+            flash('Please log in as Administrator to access this page.', 'warning')
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
+
+# PUBLIC CUSTOMER ROUTES
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Student Registration
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+@app.route('/enquiry', methods=['GET', 'POST'])
+def enquiry():
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        register_number = request.form.get('register_number', '').strip()
-        department = request.form.get('department', '').strip()
+        customer_name = request.form.get('customer_name', '').strip()
+        phone_number = request.form.get('phone_number', '').strip()
         email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
+        subject = request.form.get('subject', '').strip()
+        message = request.form.get('message', '').strip()
+        enquiry_date_str = request.form.get('enquiry_date', '').strip()
 
-        if not name or not register_number or not department or not email or not password:
-            flash('All fields are required.', 'danger')
-            return redirect(url_for('register'))
+        if not customer_name or not phone_number or not email or not subject or not message:
+            flash('All required fields must be filled out.', 'danger')
+            return redirect(url_for('enquiry'))
 
-        existing_student = Student.query.filter(
-            (Student.email == email) | (Student.register_number == register_number)
-        ).first()
+        try:
+            enquiry_date_val = datetime.strptime(enquiry_date_str, '%Y-%m-%d').date() if enquiry_date_str else date.today()
+        except ValueError:
+            enquiry_date_val = date.today()
 
-        if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
-            return redirect(url_for('register'))
+        ref_num = generate_ref_num()
 
-        student = Student(
-            name=name,
-            register_number=register_number,
-            department=department,
-            email=email
+        new_enquiry = Enquiry(
+            ref_num=ref_num,
+            customer_name=customer_name,
+            phone_number=phone_number,
+            email=email,
+            subject=subject,
+            message=message,
+            enquiry_date=enquiry_date_val,
+            status='New'
         )
-        student.set_password(password)
-        db.session.add(student)
+        db.session.add(new_enquiry)
         db.session.commit()
 
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('enquiry_success', ref_num=ref_num))
 
-    return render_template('register.html')
+    today_str = date.today().isoformat()
+    return render_template('enquiry.html', today=today_str)
 
-# Student & Admin Login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/enquiry/success/<ref_num>')
+def enquiry_success(ref_num):
+    enquiry_obj = Enquiry.query.filter_by(ref_num=ref_num).first_or_404()
+    return render_template('enquiry_success.html', enquiry=enquiry_obj)
+
+# ADMIN AUTHENTICATION ROUTES
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if session.get('admin_logged_in'):
+        return redirect(url_for('admin_dashboard'))
+
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
+        if not username or not password:
+            flash('Please enter both username and password.', 'danger')
+            return redirect(url_for('admin_login'))
+
+        # Check DB first or fallback to env/hardcoded admin
+        admin_user = Admin.query.filter_by(username=username).first()
+        authenticated = False
+
+        if admin_user and admin_user.check_password(password):
+            authenticated = True
+        elif username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            authenticated = True
+
+        if authenticated:
+            session['admin_logged_in'] = True
+            session['admin_username'] = username
+            flash('Logged in successfully as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
         else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
+            flash('Invalid admin username or password.', 'danger')
+            return redirect(url_for('admin_login'))
 
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
+    return render_template('admin_login.html')
 
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
-
-    return render_template('login.html')
-
-# Logout
-@app.route('/logout')
-def logout():
+@app.route('/admin/logout')
+def admin_logout():
     session.clear()
-    flash('You have been logged out.', 'info')
+    flash('Logged out successfully.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
-@app.route('/student/dashboard')
-@student_required
-def student_dashboard():
-    student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+# ADMIN DASHBOARD & MANAGEMENT ROUTES
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
-
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
-    )
-    db.session.add(booking)
-    db.session.commit()
-
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
-
-# Admin Dashboard & Equipment Management
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    total_enquiries = Enquiry.query.count()
+    new_enquiries = Enquiry.query.filter_by(status='New').count()
+    in_progress_enquiries = Enquiry.query.filter_by(status='In Progress').count()
+    responded_enquiries = Enquiry.query.filter_by(status='Responded').count()
+    closed_enquiries = Enquiry.query.filter_by(status='Closed').count()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    total_leads = Lead.query.count()
+    followup_leads = Lead.query.filter_by(status='Follow-up').count()
+    converted_leads = Lead.query.filter_by(status='Converted').count()
+
+    recent_enquiries = Enquiry.query.order_by(Enquiry.created_at.desc()).limit(5).all()
+    upcoming_followups = Lead.query.filter(Lead.follow_up_date.isnot(None)).order_by(Lead.follow_up_date.asc()).limit(5).all()
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        total_enquiries=total_enquiries,
+        new_enquiries=new_enquiries,
+        in_progress_enquiries=in_progress_enquiries,
+        responded_enquiries=responded_enquiries,
+        closed_enquiries=closed_enquiries,
+        total_leads=total_leads,
+        followup_leads=followup_leads,
+        converted_leads=converted_leads,
+        recent_enquiries=recent_enquiries,
+        upcoming_followups=upcoming_followups
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+@app.route('/admin/enquiries')
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+def enquiries():
+    search_query = request.args.get('q', '').strip()
+    status_filter = request.args.get('status', '').strip()
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
+    query = Enquiry.query
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
+    if search_query:
+        query = query.filter(
+            (Enquiry.customer_name.ilike(f'%{search_query}%')) |
+            (Enquiry.email.ilike(f'%{search_query}%')) |
+            (Enquiry.phone_number.ilike(f'%{search_query}%')) |
+            (Enquiry.subject.ilike(f'%{search_query}%')) |
+            (Enquiry.ref_num.ilike(f'%{search_query}%'))
+        )
+
+    if status_filter:
+        query = query.filter(Enquiry.status == status_filter)
+
+    all_enquiries = query.order_by(Enquiry.created_at.desc()).all()
+    return render_template('enquiries.html', enquiries=all_enquiries, q=search_query, selected_status=status_filter)
+
+@app.route('/admin/enquiry/<int:id>')
+@admin_required
+def enquiry_details(id):
+    enquiry_obj = Enquiry.query.get_or_404(id)
+    return render_template('enquiry_details.html', enquiry=enquiry_obj)
+
+@app.route('/admin/enquiry/<int:id>/update', methods=['POST'])
+@admin_required
+def update_enquiry(id):
+    enquiry_obj = Enquiry.query.get_or_404(id)
+    status = request.form.get('status', enquiry_obj.status)
+    admin_response = request.form.get('admin_response', '').strip()
+
+    enquiry_obj.status = status
+    if admin_response:
+        enquiry_obj.admin_response = admin_response
+
+    db.session.commit()
+    flash(f'Enquiry #{enquiry_obj.ref_num} updated successfully.', 'success')
+    return redirect(url_for('enquiry_details', id=id))
+
+@app.route('/admin/enquiry/<int:id>/convert', methods=['POST'])
+@admin_required
+def convert_to_lead(id):
+    enquiry_obj = Enquiry.query.get_or_404(id)
+    requirement = request.form.get('requirement', '').strip() or f"Enquiry Subject: {enquiry_obj.subject}\nDetails: {enquiry_obj.message}"
+    notes = request.form.get('notes', '').strip() or "Converted from online customer enquiry."
+    follow_up_date_str = request.form.get('follow_up_date', '').strip()
+
+    follow_up_date_val = None
+    if follow_up_date_str:
+        try:
+            follow_up_date_val = datetime.strptime(follow_up_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            follow_up_date_val = date.today()
+
+    new_lead = Lead(
+        enquiry_id=enquiry_obj.id,
+        customer_name=enquiry_obj.customer_name,
+        phone_number=enquiry_obj.phone_number,
+        email=enquiry_obj.email,
+        requirement=requirement,
+        status='New Lead',
+        follow_up_date=follow_up_date_val,
+        notes=notes
     )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+    enquiry_obj.status = 'In Progress'
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+    db.session.add(new_lead)
+    db.session.commit()
+
+    flash(f'Enquiry #{enquiry_obj.ref_num} converted to Lead successfully.', 'success')
+    return redirect(url_for('lead_details', id=new_lead.id))
+
+@app.route('/admin/enquiry/<int:id>/delete', methods=['POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
-
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
-
+def delete_enquiry(id):
+    enquiry_obj = Enquiry.query.get_or_404(id)
+    ref = enquiry_obj.ref_num
+    db.session.delete(enquiry_obj)
     db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+    flash(f'Enquiry {ref} deleted successfully.', 'info')
+    return redirect(url_for('enquiries'))
 
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
+@app.route('/admin/leads')
 @admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
+def leads():
+    search_query = request.args.get('q', '').strip()
+    status_filter = request.args.get('status', '').strip()
 
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
+    query = Lead.query
+
+    if search_query:
+        query = query.filter(
+            (Lead.customer_name.ilike(f'%{search_query}%')) |
+            (Lead.email.ilike(f'%{search_query}%')) |
+            (Lead.phone_number.ilike(f'%{search_query}%')) |
+            (Lead.requirement.ilike(f'%{search_query}%'))
+        )
+
+    if status_filter:
+        query = query.filter(Lead.status == status_filter)
+
+    all_leads = query.order_by(Lead.created_at.desc()).all()
+    return render_template('leads.html', leads=all_leads, q=search_query, selected_status=status_filter)
+
+@app.route('/admin/lead/<int:id>')
 @admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def lead_details(id):
+    lead_obj = Lead.query.get_or_404(id)
+    followups = FollowUp.query.filter_by(lead_id=id).order_by(FollowUp.created_at.desc()).all()
+    today_str = date.today().isoformat()
+    return render_template('lead_details.html', lead=lead_obj, followups=followups, today=today_str)
 
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
+@app.route('/admin/lead/<int:id>/update', methods=['POST'])
 @admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def update_lead(id):
+    lead_obj = Lead.query.get_or_404(id)
+    status = request.form.get('status', lead_obj.status)
+    requirement = request.form.get('requirement', lead_obj.requirement).strip()
+    notes = request.form.get('notes', '').strip()
+    follow_up_date_str = request.form.get('follow_up_date', '').strip()
 
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
+    lead_obj.status = status
+    lead_obj.requirement = requirement
 
-    booking.status = 'Rejected'
+    if notes:
+        lead_obj.notes = notes
+
+    if follow_up_date_str:
+        try:
+            lead_obj.follow_up_date = datetime.strptime(follow_up_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+
+    # If new notes or follow-up date was set, create a FollowUp history record
+    if notes or follow_up_date_str:
+        f_date = lead_obj.follow_up_date or date.today()
+        f_notes = notes if notes else "Status or follow-up date updated."
+        followup_record = FollowUp(
+            lead_id=lead_obj.id,
+            follow_up_date=f_date,
+            notes=f_notes,
+            status_at_time=status
+        )
+        db.session.add(followup_record)
+
     db.session.commit()
+    flash(f'Lead details for {lead_obj.customer_name} updated.', 'success')
+    return redirect(url_for('lead_details', id=id))
 
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
+@app.route('/admin/lead/<int:id>/delete', methods=['POST'])
 @admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def delete_lead(id):
+    lead_obj = Lead.query.get_or_404(id)
+    name = lead_obj.customer_name
+    db.session.delete(lead_obj)
+    db.session.commit()
+    flash(f'Lead for {name} deleted successfully.', 'info')
+    return redirect(url_for('leads'))
 
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
+@app.route('/admin/followups')
+@admin_required
+def followups():
+    all_leads = Lead.query.order_by(Lead.customer_name.asc()).all()
+    all_followups = FollowUp.query.order_by(FollowUp.created_at.desc()).all()
+    upcoming_leads = Lead.query.filter(Lead.follow_up_date.isnot(None)).order_by(Lead.follow_up_date.asc()).all()
+    today_str = date.today().isoformat()
+    return render_template('followups.html', leads=all_leads, followups=all_followups, upcoming_leads=upcoming_leads, today=today_str)
 
-    booking.status = 'Returned'
+@app.route('/admin/followup/add', methods=['POST'])
+@admin_required
+def add_followup():
+    lead_id = request.form.get('lead_id', type=int)
+    follow_up_date_str = request.form.get('follow_up_date', '').strip()
+    notes = request.form.get('notes', '').strip()
+    status = request.form.get('status', '').strip()
+
+    if not lead_id or not follow_up_date_str or not notes:
+        flash('Please select a lead, follow-up date, and enter notes.', 'danger')
+        return redirect(url_for('followups'))
+
+    lead_obj = Lead.query.get_or_404(lead_id)
+
+    try:
+        f_date = datetime.strptime(follow_up_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        f_date = date.today()
+
+    if status:
+        lead_obj.status = status
+
+    lead_obj.follow_up_date = f_date
+    lead_obj.notes = notes
+
+    new_followup = FollowUp(
+        lead_id=lead_obj.id,
+        follow_up_date=f_date,
+        notes=notes,
+        status_at_time=lead_obj.status
+    )
+
+    db.session.add(new_followup)
     db.session.commit()
 
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+    flash(f'Follow-up added for {lead_obj.customer_name}.', 'success')
+    return redirect(url_for('followups'))
 
 if __name__ == '__main__':
     with app.app_context():

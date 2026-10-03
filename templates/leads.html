@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Leads - Small Business Online Enquiry{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card card-custom p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-briefcase-fill text-peach me-2"></i> Lead Management</h3>
+            <a href="{{ url_for('followups') }}" class="btn btn-peach btn-sm"><i class="bi bi-calendar-check me-1"></i> View Follow-up Calendar</a>
+        </div>
+
+        <!-- Search & Filter Form -->
+        <form action="{{ url_for('leads') }}" method="GET" class="row g-2 mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="Search lead by customer name, phone, email, or requirements...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="status">
+                    <option value="">All Lead Statuses</option>
+                    <option value="New Lead" {% if selected_status == 'New Lead' %}selected{% endif %}>New Lead</option>
+                    <option value="Contacted" {% if selected_status == 'Contacted' %}selected{% endif %}>Contacted</option>
+                    <option value="Follow-up" {% if selected_status == 'Follow-up' %}selected{% endif %}>Follow-up</option>
+                    <option value="Converted" {% if selected_status == 'Converted' %}selected{% endif %}>Converted</option>
+                    <option value="Lost" {% if selected_status == 'Lost' %}selected{% endif %}>Lost</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-cyan text-dark"><i class="bi bi-filter me-1"></i> Filter</button>
+            </div>
+        </form>
+
+        <!-- Leads Table -->
+        <div class="table-responsive">
+            <table class="table table-hover table-custom align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Lead ID</th>
+                        <th>Customer Information</th>
+                        <th>Requirement</th>
+                        <th>Lead Status</th>
+                        <th>Next Follow-up</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if leads %}
+                        {% for ld in leads %}
+                            <tr>
+                                <td class="fw-bold font-monospace text-peach">LEAD-{{ ld.id }}</td>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ ld.customer_name }}</div>
+                                    <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ ld.phone_number }}</div>
+                                    <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ ld.email }}</div>
+                                </td>
+                                <td>
+                                    <span class="text-dark small d-inline-block text-truncate" style="max-width: 280px;">{{ ld.requirement }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-status {% if ld.status == 'New Lead' %}badge-new{% elif ld.status == 'Contacted' %}badge-in-progress{% elif ld.status == 'Follow-up' %}badge-responded{% elif ld.status == 'Converted' %}badge-converted{% else %}badge-lost{% endif %}">
+                                        {{ ld.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if ld.follow_up_date %}
+                                        <span class="text-danger fw-semibold small"><i class="bi bi-calendar-event me-1"></i>{{ ld.follow_up_date }}</span>
+                                    {% else %}
+                                        <span class="text-muted small">Not scheduled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('lead_details', id=ld.id) }}" class="btn btn-sm btn-outline-peach me-1">
+                                        <i class="bi bi-eye"></i> Manage
+                                    </a>
+                                    <form action="{{ url_for('delete_lead', id=ld.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete lead for {{ ld.customer_name }}?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No leads found matching your filters.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

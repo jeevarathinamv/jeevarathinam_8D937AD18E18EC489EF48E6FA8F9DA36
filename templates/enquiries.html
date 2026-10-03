@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Enquiries - Small Business Online Enquiry{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card card-custom p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-inbox-fill text-cyan me-2"></i> Enquiry Management</h3>
+            <a href="{{ url_for('enquiry') }}" class="btn btn-cyan btn-sm"><i class="bi bi-plus-circle me-1"></i> New Enquiry Form</a>
+        </div>
+
+        <!-- Search & Filter Form -->
+        <form action="{{ url_for('enquiries') }}" method="GET" class="row g-2 mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="Search by name, phone, email, subject, or ENQ reference...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="New" {% if selected_status == 'New' %}selected{% endif %}>New</option>
+                    <option value="In Progress" {% if selected_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Responded" {% if selected_status == 'Responded' %}selected{% endif %}>Responded</option>
+                    <option value="Closed" {% if selected_status == 'Closed' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-peach"><i class="bi bi-filter me-1"></i> Search</button>
+            </div>
+        </form>
+
+        <!-- Enquiries Table -->
+        <div class="table-responsive">
+            <table class="table table-hover table-custom align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Ref #</th>
+                        <th>Customer Details</th>
+                        <th>Subject</th>
+                        <th>Enquiry Date</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if enquiries %}
+                        {% for eq in enquiries %}
+                            <tr>
+                                <td class="fw-bold font-monospace text-cyan">{{ eq.ref_num }}</td>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ eq.customer_name }}</div>
+                                    <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ eq.phone_number }}</div>
+                                    <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ eq.email }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ eq.subject }}</div>
+                                    <small class="text-muted text-truncate d-inline-block" style="max-width: 250px;">{{ eq.message }}</small>
+                                </td>
+                                <td><i class="bi bi-calendar3 me-1 text-peach"></i>{{ eq.enquiry_date }}</td>
+                                <td>
+                                    <span class="badge badge-status {% if eq.status == 'New' %}badge-new{% elif eq.status == 'In Progress' %}badge-in-progress{% elif eq.status == 'Responded' %}badge-responded{% else %}badge-closed{% endif %}">
+                                        {{ eq.status }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('enquiry_details', id=eq.id) }}" class="btn btn-sm btn-outline-cyan me-1">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <form action="{{ url_for('delete_enquiry', id=eq.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete enquiry {{ eq.ref_num }}?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No enquiries matching your search criteria.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
