@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Lead Details - {{ lead.customer_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 text-white flex-wrap gap-2">
+        <a href="{{ url_for('leads') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Leads</a>
+        <div>
+            <form action="{{ url_for('delete_lead', id=lead.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this lead?');">
+                <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash me-1"></i> Delete Lead</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Lead Info & Follow-up History -->
+        <div class="col-lg-7">
+            <div class="card card-custom p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                        <span class="text-muted small fw-semibold">LEAD IDENTIFIER</span>
+                        <h3 class="fw-bold text-peach font-monospace mb-0">LEAD-{{ lead.id }}</h3>
+                    </div>
+                    <div>
+                        <span class="badge badge-status fs-6 {% if lead.status == 'New Lead' %}badge-new{% elif lead.status == 'Contacted' %}badge-in-progress{% elif lead.status == 'Follow-up' %}badge-responded{% elif lead.status == 'Converted' %}badge-converted{% else %}badge-lost{% endif %}">
+                            {{ lead.status }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-white p-3 rounded-3 mb-3 border">
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-2"><i class="bi bi-person-lines-fill text-peach me-2"></i> Prospect Contact Details</h6>
+                    <div class="row g-2">
+                        <div class="col-sm-4 text-muted">Customer Name:</div>
+                        <div class="col-sm-8 fw-bold text-dark">{{ lead.customer_name }}</div>
+
+                        <div class="col-sm-4 text-muted">Phone Number:</div>
+                        <div class="col-sm-8 text-dark"><i class="bi bi-telephone text-peach me-1"></i> {{ lead.phone_number }}</div>
+
+                        <div class="col-sm-4 text-muted">Email Address:</div>
+                        <div class="col-sm-8 text-dark"><i class="bi bi-envelope text-peach me-1"></i> {{ lead.email }}</div>
+
+                        <div class="col-sm-4 text-muted">Follow-up Date:</div>
+                        <div class="col-sm-8 text-dark fw-semibold text-danger"><i class="bi bi-calendar-event me-1"></i> {{ lead.follow_up_date or 'Not Scheduled' }}</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-3 rounded-3 mb-3 border">
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-2"><i class="bi bi-file-text-fill text-cyan me-2"></i> Business Requirement</h6>
+                    <p class="text-dark mb-0">{{ lead.requirement }}</p>
+                </div>
+
+                {% if lead.notes %}
+                    <div class="alert alert-custom mb-0">
+                        <h6 class="fw-bold text-dark mb-1"><i class="bi bi-sticky-fill text-peach me-1"></i> Latest Lead Notes:</h6>
+                        <p class="mb-0 text-dark small">{{ lead.notes }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Follow-up History Log -->
+            <div class="card card-navy p-4">
+                <h5 class="fw-bold text-cyan border-bottom border-secondary pb-2 mb-3"><i class="bi bi-clock-history text-peach me-2"></i> Follow-up Log History</h5>
+                {% if followups %}
+                    <div class="timeline">
+                        {% for f in followups %}
+                            <div class="bg-dark p-3 rounded-3 mb-2 border border-secondary">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge bg-cyan text-dark fw-bold"><i class="bi bi-calendar3 me-1"></i> {{ f.follow_up_date }}</span>
+                                    <small class="text-white-50">Status: {{ f.status_at_time or 'Follow-up' }}</small>
+                                </div>
+                                <p class="small text-light mb-0 mt-1">{{ f.notes }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-light opacity-75 small text-center mb-0">No historical follow-up logs recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Update Form -->
+        <div class="col-lg-5">
+            <div class="card card-custom p-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-arrow-repeat text-cyan me-2"></i> Update Lead &amp; Follow-up</h5>
+                <form action="{{ url_for('update_lead', id=lead.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="status" class="form-label fw-semibold">Lead Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="New Lead" {% if lead.status == 'New Lead' %}selected{% endif %}>New Lead</option>
+                            <option value="Contacted" {% if lead.status == 'Contacted' %}selected{% endif %}>Contacted</option>
+                            <option value="Follow-up" {% if lead.status == 'Follow-up' %}selected{% endif %}>Follow-up</option>
+                            <option value="Converted" {% if lead.status == 'Converted' %}selected{% endif %}>Converted</option>
+                            <option value="Lost" {% if lead.status == 'Lost' %}selected{% endif %}>Lost</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="follow_up_date" class="form-label fw-semibold">Next Follow-up Date</label>
+                        <input type="date" class="form-control" id="follow_up_date" name="follow_up_date" value="{{ lead.follow_up_date or today }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="requirement" class="form-label fw-semibold">Requirement Details</label>
+                        <textarea class="form-control" id="requirement" name="requirement" rows="3">{{ lead.requirement }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label fw-semibold">Add Follow-up Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Enter notes from call, meeting or email conversation..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyan w-100 fw-bold"><i class="bi bi-check-circle me-1"></i> Save Updates</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

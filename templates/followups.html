@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Follow-up Management - Small Business Online Enquiry{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 text-white flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold mb-0"><i class="bi bi-calendar-check-fill text-cyan me-2"></i> Follow-up Management</h3>
+            <p class="small text-light opacity-75 mb-0">Schedule and record follow-up communications with potential customers.</p>
+        </div>
+        <a href="{{ url_for('leads') }}" class="btn btn-outline-cyan btn-sm"><i class="bi bi-briefcase me-1"></i> View All Leads</a>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Record New Follow-up Form -->
+        <div class="col-lg-5">
+            <div class="card card-custom p-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-plus-circle-fill text-peach me-2"></i> Record New Follow-up</h5>
+                <form action="{{ url_for('add_followup') }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="lead_id" class="form-label fw-semibold">Select Lead / Customer <span class="text-danger">*</span></label>
+                        <select class="form-select" id="lead_id" name="lead_id" required>
+                            <option value="">-- Choose a Lead --</option>
+                            {% for ld in leads %}
+                                <option value="{{ ld.id }}">{{ ld.customer_name }} ({{ ld.phone_number }}) - Status: {{ ld.status }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="follow_up_date" class="form-label fw-semibold">Follow-up Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="follow_up_date" name="follow_up_date" value="{{ today }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label fw-semibold">Update Lead Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">Keep Current Status</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Follow-up">Follow-up</option>
+                            <option value="Converted">Converted</option>
+                            <option value="Lost">Lost</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label fw-semibold">Follow-up Communication Notes <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Detail the call results, customer feedback, next steps..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-peach w-100 fw-bold"><i class="bi bi-save-fill me-1"></i> Save Follow-up Log</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Scheduled Follow-ups List -->
+        <div class="col-lg-7">
+            <div class="card card-custom p-4 mb-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-alarm-fill text-cyan me-2"></i> Upcoming Scheduled Follow-ups</h5>
+                {% if upcoming_leads %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Follow-up Date</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ld in upcoming_leads %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-dark">{{ ld.customer_name }}</div>
+                                            <small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ ld.phone_number }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger text-white"><i class="bi bi-calendar3 me-1"></i>{{ ld.follow_up_date }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-status {% if ld.status == 'New Lead' %}badge-new{% elif ld.status == 'Contacted' %}badge-in-progress{% elif ld.status == 'Follow-up' %}badge-responded{% elif ld.status == 'Converted' %}badge-converted{% else %}badge-lost{% endif %}">
+                                                {{ ld.status }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ url_for('lead_details', id=ld.id) }}" class="btn btn-sm btn-outline-cyan">View Details</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No upcoming scheduled follow-ups found.</p>
+                {% endif %}
+            </div>
+
+            <!-- Follow-up Activity Stream -->
+            <div class="card card-navy p-4">
+                <h5 class="fw-bold text-cyan border-bottom border-secondary pb-2 mb-3"><i class="bi bi-journal-text text-peach me-2"></i> Recent Follow-up Logs</h5>
+                {% if followups %}
+                    <div class="list-group list-group-flush">
+                        {% for f in followups %}
+                            <div class="list-group-item bg-transparent border-bottom border-secondary py-2 px-0">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-cyan"><i class="bi bi-person-fill me-1"></i>{{ f.lead.customer_name if f.lead else 'Customer' }}</span>
+                                    <small class="text-peach fw-semibold"><i class="bi bi-clock me-1"></i>{{ f.follow_up_date }}</small>
+                                </div>
+                                <p class="small text-light opacity-90 mb-0">{{ f.notes }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-white-50 text-center py-3 mb-0">No follow-up activity recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
