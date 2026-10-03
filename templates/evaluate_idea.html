@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Idea - {{ idea.idea_id }} | College Entrepreneurship Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card card-custom shadow-lg">
+            <div class="card-header card-petrol-header p-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="mb-0 text-white"><i class="bi bi-calculator-fill text-warning me-2"></i> Evaluate Entrepreneurship Idea</h4>
+                    <small class="text-white-50">Score proposal parameters from 1 to 10. Total score calculated automatically.</small>
+                </div>
+                <span class="badge bg-warning text-dark fs-6">{{ idea.idea_id }}</span>
+            </div>
+            <div class="card-body p-4">
+
+                <!-- Idea Summary Header -->
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <h5 class="fw-bold mb-1 text-primary">{{ idea.title }}</h5>
+                    <div class="small text-muted mb-2">
+                        <span><strong>Student:</strong> {{ idea.student.name }} ({{ idea.student.register_number }})</span> |
+                        <span><strong>Department:</strong> {{ idea.student.department }}</span> |
+                        <span><strong>Category:</strong> {{ idea.category }}</span>
+                    </div>
+                    <p class="mb-0 text-dark small"><strong>Problem Summary:</strong> {{ idea.problem_statement }}</p>
+                </div>
+
+                <form action="{{ url_for('evaluate_idea', id=idea.id) }}" method="POST" class="needs-validation" novalidate>
+
+                    <div class="row g-4">
+                        <!-- Score 1 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border p-3 bg-white rounded-3">
+                                <label for="innovation_score" class="form-label fw-bold d-flex justify-content-between">
+                                    <span><i class="bi bi-lightbulb text-warning me-1"></i> Innovation Score</span>
+                                    <span class="text-muted small">(1 - 10)</span>
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="innovation_score" name="innovation_score" min="1" max="10" value="{{ evaluation.innovation_score if evaluation else 5 }}" required>
+                                <small class="text-muted mt-1">Evaluates uniqueness, creativity, and novelty of solution.</small>
+                            </div>
+                        </div>
+
+                        <!-- Score 2 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border p-3 bg-white rounded-3">
+                                <label for="feasibility_score" class="form-label fw-bold d-flex justify-content-between">
+                                    <span><i class="bi bi-gear-wide-connected text-info me-1"></i> Feasibility Score</span>
+                                    <span class="text-muted small">(1 - 10)</span>
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="feasibility_score" name="feasibility_score" min="1" max="10" value="{{ evaluation.feasibility_score if evaluation else 5 }}" required>
+                                <small class="text-muted mt-1">Evaluates technical feasibility, resource plan, and budget.</small>
+                            </div>
+                        </div>
+
+                        <!-- Score 3 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border p-3 bg-white rounded-3">
+                                <label for="market_potential_score" class="form-label fw-bold d-flex justify-content-between">
+                                    <span><i class="bi bi-graph-up-arrow text-success me-1"></i> Market Potential Score</span>
+                                    <span class="text-muted small">(1 - 10)</span>
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="market_potential_score" name="market_potential_score" min="1" max="10" value="{{ evaluation.market_potential_score if evaluation else 5 }}" required>
+                                <small class="text-muted mt-1">Evaluates customer demand, addressable market, and scalability.</small>
+                            </div>
+                        </div>
+
+                        <!-- Score 4 -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border p-3 bg-white rounded-3">
+                                <label for="social_impact_score" class="form-label fw-bold d-flex justify-content-between">
+                                    <span><i class="bi bi-heart-fill text-danger me-1"></i> Social Impact Score</span>
+                                    <span class="text-muted small">(1 - 10)</span>
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="social_impact_score" name="social_impact_score" min="1" max="10" value="{{ evaluation.social_impact_score if evaluation else 5 }}" required>
+                                <small class="text-muted mt-1">Evaluates community benefit, sustainability, and employment.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Live Calculated Display -->
+                    <div class="my-4 p-3 bg-lilac-light rounded-3 border text-center" style="background-color: var(--lilac-light);">
+                        <h5 class="fw-bold mb-1" style="color: var(--petrol-blue);">
+                            Total Score: <span id="total_score_display" class="fs-2 text-danger fw-bold">{{ evaluation.total_score if evaluation else 20 }}</span> / 40
+                        </h5>
+                        <small class="text-muted">Total is automatically calculated as the sum of all 4 score criteria.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="overall_remarks" class="form-label fw-bold">Overall Evaluation Remarks</label>
+                        <textarea class="form-control" id="overall_remarks" name="overall_remarks" rows="3" placeholder="Provide constructive feedback and evaluation notes for the student...">{{ evaluation.overall_remarks if evaluation else '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('manage_ideas') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-coral px-4">
+                            <i class="bi bi-check-circle-fill me-1"></i> Save Evaluation Scores
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

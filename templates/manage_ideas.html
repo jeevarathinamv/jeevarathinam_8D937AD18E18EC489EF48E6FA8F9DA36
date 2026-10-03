@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Ideas | College Entrepreneurship Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold mb-1" style="color: var(--petrol-blue);">
+            <i class="bi bi-kanban-fill me-2"></i> Manage Submitted Ideas
+        </h2>
+        <p class="text-muted mb-0">Search, filter, update status, and evaluate submitted entrepreneurship proposals.</p>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card card-custom p-3 mb-4 shadow-sm">
+    <form action="{{ url_for('manage_ideas') }}" method="GET" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Search Idea ID, Student, or Title...">
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <select class="form-select" name="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <select class="form-select" name="status">
+                <option value="">All Statuses</option>
+                {% for st in statuses %}
+                <option value="{{ st }}" {% if status_filter == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-petrol w-100"><i class="bi bi-filter"></i> Filter</button>
+            {% if search_query or category_filter or status_filter %}
+            <a href="{{ url_for('manage_ideas') }}" class="btn btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Ideas List Table -->
+<div class="card card-custom shadow-sm">
+    <div class="card-body p-0">
+        {% if ideas %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Idea ID</th>
+                        <th>Student Name</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Submission Date</th>
+                        <th>Status & Update</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for idea in ideas %}
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary">{{ idea.idea_id }}</td>
+                        <td>
+                            <div class="fw-bold">{{ idea.student.name }}</div>
+                            <small class="text-muted">{{ idea.student.register_number }}</small>
+                        </td>
+                        <td class="fw-medium" style="max-width: 200px;">{{ idea.title }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ idea.category }}</span></td>
+                        <td><small>{{ idea.submission_date.strftime('%Y-%m-%d') }}</small></td>
+                        <td style="min-width: 220px;">
+                            <form action="{{ url_for('update_idea_status', id=idea.id) }}" method="POST" class="d-flex flex-column gap-1">
+                                <div class="input-group input-group-sm">
+                                    <select name="status" class="form-select form-select-sm fw-bold">
+                                        <option value="Pending" {% if idea.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="Under Review" {% if idea.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                                        <option value="Approved" {% if idea.status == 'Approved' %}selected{% endif %}>Approved</option>
+                                        <option value="Rejected" {% if idea.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                        <option value="Selected" {% if idea.status == 'Selected' %}selected{% endif %}>Selected</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-petrol" title="Save Status"><i class="bi bi-save"></i></button>
+                                </div>
+                                <input type="text" name="admin_remarks" class="form-control form-control-sm" value="{{ idea.admin_remarks or '' }}" placeholder="Add remarks..." style="font-size: 0.78rem;">
+                            </form>
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('idea_details', id=idea.id) }}" class="btn btn-outline-primary" title="View Complete Details">
+                                    <i class="bi bi-eye-fill"></i> View
+                                </a>
+                                <a href="{{ url_for('evaluate_idea', id=idea.id) }}" class="btn btn-coral" title="Evaluate Proposal">
+                                    <i class="bi bi-calculator"></i> Evaluate
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <i class="bi bi-folder-x fs-1 d-block mb-2"></i>
+            No ideas found matching your criteria.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
