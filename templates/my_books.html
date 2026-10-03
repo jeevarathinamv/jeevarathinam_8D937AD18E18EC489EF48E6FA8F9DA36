@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}My Books - College Library System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-bookmark-check-fill text-primary me-2"></i>My Issued Books
+            </h2>
+            <p class="text-muted mb-0">Track your current active books and past borrowing history.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{{ url_for('books') }}" class="btn btn-mint fw-semibold"><i class="bi bi-plus-circle me-1"></i> Issue Another Book</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-stars me-2 text-primary"></i>Borrowing Records</h5>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <input type="text" class="form-control form-control-sm d-inline-block w-auto table-search-input" data-target-table="my-books-table" placeholder="Filter my records...">
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            {% if issues %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="my-books-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Book Name</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for issue in issues %}
+                                <tr {% if issue.status == 'Overdue' %}class="table-danger border-start border-danger border-4"{% endif %}>
+                                    <td class="fw-bold text-muted">{{ loop.index }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ issue.book.book_name }}</div>
+                                        <span class="small text-muted">ISBN: {{ issue.book.isbn }}</span>
+                                    </td>
+                                    <td>{{ issue.book.author_name }}</td>
+                                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ issue.book.category }}</span></td>
+                                    <td>{{ issue.issue_date.strftime('%Y-%m-%d') }}</td>
+                                    <td class="fw-semibold {% if issue.status == 'Overdue' %}text-danger{% endif %}">
+                                        {{ issue.due_date.strftime('%Y-%m-%d') }}
+                                    </td>
+                                    <td>{{ issue.return_date.strftime('%Y-%m-%d') if issue.return_date else '-' }}</td>
+                                    <td>
+                                        {% if issue.status == 'Issued' %}
+                                            <span class="badge badge-issued"><i class="bi bi-clock me-1"></i> Issued</span>
+                                        {% elif issue.status == 'Returned' %}
+                                            <span class="badge badge-returned"><i class="bi bi-check-circle me-1"></i> Returned</span>
+                                        {% elif issue.status == 'Overdue' %}
+                                            <span class="badge badge-overdue"><i class="bi bi-exclamation-triangle-fill me-1"></i> Overdue</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-5 text-center text-muted">
+                    <i class="bi bi-journal-album fs-1 text-secondary mb-3 d-block"></i>
+                    <h5 class="fw-bold text-dark">No Book History Found</h5>
+                    <p class="text-muted">You have not issued any books from the college library yet.</p>
+                    <a href="{{ url_for('books') }}" class="btn btn-mint fw-semibold"><i class="bi bi-search me-1"></i> Browse Library Catalog</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Issue Records - Admin Control Panel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-arrow-left-right text-primary me-2"></i>Book Issue & Return Records
+            </h2>
+            <p class="text-muted mb-0">Track all borrowed books, return dates, overdue items, and process returns.</p>
+        </div>
+    </div>
+
+    <!-- Search and Status Filter Form -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3 bg-white rounded-3">
+            <form action="{{ url_for('issue_records') }}" method="GET" class="row g-2 align-items-center">
+                <div class="col-md-6 col-lg-7">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Search by Student Name, Register No, or Book Title..." value="{{ search }}">
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <select name="status" class="form-select">
+                        <option value="All" {% if status_filter == 'All' %}selected{% endif %}>All Statuses</option>
+                        <option value="Issued" {% if status_filter == 'Issued' %}selected{% endif %}>Issued</option>
+                        <option value="Returned" {% if status_filter == 'Returned' %}selected{% endif %}>Returned</option>
+                        <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-lg-2 d-grid gap-2 d-md-flex">
+                    <button type="submit" class="btn btn-royal w-100"><i class="bi bi-funnel-fill me-1"></i> Filter</button>
+                    {% if search or (status_filter and status_filter != 'All') %}
+                        <a href="{{ url_for('issue_records') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-x-circle"></i></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Records Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-check me-2 text-primary"></i>Issue Log ({{ records|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if records %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Student Details</th>
+                                <th>Book Details</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                                <tr {% if record.status == 'Overdue' %}class="table-danger border-start border-danger border-4"{% endif %}>
+                                    <td class="fw-bold text-muted">{{ loop.index }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ record.student.student_name }}</div>
+                                        <span class="badge bg-light text-dark border">{{ record.student.register_number }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ record.book.book_name }}</div>
+                                        <span class="small text-muted">ISBN: {{ record.book.isbn }}</span>
+                                    </td>
+                                    <td>{{ record.issue_date.strftime('%Y-%m-%d') }}</td>
+                                    <td class="fw-semibold {% if record.status == 'Overdue' %}text-danger{% endif %}">
+                                        {{ record.due_date.strftime('%Y-%m-%d') }}
+                                    </td>
+                                    <td>{{ record.return_date.strftime('%Y-%m-%d') if record.return_date else '-' }}</td>
+                                    <td>
+                                        {% if record.status == 'Issued' %}
+                                            <span class="badge badge-issued"><i class="bi bi-clock me-1"></i> Issued</span>
+                                        {% elif record.status == 'Returned' %}
+                                            <span class="badge badge-returned"><i class="bi bi-check-circle me-1"></i> Returned</span>
+                                        {% elif record.status == 'Overdue' %}
+                                            <span class="badge badge-overdue"><i class="bi bi-exclamation-triangle-fill me-1"></i> Overdue</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if record.status in ['Issued', 'Overdue'] %}
+                                            <form action="{{ url_for('return_book', issue_id=record.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                                                    <i class="bi bi-arrow-return-left me-1"></i> Mark Returned
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary"><i class="bi bi-check2-all me-1"></i> Completed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-5 text-center text-muted">
+                    <i class="bi bi-journal-x fs-1 text-secondary mb-3 d-block"></i>
+                    <h5 class="fw-bold text-dark">No Records Found</h5>
+                    <p class="text-muted">No book issue records match the selected status or search filter.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

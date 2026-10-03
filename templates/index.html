@@ -1,73 +1,103 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - College Library Book Issue & Return System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<!-- Hero Banner -->
+<div class="hero-banner text-center mb-5 shadow-sm">
+    <div class="container">
+        <span class="badge bg-mint px-3 py-2 rounded-pill fs-6 mb-3 text-dark fw-bold bg-warning">College Academic Library</span>
+        <h1 class="display-4 fw-bold mb-3">College Library Book Issue & Return System</h1>
+        <p class="lead mb-4 mx-auto" style="max-width: 700px;">
+            A clean, efficient, and simple digital portal to explore, issue, and manage library books seamlessly.
         </p>
-        <div class="d-flex justify-content-center gap-3">
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
             {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
+                <a href="{{ url_for('books') }}" class="btn btn-mint btn-lg px-4 shadow"><i class="bi bi-search me-2"></i> Browse Books</a>
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg px-4 shadow"><i class="bi bi-speedometer2 me-2"></i> Go to Dashboard</a>
             {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg px-4 shadow"><i class="bi bi-speedometer2 me-2"></i> Admin Dashboard</a>
+                <a href="{{ url_for('manage_books') }}" class="btn btn-mint btn-lg px-4 shadow"><i class="bi bi-journal-plus me-2"></i> Manage Books</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-orange btn-lg px-4 shadow"><i class="bi bi-person-plus-fill me-2"></i> Student Registration</a>
+                <a href="{{ url_for('login') }}" class="btn btn-mint btn-lg px-4 shadow"><i class="bi bi-box-arrow-in-right me-2"></i> Student Login</a>
+                <a href="{{ url_for('books') }}" class="btn btn-light btn-lg px-4 text-primary shadow"><i class="bi bi-book me-2"></i> Explore Books</a>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="container mb-5">
+    <!-- Quick Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="stat-card-icon bg-primary bg-opacity-10 text-primary me-3">
+                        <i class="bi bi-journals"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fw-semibold">Total Unique Titles</h6>
+                        <h3 class="fw-bold mb-0 text-dark">{{ total_books }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="stat-card-icon bg-success bg-opacity-10 text-success me-3">
+                        <i class="bi bi-stack"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fw-semibold">Total Book Copies</h6>
+                        <h3 class="fw-bold mb-0 text-dark">{{ total_copies }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="stat-card-icon bg-warning bg-opacity-10 text-warning me-3">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1 fw-semibold">Available Copies</h6>
+                        <h3 class="fw-bold mb-0 text-dark">{{ available_copies }}</h3>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <!-- Features Overview -->
+    <div class="row text-center g-4">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+            <div class="p-4 bg-white rounded-3 shadow-sm h-100 border border-light">
+                <div class="stat-card-icon bg-info bg-opacity-10 text-info mx-auto mb-3">
+                    <i class="bi bi-search"></i>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+                <h5 class="fw-bold mb-2">Easy Book Search</h5>
+                <p class="text-muted mb-0">Search books by title, author name, ISBN or filter by course categories easily.</p>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="p-4 bg-white rounded-3 shadow-sm h-100 border border-light">
+                <div class="stat-card-icon bg-success bg-opacity-10 text-success mx-auto mb-3">
+                    <i class="bi bi-hand-index-thumb"></i>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+                <h5 class="fw-bold mb-2">Instant Book Issue</h5>
+                <p class="text-muted mb-0">Students can request and issue available copies with auto-updated stock counts.</p>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="p-4 bg-white rounded-3 shadow-sm h-100 border border-light">
+                <div class="stat-card-icon bg-warning bg-opacity-10 text-warning mx-auto mb-3">
+                    <i class="bi bi-clock-history"></i>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+                <h5 class="fw-bold mb-2">Automated Due Alerts</h5>
+                <p class="text-muted mb-0">Track due dates automatically with clear overdue statuses and seamless admin return processing.</p>
             </div>
         </div>
     </div>
