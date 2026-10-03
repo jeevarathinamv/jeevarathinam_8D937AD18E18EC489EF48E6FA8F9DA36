@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Add Career Goal - Student Career Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header-banner">
+    <h2><i class="bi bi-plus-circle-fill me-2 text-info"></i>Add New Career Goal</h2>
+    <p class="mb-0 text-light opacity-90">Set target milestones for technical skills, internships, placements, or higher studies.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-glass">
+            <div class="card-header bg-indigo text-white fw-bold">
+                <i class="bi bi-bullseye me-2"></i> Goal Details
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('add_goal') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-bold text-indigo">Goal Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Master Python Flask & SQLAlchemy" required>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="category" class="form-label fw-bold text-indigo">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="" disabled selected>Select Goal Category</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label fw-bold text-indigo">Priority</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="High">High</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="start_date" class="form-label fw-bold text-indigo">Start Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ today }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="target_date" class="form-label fw-bold text-indigo">Target Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="target_date" name="target_date" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="progress_percentage" class="form-label fw-bold text-indigo">Initial Progress Percentage: <span id="addProgVal" class="text-cyan fw-bold">0%</span></label>
+                            <input type="range" class="form-range progress-range-input" id="progress_percentage" name="progress_percentage"
+                                   min="0" max="100" step="5" value="0" data-output-target="addProgVal">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label fw-bold text-indigo">Initial Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Not Started" selected>Not Started</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-bold text-indigo">Goal Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Describe what you plan to accomplish, key topics to cover, or specific objectives..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('goals') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-cyan px-4 fw-bold">
+                            <i class="bi bi-check-circle me-1"></i> Save Goal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

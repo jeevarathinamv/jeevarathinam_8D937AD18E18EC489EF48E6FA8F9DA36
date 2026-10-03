@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Students - Student Career Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header-banner d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+    <div>
+        <h2><i class="bi bi-people-fill me-2 text-info"></i>Student Management</h2>
+        <p class="mb-0 text-light opacity-90">Search, view, and manage student career records.</p>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="card card-glass mb-4">
+    <div class="card-body py-3">
+        <form method="GET" action="{{ url_for('manage_students') }}" class="row g-2 align-items-center">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-indigo text-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" id="tableSearchInput" class="form-control"
+                           placeholder="Search student by Name, Register Number, Department, or Email..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-cyan fw-bold flex-grow-1">Search</button>
+                <a href="{{ url_for('manage_students') }}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Students Directory Table -->
+<div class="card card-glass">
+    <div class="card-header bg-indigo text-white fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-card-list me-2"></i> Registered Students Directory</span>
+        <span class="badge bg-info text-dark">{{ student_data|length }} Students</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 searchable-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Reg Number</th>
+                        <th>Department</th>
+                        <th>Email</th>
+                        <th>Total Goals</th>
+                        <th>Overall Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if student_data %}
+                        {% for item in student_data %}
+                            {% set st = item.student %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ st.name }}</td>
+                                <td><code>{{ st.register_number }}</code></td>
+                                <td class="small">{{ st.department }}</td>
+                                <td class="small">{{ st.email }}</td>
+                                <td>
+                                    <span class="badge bg-indigo">{{ item.total_goals }} Goals</span>
+                                    <small class="text-success fw-bold me-1">({{ item.completed_goals }} Done)</small>
+                                </td>
+                                <td style="min-width: 140px;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress progress-custom flex-grow-1 me-2">
+                                            <div class="progress-bar bg-cyan-grad" style="width: {{ item.overall_progress }}%;"></div>
+                                        </div>
+                                        <small class="fw-bold">{{ item.overall_progress }}%</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('view_student_detail', student_id=st.id) }}" class="btn btn-sm btn-outline-primary" title="View Student Career Portfolio">
+                                            <i class="bi bi-eye-fill"></i> View
+                                        </a>
+                                        <form action="{{ url_for('delete_student', student_id=st.id) }}" method="POST" class="d-inline confirm-delete" data-item-name="{{ st.name }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Student Record">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No student records match your query.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
