@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Customers - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold text-white mb-1"><i class="bi bi-people text-primary me-2"></i>Customer Management</h2>
+            <p class="text-white-50 small mb-0">View registered customers, search profiles, and review booking history.</p>
+        </div>
+    </div>
+
+    <!-- Search Card -->
+    <div class="card content-card border-0 shadow-lg p-3 p-md-4 mb-4">
+        <form action="{{ url_for('manage_customers') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-9 col-lg-10">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-primary"></i></span>
+                    <input type="text" class="form-control form-control-lg border-start-0 rounded-end-3" name="q" placeholder="Search by customer name, email address or phone number..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3 col-lg-2 d-flex gap-1">
+                <button type="submit" class="btn btn-raspberry btn-lg w-100 rounded-pill"><i class="bi bi-search me-1"></i> Search</button>
+                {% if search_query %}
+                    <a href="{{ url_for('manage_customers') }}" class="btn btn-outline-secondary btn-lg rounded-circle" title="Clear Search"><i class="bi bi-x-lg"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Customers List Table -->
+    <div class="card content-card border-0 shadow-lg p-3 p-md-4">
+        {% if customers %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#ID</th>
+                            <th>Customer Name</th>
+                            <th>Email Address</th>
+                            <th>Phone Number</th>
+                            <th>Total Bookings</th>
+                            <th>Registered Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in customers %}
+                            <tr>
+                                <td class="fw-bold text-secondary">#{{ c.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 35px; height: 35px;">
+                                            {{ c.name[0]|upper }}
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ c.name }}</span>
+                                    </div>
+                                </td>
+                                <td><span class="small text-dark">{{ c.email }}</span></td>
+                                <td><span class="small text-dark"><i class="bi bi-telephone text-primary me-1"></i>{{ c.phone }}</span></td>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3">
+                                        {{ c.bookings|length }} Bookings
+                                    </span>
+                                </td>
+                                <td class="small text-muted">{{ c.created_at.strftime('%d %b %Y') }}</td>
+                                <td class="text-end">
+                                    <div class="btn-group gap-1">
+                                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#customerModal{{ c.id }}">
+                                            <i class="bi bi-eye me-1"></i> Details
+                                        </button>
+                                        <form action="{{ url_for('delete_customer', customer_id=c.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete customer {{ c.name }}? This will also remove all associated bookings!');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2">
+                                                <i class="bi bi-trash me-1"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Customer Details Modal -->
+                            <div class="modal fade" id="customerModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content border-0 shadow-lg rounded-4">
+                                        <div class="modal-header border-bottom">
+                                            <h5 class="modal-title fw-bold text-violet"><i class="bi bi-person-badge me-2"></i>Customer Details - {{ c.name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4 text-start">
+                                            <div class="row g-3 bg-light p-3 rounded-3 mb-4">
+                                                <div class="col-md-6">
+                                                    <span class="text-muted extra-small d-block">Full Name</span>
+                                                    <strong class="text-dark">{{ c.name }}</strong>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <span class="text-muted extra-small d-block">Phone Number</span>
+                                                    <strong class="text-dark">{{ c.phone }}</strong>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <span class="text-muted extra-small d-block">Email Address</span>
+                                                    <strong class="text-dark">{{ c.email }}</strong>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <span class="text-muted extra-small d-block">Account Created</span>
+                                                    <strong class="text-dark">{{ c.created_at.strftime('%d %b %Y, %H:%M') }}</strong>
+                                                </div>
+                                            </div>
+
+                                            <h6 class="fw-bold text-violet mb-3"><i class="bi bi-journal-bookmark text-primary me-2"></i>Booking History ({{ c.bookings|length }})</h6>
+                                            {% if c.bookings %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm table-hover align-middle">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>#ID</th>
+                                                                <th>Service</th>
+                                                                <th>Date</th>
+                                                                <th>Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for kb in c.bookings %}
+                                                                <tr>
+                                                                    <td>#{{ kb.id }}</td>
+                                                                    <td class="fw-medium">{{ kb.service.name }}</td>
+                                                                    <td class="small">{{ kb.booking_date.strftime('%d %b %Y') }}</td>
+                                                                    <td>
+                                                                        <span class="badge bg-light text-dark border">{{ kb.status }}</span>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            {% else %}
+                                                <p class="text-muted small mb-0">No bookings placed by this customer yet.</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer border-top px-4">
+                                            <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <p class="text-secondary mb-0">No customer profiles found matching search criteria.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
