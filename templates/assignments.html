@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}All Assignments - Assignment Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Header Banner -->
+    <div class="header-card mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="bi bi-journal-bookmark-fill text-info me-2"></i> Course Assignments
+                </h2>
+                <p class="mb-0 text-white-50">Review given assignments, deadline status, and submit your work.</p>
+            </div>
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-light rounded-pill btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Assignment Cards List -->
+    {% if assignments %}
+        <div class="row g-4">
+            {% for assignment in assignments %}
+                {% set d_status = get_deadline_status(assignment.deadline_date) %}
+                {% set submission = submissions_dict.get(assignment.id) %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card card-theme h-100 p-3 position-relative">
+                        <!-- Top Subject Badge & Status -->
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge purple-badge px-3 py-1 rounded-pill fw-semibold">
+                                <i class="bi bi-book me-1"></i> {{ assignment.subject }}
+                            </span>
+                            {% if submission %}
+                                {% if submission.status == 'Late' %}
+                                    <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">
+                                        <i class="bi bi-clock-history me-1"></i> Submitted Late
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success text-white px-3 py-1 rounded-pill fw-bold">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Submitted
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge peach-badge px-3 py-1 rounded-pill fw-bold">
+                                    <i class="bi bi-hourglass-split me-1"></i> Pending
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Assignment Title -->
+                        <h5 class="fw-bold text-dark mt-2 mb-2">{{ assignment.title }}</h5>
+
+                        <!-- Description -->
+                        <p class="text-secondary small mb-3 flex-grow-1" style="line-height: 1.5;">
+                            {{ assignment.description }}
+                        </p>
+
+                        <!-- Dates Section -->
+                        <div class="p-2 rounded-3 bg-light border mb-3">
+                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                <span><i class="bi bi-calendar-event me-1"></i> Given Date:</span>
+                                <span class="fw-medium text-dark">{{ assignment.given_date.strftime('%d %b %Y') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span><i class="bi bi-calendar-x me-1"></i> Deadline:</span>
+                                <span class="fw-bold text-dark">{{ assignment.deadline_date.strftime('%d %b %Y') }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Deadline Visual Indicator -->
+                        <div class="mb-3">
+                            {% if d_status.label == 'Upcoming' %}
+                                <div class="alert alert-info py-2 px-3 small rounded-3 mb-0 d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                    <div><strong>Upcoming Deadline:</strong> {{ d_status.days_left }} days remaining.</div>
+                                </div>
+                            {% elif d_status.label == 'Due Soon' %}
+                                <div class="alert alert-warning py-2 px-3 small rounded-3 mb-0 d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                    <div><strong>Due Soon:</strong> Only {{ d_status.days_left }} day(s) left!</div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-danger py-2 px-3 small rounded-3 mb-0 d-flex align-items-center">
+                                    <i class="bi bi-x-circle-fill me-2 fs-5"></i>
+                                    <div><strong>Deadline Passed:</strong> Submissions will be marked Late.</div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="d-grid mt-auto">
+                            <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" class="btn {% if submission %}btn-purple{% else %}btn-cyan{% endif %} btn-block fw-semibold">
+                                {% if submission %}
+                                    <i class="bi bi-pencil-square me-1"></i> View / Update Submission
+                                {% else %}
+                                    <i class="bi bi-upload me-1"></i> Submit Assignment
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card card-theme text-center py-5">
+            <i class="bi bi-journal-x fs-1 text-muted mb-2"></i>
+            <h4 class="text-secondary">No assignments available at the moment.</h4>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

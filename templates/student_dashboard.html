@@ -1,174 +1,169 @@
 {% extends "base.html" %}
 
-{% block title %}Student Dashboard - College Sports Hub{% endblock %}
+{% block title %}Student Dashboard - Assignment Tracker{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm bg-gradient-primary text-white rounded-4 p-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+<div class="container py-3">
+    <!-- Student Header Welcome Card -->
+    <div class="header-card mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-1">
+                    <i class="bi bi-mortarboard-fill text-info me-2"></i> Welcome, {{ student.name }}!
+                </h2>
+                <p class="mb-0 text-white-50">
+                    Register No: <span class="text-warning fw-semibold">{{ student.register_number }}</span> |
+                    Department: <span class="text-info fw-semibold">{{ student.department }}</span>
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('student_assignments') }}" class="btn btn-cyan btn-lg shadow-sm">
+                    <i class="bi bi-file-earmark-arrow-up me-1"></i> View Assignments
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Summary Section -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card card-theme card-cyan-stat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h2 class="fw-bold mb-1"><i class="bi bi-person-badge-fill text-warning me-2"></i> Welcome, {{ student.name }}!</h2>
-                        <p class="mb-0 text-white-50">
-                            <strong>Register No:</strong> {{ student.register_number }} &nbsp;|&nbsp;
-                            <strong>Department:</strong> {{ student.department }}
-                        </p>
+                        <p class="text-secondary fw-semibold small mb-1">Total Assignments</p>
+                        <h3 class="fw-bold text-dark mb-0">{{ total_assignments }}</h3>
                     </div>
-                    <div class="mt-3 mt-md-0">
-                        <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-journal-text me-1"></i> Total Bookings: {{ bookings|length }}
-                        </span>
+                    <div class="bg-cyan-main bg-opacity-10 p-3 rounded-circle text-info">
+                        <i class="bi bi-journal-text fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card card-theme card-peach-stat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-secondary fw-semibold small mb-1">Pending Submissions</p>
+                        <h3 class="fw-bold text-danger mb-0">{{ pending_count }}</h3>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning">
+                        <i class="bi bi-exclamation-circle-fill fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card card-theme card-purple-stat p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-secondary fw-semibold small mb-1">Submitted</p>
+                        <h3 class="fw-bold text-success mb-0">{{ submitted_count }}</h3>
+                    </div>
+                    <div class="bg-purple bg-opacity-10 p-3 rounded-circle text-success">
+                        <i class="bi bi-check-circle-fill fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card card-theme p-3 h-100" style="background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%); border-left: 6px solid #0288d1; border-radius: 16px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-secondary fw-semibold small mb-1">Upcoming Deadlines</p>
+                        <h3 class="fw-bold text-primary mb-0">{{ upcoming_deadlines }}</h3>
+                    </div>
+                    <div class="p-3 rounded-circle text-primary">
+                        <i class="bi bi-alarm-fill fs-2"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Available Equipment Grid -->
-    <div class="row mb-5">
-        <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold text-primary mb-0"><i class="bi bi-collection-fill me-2"></i> Available Sports Equipment</h4>
-            <span class="text-muted small">Select equipment to submit a booking request</span>
-        </div>
-
-        {% if equipments %}
-            {% for item in equipments %}
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="card h-100 border-0 shadow-sm card-hover rounded-4 overflow-hidden">
-                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-semibold">{{ item.category }}</span>
-                            {% if item.available_quantity > 0 %}
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> In Stock</span>
-                            {% else %}
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i> Out of Stock</span>
-                            {% endif %}
-                        </div>
-                        <div class="card-body px-4 py-3">
-                            <h5 class="fw-bold text-dark mb-2">{{ item.name }}</h5>
-                            <p class="text-muted small mb-3">{{ item.description or 'High quality sports gear for college athletic activities.' }}</p>
-                            <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3">
-                                <span class="small text-muted fw-semibold">Available Quantity:</span>
-                                <span class="fw-bold fs-5 {% if item.available_quantity > 0 %}text-success{% else %}text-danger{% endif %}">
-                                    {{ item.available_quantity }} / {{ item.total_quantity }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
-                            {% if item.available_quantity > 0 %}
-                                <button type="button" class="btn btn-primary w-100 rounded-pill fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#bookModal{{ item.id }}">
-                                    <i class="bi bi-calendar-plus me-1"></i> Book Now
-                                </button>
-                            {% else %}
-                                <button class="btn btn-secondary w-100 rounded-pill fw-semibold disabled" disabled>
-                                    Unavailable
-                                </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Booking Modal for Item -->
-                <div class="modal fade" id="bookModal{{ item.id }}" tabindex="-1" aria-labelledby="bookModalLabel{{ item.id }}" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-4 border-0 shadow">
-                            <div class="modal-header bg-primary text-white rounded-top-4">
-                                <h5 class="modal-title fw-bold" id="bookModalLabel{{ item.id }}">
-                                    <i class="bi bi-calendar-event me-2"></i> Request Booking: {{ item.name }}
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form action="{{ url_for('book_equipment') }}" method="POST">
-                                <div class="modal-body p-4">
-                                    <input type="hidden" name="equipment_id" value="{{ item.id }}">
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Equipment</label>
-                                        <input type="text" class="form-control bg-light" value="{{ item.name }} ({{ item.category }})" readonly>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="booking_date{{ item.id }}" class="form-label fw-semibold">Booking Date</label>
-                                        <input type="date" class="form-control" id="booking_date{{ item.id }}" name="booking_date" min="{{ today }}" value="{{ today }}" required>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="quantity{{ item.id }}" class="form-label fw-semibold">Quantity</label>
-                                        <input type="number" class="form-control" id="quantity{{ item.id }}" name="quantity" min="1" max="{{ item.available_quantity }}" value="1" required>
-                                        <div class="form-text text-muted">Max available right now: {{ item.available_quantity }}</div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer bg-light rounded-bottom-4">
-                                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Submit Booking Request</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12 text-center py-5">
-                <p class="text-muted fs-5">No sports equipment currently registered in system.</p>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- My Booking Details & Track Status -->
+    <!-- Active Assignments & Deadline Tracker Section -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
-                    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-primary me-2"></i> My Booking History & Status</h4>
+            <div class="card card-theme p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                    <h4 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-clock-history text-info me-2"></i> Active Assignments & Deadline Tracker
+                    </h4>
+                    <a href="{{ url_for('student_assignments') }}" class="btn btn-outline-info btn-sm rounded-pill fw-semibold">
+                        View All Assignments <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
                 </div>
-                <div class="card-body p-0">
-                    {% if bookings %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+
+                {% if assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Assignment Title</th>
+                                    <th>Subject</th>
+                                    <th>Given Date</th>
+                                    <th>Deadline Date</th>
+                                    <th>Deadline Status</th>
+                                    <th>Submission Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                    {% set d_status = get_deadline_status(assignment.deadline_date) %}
+                                    {% set is_submitted = assignment.id in submitted_assignment_ids %}
                                     <tr>
-                                        <th class="ps-4">Booking ID</th>
-                                        <th>Equipment Name</th>
-                                        <th>Booking Date</th>
-                                        <th>Quantity</th>
-                                        <th>Requested On</th>
-                                        <th class="pe-4 text-center">Status</th>
+                                        <td>
+                                            <div class="fw-bold text-dark">{{ assignment.title }}</div>
+                                            <div class="small text-muted text-truncate" style="max-width: 280px;">{{ assignment.description }}</div>
+                                        </td>
+                                        <td><span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1">{{ assignment.subject }}</span></td>
+                                        <td class="small text-muted">{{ assignment.given_date.strftime('%Y-%m-%d') }}</td>
+                                        <td class="fw-semibold text-dark">{{ assignment.deadline_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            {% if d_status.label == 'Upcoming' %}
+                                                <span class="badge bg-info text-dark px-3 py-2 rounded-pill">
+                                                    <i class="bi bi-calendar-check me-1"></i> Upcoming ({{ d_status.days_left }} days left)
+                                                </span>
+                                            {% elif d_status.label == 'Due Soon' %}
+                                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Due Soon ({{ d_status.days_left }} days)
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger text-white px-3 py-2 rounded-pill">
+                                                    <i class="bi bi-x-circle-fill me-1"></i> Deadline Passed
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if is_submitted %}
+                                                <span class="badge bg-success text-white px-3 py-2 rounded-pill">
+                                                    <i class="bi bi-check-all me-1"></i> Submitted
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-peach text-dark px-3 py-2 rounded-pill peach-badge">
+                                                    <i class="bi bi-hourglass-split me-1"></i> Pending
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" class="btn {% if is_submitted %}btn-outline-secondary{% else %}btn-cyan{% endif %} btn-sm">
+                                                {% if is_submitted %}<i class="bi bi-pencil-square me-1"></i> Resubmit{% else %}<i class="bi bi-upload me-1"></i> Submit{% endif %}
+                                            </a>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {% for b in bookings %}
-                                        <tr>
-                                            <td class="ps-4 fw-bold">#{{ b.id }}</td>
-                                            <td class="fw-semibold text-primary">{{ b.equipment.name }}</td>
-                                            <td><i class="bi bi-calendar3 me-1 text-muted"></i> {{ b.booking_date.strftime('%Y-%m-%d') }}</td>
-                                            <td><span class="badge bg-secondary bg-opacity-10 text-dark border px-3 py-1">{{ b.quantity }}</span></td>
-                                            <td class="small text-muted">{{ b.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                            <td class="pe-4 text-center">
-                                                {% if b.status == 'Pending' %}
-                                                    <span class="badge badge-pending px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
-                                                {% elif b.status == 'Approved' %}
-                                                    <span class="badge badge-approved px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
-                                                {% elif b.status == 'Rejected' %}
-                                                    <span class="badge badge-rejected px-3 py-2 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
-                                                {% elif b.status == 'Returned' %}
-                                                    <span class="badge badge-returned px-3 py-2 rounded-pill"><i class="bi bi-arrow-return-left me-1"></i> Returned</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">{{ b.status }}</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <p class="mb-0">You haven't submitted any booking requests yet.</p>
-                        </div>
-                    {% endif %}
-                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-journal-x fs-1 text-muted d-block mb-2"></i>
+                        <h5 class="text-muted">No assignments created yet.</h5>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

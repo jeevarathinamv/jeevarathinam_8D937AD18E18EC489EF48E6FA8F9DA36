@@ -1,8 +1,8 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from datetime import date, timedelta
+from app import app, db, Student, Admin, Assignment, Submission, get_deadline_status
 
-class SportsBookingTestCase(unittest.TestCase):
+class AssignmentTrackerTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +11,29 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Seed test assignments
+            today = date.today()
+            self.asgn1 = Assignment(
+                title='Flask Basics',
+                subject='Web Tech',
+                description='Intro to Flask routing and Jinja',
+                given_date=today - timedelta(days=3),
+                deadline_date=today + timedelta(days=5)
+            )
+            self.asgn2 = Assignment(
+                title='SQL Normalization',
+                subject='DBMS',
+                description='1NF to 3NF',
+                given_date=today - timedelta(days=10),
+                deadline_date=today - timedelta(days=1)
+            )
+            db.session.add_all([self.asgn1, self.asgn2])
+
+            # Seed test admin
+            self.admin = Admin(username='admin', email='admin@college.edu')
+            self.admin.set_password('admin123')
+            db.session.add(self.admin)
+
             db.session.commit()
 
     def tearDown(self):
@@ -25,92 +44,95 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'name': 'Jane Student',
+            'register_number': 'REG001',
+            'department': 'MCA',
+            'email': 'jane@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'jane@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'Welcome back, Jane Student!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_admin_assignment_crud(self):
+        # Admin login
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'})
+
+        # Add Assignment
+        today = date.today().strftime('%Y-%m-%d')
+        deadline = (date.today() + timedelta(days=7)).strftime('%Y-%m-%d')
+        response = self.client.post('/admin/assignment/add', data={
+            'title': 'Algorithm Complexity',
+            'subject': 'DSA',
+            'description': 'Big-O notation examples',
+            'given_date': today,
+            'deadline_date': deadline
+        }, follow_redirects=True)
+        self.assertIn(b'created successfully', response.data)
+
+        # Edit Assignment #1
+        response = self.client.post('/admin/assignment/edit/1', data={
+            'title': 'Flask Basics & Advanced Routing',
+            'subject': 'Web Tech',
+            'description': 'Updated description for Flask assignment',
+            'given_date': today,
+            'deadline_date': deadline
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
+
+        # Delete Assignment #2
+        response = self.client.post('/admin/assignment/delete/2', follow_redirects=True)
+        self.assertIn(b'deleted successfully', response.data)
+
+    def test_student_submission_workflow_and_status(self):
+        # Register & Login Student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
+            'name': 'Bob Smith',
+            'register_number': 'REG002',
             'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
+            'email': 'bob@college.edu',
+            'password': 'password123'
         })
-        self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
-        })
+        self.client.post('/login', data={'email_or_reg': 'REG002', 'password': 'password123'})
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # Submit Assignment #1 (On-time -> deadline in future)
+        response = self.client.post('/student/submit/1', data={
+            'submission_text': 'https://github.com/bob/flask-assignment'
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn(b'Assignment submitted successfully! Status: Submitted', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
+        # Submit Assignment #2 (Late -> deadline in past)
+        response = self.client.post('/student/submit/2', data={
+            'submission_text': 'Completed SQL Normalization writeup.'
         }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        self.assertIn(b'Assignment submitted successfully! Status: Late', response.data)
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # Check Submission History
+        response = self.client.get('/student/history')
+        self.assertIn(b'Submitted Late', response.data)
 
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
-        })
+    def test_deadline_status_calculator(self):
+        today = date.today()
+        upcoming = get_deadline_status(today + timedelta(days=5))
+        self.assertEqual(upcoming['label'], 'Upcoming')
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        due_soon = get_deadline_status(today + timedelta(days=1))
+        self.assertEqual(due_soon['label'], 'Due Soon')
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
-
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+        passed = get_deadline_status(today - timedelta(days=2))
+        self.assertEqual(passed['label'], 'Deadline Passed')
 
 if __name__ == '__main__':
     unittest.main()
