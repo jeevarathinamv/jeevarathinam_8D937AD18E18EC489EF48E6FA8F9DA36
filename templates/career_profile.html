@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Career Profile - Student Career Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header-banner">
+    <h2><i class="bi bi-person-badge-fill me-2 text-info"></i>Student Career Profile</h2>
+    <p class="mb-0 text-light opacity-90">Maintain your target job role, career objectives, industry preference, and career roadmap.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card card-glass">
+            <div class="card-header bg-indigo text-white fw-bold">
+                <i class="bi bi-pencil-square me-2"></i> Update Career Profile
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('career_profile') }}" method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="target_job_role" class="form-label fw-bold text-indigo">Target Job Role</label>
+                            <input type="text" class="form-control" id="target_job_role" name="target_job_role"
+                                   placeholder="e.g. Software Engineer, Data Analyst, Cloud Architect"
+                                   value="{{ profile.target_job_role if profile and profile.target_job_role else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="target_industry" class="form-label fw-bold text-indigo">Target Industry</label>
+                            <input type="text" class="form-control" id="target_industry" name="target_industry"
+                                   placeholder="e.g. Information Technology, Healthcare, Fintech"
+                                   value="{{ profile.target_industry if profile and profile.target_industry else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="preferred_career_field" class="form-label fw-bold text-indigo">Preferred Career Field</label>
+                            <input type="text" class="form-control" id="preferred_career_field" name="preferred_career_field"
+                                   placeholder="e.g. Full Stack Web Development, AI/ML, Cybersecurity"
+                                   value="{{ profile.preferred_career_field if profile and profile.preferred_career_field else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="skills" class="form-label fw-bold text-indigo">Key Technical & Soft Skills</label>
+                            <input type="text" class="form-control" id="skills" name="skills"
+                                   placeholder="e.g. Python, SQL, Flask, JavaScript, Problem Solving"
+                                   value="{{ profile.skills if profile and profile.skills else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="career_objective" class="form-label fw-bold text-indigo">Career Objective</label>
+                        <textarea class="form-control" id="career_objective" name="career_objective" rows="3"
+                                  placeholder="Describe your overall career objective and professional aspiration...">{{ profile.career_objective if profile and profile.career_objective else '' }}</textarea>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="short_term_goal" class="form-label fw-bold text-indigo">Short-Term Goal (1-2 Years)</label>
+                            <textarea class="form-control" id="short_term_goal" name="short_term_goal" rows="3"
+                                      placeholder="e.g. Secure a software development internship and master Python/Flask...">{{ profile.short_term_goal if profile and profile.short_term_goal else '' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="long_term_goal" class="form-label fw-bold text-indigo">Long-Term Goal (3-5 Years)</label>
+                            <textarea class="form-control" id="long_term_goal" name="long_term_goal" rows="3"
+                                      placeholder="e.g. Become a Senior Full-Stack Engineer leading technical projects...">{{ profile.long_term_goal if profile and profile.long_term_goal else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-cyan px-4 fw-bold">
+                            <i class="bi bi-save me-1"></i> Save Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

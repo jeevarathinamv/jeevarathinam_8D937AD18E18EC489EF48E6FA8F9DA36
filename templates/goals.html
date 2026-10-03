@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Career Goals - Student Career Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header-banner d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+    <div>
+        <h2><i class="bi bi-bullseye me-2 text-info"></i>Career Goals Management</h2>
+        <p class="mb-0 text-light opacity-90">Track, update, and manage your short-term and long-term career objectives.</p>
+    </div>
+    <div class="mt-3 mt-md-0">
+        <a href="{{ url_for('add_goal') }}" class="btn btn-cyan fw-bold">
+            <i class="bi bi-plus-circle-fill me-1"></i> Add New Goal
+        </a>
+    </div>
+</div>
+
+<!-- Category & Status Filter Bar -->
+<div class="card card-glass mb-4">
+    <div class="card-body py-3">
+        <form method="GET" action="{{ url_for('goals') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-indigo text-white"><i class="bi bi-funnel-fill"></i> Category</span>
+                    <select name="category" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-indigo text-white"><i class="bi bi-tag-fill"></i> Status</span>
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="Not Started" {% if status_filter == 'Not Started' %}selected{% endif %}>Not Started</option>
+                        <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                        <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2 text-end">
+                <a href="{{ url_for('goals') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Goals Cards / Table Grid -->
+<div class="row g-4">
+    {% if goals %}
+        {% for g in goals %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-peach h-100 d-flex flex-column">
+                    <div class="card-header bg-white bg-opacity-75 d-flex justify-content-between align-items-center rounded-top-16 border-bottom-0 pt-3 px-3">
+                        <span class="badge bg-indigo text-white">{{ g.category }}</span>
+                        <div>
+                            {% if g.priority == 'High' %}
+                                <span class="badge badge-priority-high"><i class="bi bi-exclamation-triangle-fill"></i> High</span>
+                            {% elif g.priority == 'Medium' %}
+                                <span class="badge badge-priority-medium">Medium</span>
+                            {% else %}
+                                <span class="badge badge-priority-low">Low</span>
+                            {% endif %}
+
+                            {% if g.status == 'Completed' %}
+                                <span class="badge badge-completed ms-1">Completed</span>
+                            {% elif g.status == 'In Progress' %}
+                                <span class="badge badge-in-progress ms-1">In Progress</span>
+                            {% elif g.status == 'Overdue' %}
+                                <span class="badge badge-overdue ms-1">Overdue</span>
+                            {% else %}
+                                <span class="badge badge-not-started ms-1">Not Started</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card-body px-3 py-2 flex-grow-1">
+                        <h5 class="fw-bold text-dark mb-2">{{ g.title }}</h5>
+                        <p class="small text-muted mb-3 text-truncate-2" style="min-height: 40px;">
+                            {{ g.description if g.description else 'No description provided.' }}
+                        </p>
+
+                        <div class="mb-2 small">
+                            <div><i class="bi bi-calendar-event me-1 text-indigo"></i> Start: <strong>{{ g.start_date.strftime('%d %b %Y') }}</strong></div>
+                            <div><i class="bi bi-calendar-check me-1 text-danger"></i> Target: <strong>{{ g.target_date.strftime('%d %b %Y') }}</strong></div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1 small fw-bold">
+                                <span>Progress</span>
+                                <span class="text-indigo">{{ g.progress_percentage }}%</span>
+                            </div>
+                            <div class="progress progress-custom">
+                                <div class="progress-bar {% if g.status == 'Completed' %}bg-success{% elif g.status == 'Overdue' %}bg-danger{% else %}bg-cyan-grad{% endif %}"
+                                     style="width: {{ g.progress_percentage }}%;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if g.notes %}
+                            <div class="mt-2 p-2 bg-white bg-opacity-60 rounded small text-secondary">
+                                <i class="bi bi-journal-text me-1"></i> <em>{{ g.notes }}</em>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Card Footer Actions -->
+                    <div class="card-footer bg-white bg-opacity-50 border-0 p-3 d-flex justify-content-between align-items-center">
+                        <!-- Quick Progress Update Button -->
+                        <button type="button" class="btn btn-sm btn-cyan" data-bs-toggle="modal" data-bs-target="#updateProgressModal{{ g.id }}">
+                            <i class="bi bi-arrow-up-circle me-1"></i> Update Progress
+                        </button>
+
+                        <div class="d-flex gap-1">
+                            <a href="{{ url_for('edit_goal', goal_id=g.id) }}" class="btn btn-sm btn-outline-primary" title="Edit Goal">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <form action="{{ url_for('delete_goal', goal_id=g.id) }}" method="POST" class="d-inline confirm-delete" data-item-name="{{ g.title }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Goal">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for Quick Progress Update -->
+            <div class="modal fade" id="updateProgressModal{{ g.id }}" tabindex="-1" aria-labelledby="modalLabel{{ g.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-indigo text-white">
+                            <h5 class="modal-title fw-bold" id="modalLabel{{ g.id }}"><i class="bi bi-graph-up me-2"></i>Update Progress: {{ g.title }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ url_for('update_goal_progress', goal_id=g.id) }}" method="POST">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Progress Percentage: <span id="progressValDisplay{{ g.id }}" class="text-primary">{{ g.progress_percentage }}%</span></label>
+                                    <input type="range" class="form-range progress-range-input" name="progress_percentage"
+                                           min="0" max="100" step="5" value="{{ g.progress_percentage }}"
+                                           data-output-target="progressValDisplay{{ g.id }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="status{{ g.id }}" class="form-label fw-bold">Current Status</label>
+                                    <select name="status" id="status{{ g.id }}" class="form-select">
+                                        <option value="Not Started" {% if g.status == 'Not Started' %}selected{% endif %}>Not Started</option>
+                                        <option value="In Progress" {% if g.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="Completed" {% if g.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                        <option value="Overdue" {% if g.status == 'Overdue' %}selected{% endif %}>Overdue</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="notes{{ g.id }}" class="form-label fw-bold">Progress Notes / Updates</label>
+                                    <textarea name="notes" id="notes{{ g.id }}" class="form-control" rows="3" placeholder="Add notes regarding achievements or next steps...">{{ g.notes or '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-cyan fw-bold">Save Update</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card card-glass text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted mb-2"></i>
+                <h5 class="fw-bold text-muted">No Career Goals Found</h5>
+                <p class="text-secondary small">Start building your career trajectory by creating a new goal.</p>
+                <div>
+                    <a href="{{ url_for('add_goal') }}" class="btn btn-cyan">
+                        <i class="bi bi-plus-circle me-1"></i> Add New Goal
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

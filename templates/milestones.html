@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Career Milestones - Student Career Goal Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header-banner">
+    <h2><i class="bi bi-flag-fill me-2 text-info"></i>Career Milestones</h2>
+    <p class="mb-0 text-light opacity-90">Record key accomplishments like completed projects, internships, certifications, and placement preparation steps.</p>
+</div>
+
+<div class="row g-4">
+    <!-- Add Milestone Form -->
+    <div class="col-lg-4">
+        <div class="card card-glass">
+            <div class="card-header bg-indigo text-white fw-bold">
+                <i class="bi bi-plus-circle me-2"></i> Add Milestone
+            </div>
+            <div class="card-body p-3">
+                <form action="{{ url_for('milestones') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-semibold text-indigo">Milestone Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Completed MCA Final Project Demo" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="milestone_type" class="form-label fw-semibold text-indigo">Milestone Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="milestone_type" name="milestone_type" required>
+                            {% for mt in milestone_types %}
+                                <option value="{{ mt }}">{{ mt }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="date_achieved" class="form-label fw-semibold text-indigo">Date Achieved <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="date_achieved" name="date_achieved" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-semibold text-indigo">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Details about what you achieved or learned..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyan w-100 fw-bold">
+                        <i class="bi bi-check-circle me-1"></i> Record Milestone
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline View of Milestones -->
+    <div class="col-lg-8">
+        <div class="card card-glass">
+            <div class="card-header bg-indigo text-white fw-bold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-diagram-3 me-2"></i> Milestone Journey Timeline</span>
+                <span class="badge bg-info text-dark">{{ milestones|length }} Milestones</span>
+            </div>
+            <div class="card-body p-4">
+                {% if milestones %}
+                    <div class="timeline">
+                        {% for m in milestones %}
+                            <div class="timeline-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge bg-indigo mb-1">{{ m.milestone_type }}</span>
+                                        <h5 class="fw-bold mb-1 text-dark">{{ m.title }}</h5>
+                                        <div class="timeline-date mb-2">
+                                            <i class="bi bi-calendar-check me-1 text-cyan"></i> {{ m.date_achieved.strftime('%d %B %Y') }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <form action="{{ url_for('delete_milestone', milestone_id=m.id) }}" method="POST" class="confirm-delete" data-item-name="{{ m.title }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Remove Milestone">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% if m.description %}
+                                    <p class="text-secondary small mb-0 bg-light p-2 rounded border">
+                                        {{ m.description }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-flag fs-1 mb-2"></i>
+                        <h5>No Milestones Recorded Yet</h5>
+                        <p class="small">Add your career accomplishments to view your timeline trajectory.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
