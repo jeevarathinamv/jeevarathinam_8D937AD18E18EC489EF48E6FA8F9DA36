@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Create New Sale - Small Business System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-lg">
+            <div class="card-header-custom d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="bi bi-cart-plus me-2"></i> Create New Sale</h4>
+                <span class="badge badge-coral fs-6">Sale #: {{ auto_sale_number }}</span>
+            </div>
+            <div class="card-body p-4 bg-white">
+                <form action="{{ url_for('create_sale') }}" method="POST">
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="customer_id" class="form-label fw-semibold">Select Customer <span class="text-danger">*</span></label>
+                            <select class="form-select" id="customer_id" name="customer_id" required>
+                                <option value="" disabled selected>-- Choose Customer --</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.name }} ({{ customer.phone }} - {{ customer.customer_type }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="sale_date" class="form-label fw-semibold">Sale Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="sale_date" name="sale_date" value="{{ today }}" required>
+                        </div>
+                    </div>
+
+                    <div class="card bg-light border-0 p-3 mb-4 rounded-3">
+                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-box me-1"></i> Product Selection & Price Calculation</h6>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="product_id" class="form-label fw-semibold">Select Product <span class="text-danger">*</span></label>
+                                <select class="form-select" id="product_id" name="product_id" required>
+                                    <option value="" disabled selected>-- Choose Product --</option>
+                                    {% for product in products %}
+                                        <option value="{{ product.id }}" data-price="{{ product.selling_price }}" data-stock="{{ product.available_stock }}">
+                                            {{ product.name }} ({{ product.product_code }}) - Stock: {{ product.available_stock }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="mt-1">
+                                    <span id="available_stock_badge" class="badge bg-secondary">Available Stock: -</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="quantity" class="form-label fw-semibold">Quantity <span class="text-danger">*</span></label>
+                                <input type="number" min="1" class="form-control" id="quantity" name="quantity" value="1" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="selling_price" class="form-label fw-semibold">Price per Unit (₹) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="selling_price" name="selling_price" value="0.00" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="discount" class="form-label fw-semibold">Discount Amount (₹)</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="discount" name="discount" value="0.00">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="payment_status" class="form-label fw-semibold">Payment Status</label>
+                                <select class="form-select" id="payment_status" name="payment_status">
+                                    <option value="Paid" selected>Paid</option>
+                                    <option value="Partially Paid">Partially Paid</option>
+                                    <option value="Unpaid">Unpaid</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Calculation Summary Box -->
+                    <div class="p-3 bg-white border rounded-3 mb-4">
+                        <div class="row align-items-center text-center text-md-start">
+                            <div class="col-md-6">
+                                <span class="text-muted fw-semibold">Item Subtotal (Qty × Unit Price):</span>
+                                <h5 class="fw-bold text-dark mb-0" id="subtotal_display">₹0.00</h5>
+                            </div>
+                            <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                                <span class="text-muted fw-semibold">Grand Total (Subtotal - Discount):</span>
+                                <h3 class="fw-bold text-success mb-0" id="grand_total_display">₹0.00</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('sales_history') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-coral btn-lg">
+                            <i class="bi bi-cart-check me-2"></i> Complete Sale & Update Stock
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
