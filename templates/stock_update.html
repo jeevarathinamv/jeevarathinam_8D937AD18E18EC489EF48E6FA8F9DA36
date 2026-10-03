@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Update Stock - Laboratory Stock Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-lg-7">
+        <div class="card card-custom p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="page-title mb-1">Update Item Stock</h3>
+                    <p class="text-muted mb-0">Record new stock arrival or stock consumption for a lab item</p>
+                </div>
+                <a href="{{ url_for('items_list') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Items
+                </a>
+            </div>
+
+            <form action="{{ url_for('stock_update') }}" method="POST" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="item_id" class="form-label fw-semibold">Select Laboratory Item <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="item_id" name="item_id" required>
+                        <option value="" disabled {% if not selected_item_id %}selected{% endif %}>-- Choose an Item --</option>
+                        {% for item in items %}
+                            <option value="{{ item.id }}" {% if selected_item_id == item.id %}selected{% endif %}>
+                                {{ item.item_name }} ({{ item.item_code }}) — Current Stock: {{ item.quantity }} {{ item.unit }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Please select an item to update.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Transaction Type <span class="text-danger">*</span></label>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="transaction_type" id="type_add" value="Stock Added" checked autocomplete="off">
+                            <label class="btn btn-outline-success w-100 p-3 fw-bold border-2" for="type_add">
+                                <i class="bi bi-plus-circle fs-4 d-block mb-1"></i>
+                                Stock Added
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="transaction_type" id="type_used" value="Stock Used" autocomplete="off">
+                            <label class="btn btn-outline-warning w-100 p-3 fw-bold border-2 text-dark" for="type_used">
+                                <i class="bi bi-dash-circle fs-4 d-block mb-1"></i>
+                                Stock Used
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="quantity" class="form-label fw-semibold">Quantity <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control form-control-lg" id="quantity" name="quantity" min="1" value="1" required>
+                    <div class="invalid-feedback">Please enter a valid quantity greater than zero.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="remarks" class="form-label fw-semibold">Remarks / Purpose</label>
+                    <textarea class="form-control" id="remarks" name="remarks" rows="3" placeholder="e.g., Received new batch from supplier, or Issued for MCA Student Demo Lab Session"></textarea>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-teal btn-lg fw-bold shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Confirm & Save Stock Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

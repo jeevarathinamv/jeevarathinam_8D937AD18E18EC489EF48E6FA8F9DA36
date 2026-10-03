@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Item - Laboratory Stock Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-lg-8">
+        <div class="card card-custom p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="page-title mb-1">Add New Laboratory Item</h3>
+                    <p class="text-muted mb-0">Fill in the item details to register a new stock entry</p>
+                </div>
+                <a href="{{ url_for('items_list') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Items
+                </a>
+            </div>
+
+            <form action="{{ url_for('add_item') }}" method="POST" class="needs-validation" novalidate>
+                <div class="row g-3">
+                    <!-- Item Name -->
+                    <div class="col-md-6">
+                        <label for="item_name" class="form-label fw-semibold">Item Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="item_name" name="item_name" placeholder="e.g. Arduino Uno R3" required>
+                        <div class="invalid-feedback">Please provide an item name.</div>
+                    </div>
+
+                    <!-- Item Code -->
+                    <div class="col-md-6">
+                        <label for="item_code" class="form-label fw-semibold">Item Code <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control text-uppercase" id="item_code" name="item_code" placeholder="e.g. ELEC-001" required>
+                        <div class="invalid-feedback">Please provide a unique item code.</div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label for="category" class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="" disabled selected>Select Category</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat }}">{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Please select a category.</div>
+                    </div>
+
+                    <!-- Unit -->
+                    <div class="col-md-6">
+                        <label for="unit" class="form-label fw-semibold">Unit of Measurement <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="unit" name="unit" value="Pcs" placeholder="e.g. Pcs, Units, Packs, Reams, Boxes" required>
+                        <div class="invalid-feedback">Please enter the unit of measurement.</div>
+                    </div>
+
+                    <!-- Initial Quantity -->
+                    <div class="col-md-6">
+                        <label for="quantity" class="form-label fw-semibold">Initial Quantity <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="0" value="10" required>
+                        <div class="invalid-feedback">Quantity cannot be negative.</div>
+                    </div>
+
+                    <!-- Minimum Stock -->
+                    <div class="col-md-6">
+                        <label for="minimum_stock" class="form-label fw-semibold">Minimum Stock Alert Threshold <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="minimum_stock" name="minimum_stock" min="0" value="5" required>
+                        <div class="form-text">Triggers "Low Stock" alert when quantity drops to or below this number.</div>
+                        <div class="invalid-feedback">Minimum stock cannot be negative.</div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-md-6">
+                        <label for="location" class="form-label fw-semibold">Storage Location <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="e.g. Lab 1 - Drawer 3" required>
+                        <div class="invalid-feedback">Please enter storage location.</div>
+                    </div>
+
+                    <!-- Added Date -->
+                    <div class="col-md-6">
+                        <label for="added_date" class="form-label fw-semibold">Added Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="added_date" name="added_date" value="{{ today }}" required>
+                        <div class="invalid-feedback">Please select date.</div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('items_list') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-teal fw-bold px-4">
+                        <i class="bi bi-check-circle me-1"></i> Save Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

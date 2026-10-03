@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Stock History - Laboratory Stock Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="page-title mb-1">Stock Transaction History Log</h2>
+        <p class="text-muted mb-0">Audit trail of all stock additions and stock usage</p>
+    </div>
+    <div class="mt-2 mt-md-0">
+        <a href="{{ url_for('stock_update') }}" class="btn btn-warning fw-bold text-dark shadow-sm">
+            <i class="bi bi-arrow-left-right me-1"></i> Update Stock
+        </a>
+    </div>
+</div>
+
+<!-- Filter by Item Card -->
+<div class="card card-custom p-3 mb-4">
+    <form action="{{ url_for('stock_history') }}" method="GET" class="row g-3 align-items-center">
+        <div class="col-md-8">
+            <label for="item_id" class="form-label small fw-bold text-muted mb-1">Filter by Item</label>
+            <select class="form-select" id="item_id" name="item_id">
+                <option value="">All Items History</option>
+                {% for item in items %}
+                    <option value="{{ item.id }}" {% if selected_item_id == item.id %}selected{% endif %}>
+                        {{ item.item_name }} ({{ item.item_code }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end mt-md-4">
+            <button type="submit" class="btn btn-sky w-100 fw-bold me-2">
+                <i class="bi bi-funnel"></i> Filter History
+            </button>
+            <a href="{{ url_for('stock_history') }}" class="btn btn-outline-secondary" title="Reset Filter">
+                <i class="bi bi-x-circle"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- History Table Card -->
+<div class="card card-custom border-0 overflow-hidden">
+    {% if history_logs %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 table-custom">
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Transaction Type</th>
+                    <th>Quantity</th>
+                    <th>Date & Time</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in history_logs %}
+                <tr>
+                    <td><small class="text-muted font-monospace">#LOG-{{ log.id }}</small></td>
+                    <td><span class="badge bg-secondary font-monospace">{{ log.item.item_code }}</span></td>
+                    <td>
+                        <strong class="text-teal">{{ log.item.item_name }}</strong><br>
+                        <small class="text-muted">{{ log.item.category }}</small>
+                    </td>
+                    <td>
+                        {% if log.transaction_type == 'Stock Added' %}
+                            <span class="badge bg-success px-2 py-1"><i class="bi bi-plus-circle me-1"></i> Stock Added</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-dash-circle me-1"></i> Stock Used</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fs-6 fw-bold {% if log.transaction_type == 'Stock Added' %}text-success{% else %}text-danger{% endif %}">
+                            {% if log.transaction_type == 'Stock Added' %}+{% else %}-{% endif %}{{ log.quantity }}
+                        </span>
+                        <small class="text-muted">{{ log.item.unit }}</small>
+                    </td>
+                    <td><small class="text-muted"><i class="bi bi-clock me-1"></i>{{ log.date.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+                    <td><small class="text-dark">{{ log.remarks or '-' }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-clock-history display-4 text-muted"></i>
+        <h5 class="mt-3 text-muted">No stock history transactions found.</h5>
+        <a href="{{ url_for('stock_history') }}" class="btn btn-sky btn-sm mt-2">Reset Filter</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -6,15 +6,11 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
-
-# Admin Hardcoded Credentials
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'laboratory_stock_secret_key_98765')
 
 # Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/laboratory_stock')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'laboratory_stock.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,17 +18,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-class Student(db.Model):
-    __tablename__ = 'students'
+CATEGORIES = [
+    'Computer Equipment',
+    'Electronic Components',
+    'Laboratory Equipment',
+    'Stationery',
+    'Other'
+]
+
+# Database Models
+class Admin(db.Model):
+    __tablename__ = 'admins'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    register_number = db.Column(db.String(50), unique=True, nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='student', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,347 +40,381 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+
+class Item(db.Model):
+    __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+    item_code = db.Column(db.String(50), unique=True, nullable=False)
     category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    minimum_stock = db.Column(db.Integer, nullable=False, default=5)
+    unit = db.Column(db.String(20), nullable=False, default='Pcs')
+    location = db.Column(db.String(100), nullable=False, default='Main Lab')
+    added_date = db.Column(db.Date, nullable=False, default=date.today)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
+    stock_logs = db.relationship('StockHistory', backref='item', lazy=True, cascade='all, delete-orphan')
 
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+    @property
+    def stock_status(self):
+        if self.quantity == 0:
+            return 'Out of Stock'
+        elif self.quantity <= self.minimum_stock:
+            return 'Low Stock'
+        else:
+            return 'In Stock'
+
+    @property
+    def stock_badge_class(self):
+        if self.stock_status == 'In Stock':
+            return 'bg-success'
+        elif self.stock_status == 'Low Stock':
+            return 'bg-warning text-dark'
+        else:
+            return 'bg-danger'
+
+
+class StockHistory(db.Model):
+    __tablename__ = 'stock_history'
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    transaction_type = db.Column(db.String(50), nullable=False)  # 'Stock Added', 'Stock Used'
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    remarks = db.Column(db.String(255), nullable=True)
 
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
-        db.session.commit()
 
-# Auth Decorators
-def student_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'student':
-            flash('Please log in as a student to access this page.', 'warning')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
+# Auth Decorator
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_type' not in session or session['user_type'] != 'admin':
-            flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+            flash('Admin authentication required. Please log in.', 'warning')
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
+
+def seed_default_data():
+    if db.session.query(Admin).count() == 0:
+        default_admin = Admin(username='admin')
+        default_admin.set_password('admin123')
+        db.session.add(default_admin)
+        db.session.commit()
+
+    if db.session.query(Item).count() == 0:
+        sample_items = [
+            Item(item_name='Desktop PC i5 12th Gen', item_code='COMP-001', category='Computer Equipment', quantity=25, minimum_stock=5, unit='Units', location='Lab 1 - Rack A', added_date=date.today()),
+            Item(item_name='Optical Mouse USB', item_code='COMP-002', category='Computer Equipment', quantity=40, minimum_stock=10, unit='Pcs', location='Lab 1 - Shelf B', added_date=date.today()),
+            Item(item_name='Arduino Uno R3', item_code='ELEC-001', category='Electronic Components', quantity=15, minimum_stock=5, unit='Pcs', location='Electronics Lab - Cabinet 1', added_date=date.today()),
+            Item(item_name='Resistor Kit (10k Ohm)', item_code='ELEC-002', category='Electronic Components', quantity=3, minimum_stock=10, unit='Packs', location='Electronics Lab - Drawer 3', added_date=date.today()),
+            Item(item_name='Digital Multimeter', item_code='LAB-001', category='Laboratory Equipment', quantity=8, minimum_stock=2, unit='Units', location='Testing Bay 2', added_date=date.today()),
+            Item(item_name='Oscilloscope 50MHz', item_code='LAB-002', category='Laboratory Equipment', quantity=0, minimum_stock=2, unit='Units', location='Testing Bay 1', added_date=date.today()),
+            Item(item_name='A4 Printing Paper', item_code='STAT-001', category='Stationery', quantity=50, minimum_stock=10, unit='Reams', location='Store Room - Shelf A', added_date=date.today()),
+            Item(item_name='Whiteboard Markers', item_code='STAT-002', category='Stationery', quantity=2, minimum_stock=5, unit='Boxes', location='Store Room - Shelf B', added_date=date.today()),
+        ]
+        db.session.add_all(sample_items)
+        db.session.commit()
+
+        # Seed stock history
+        for item in sample_items:
+            history = StockHistory(
+                item_id=item.id,
+                quantity=item.quantity,
+                transaction_type='Stock Added',
+                remarks='Initial stock setup'
+            )
+            db.session.add(history)
+        db.session.commit()
+
+
+# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Student Registration
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if session.get('user_type') == 'admin':
+        return redirect(url_for('admin_dashboard'))
+
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        register_number = request.form.get('register_number', '').strip()
-        department = request.form.get('department', '').strip()
-        email = request.form.get('email', '').strip().lower()
+        username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
 
-        if not name or not register_number or not department or not email or not password:
-            flash('All fields are required.', 'danger')
-            return redirect(url_for('register'))
+        if not username or not password:
+            flash('Username and Password are required.', 'danger')
+            return redirect(url_for('admin_login'))
 
-        existing_student = Student.query.filter(
-            (Student.email == email) | (Student.register_number == register_number)
-        ).first()
+        admin = db.session.query(Admin).filter_by(username=username).first()
 
-        if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
-            return redirect(url_for('register'))
-
-        student = Student(
-            name=name,
-            register_number=register_number,
-            department=department,
-            email=email
-        )
-        student.set_password(password)
-        db.session.add(student)
-        db.session.commit()
-
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
-
-    return render_template('register.html')
-
-# Student & Admin Login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
-
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
+        if admin and admin.check_password(password):
+            session['user_type'] = 'admin'
+            session['user_name'] = admin.username
+            flash(f'Welcome back, {admin.username}! Successfully logged in.', 'success')
+            return redirect(url_for('admin_dashboard'))
         else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
+            flash('Invalid username or password. Please try again.', 'danger')
+            return redirect(url_for('admin_login'))
 
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
+    return render_template('admin_login.html')
 
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
 
-    return render_template('login.html')
-
-# Logout
-@app.route('/logout')
-def logout():
+@app.route('/admin/logout')
+def admin_logout():
     session.clear()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('index'))
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('admin_login'))
 
-# Student Dashboard & Equipment Booking
-@app.route('/student/dashboard')
-@student_required
-def student_dashboard():
-    student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
-
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
-    )
-    db.session.add(booking)
-    db.session.commit()
-
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
-
-# Admin Dashboard & Equipment Management
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    items = db.session.query(Item).all()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    total_items = len(items)
+    available_items = len([i for i in items if i.stock_status == 'In Stock'])
+    low_stock_items = len([i for i in items if i.stock_status == 'Low Stock'])
+    out_of_stock_items = len([i for i in items if i.stock_status == 'Out of Stock'])
+
+    recent_history = db.session.query(StockHistory).order_by(StockHistory.date.desc()).limit(5).all()
 
     return render_template(
-        'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        'dashboard.html',
+        total_items=total_items,
+        available_items=available_items,
+        low_stock_items=low_stock_items,
+        out_of_stock_items=out_of_stock_items,
+        recent_history=recent_history
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+
+@app.route('/admin/items')
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+def items_list():
+    search_query = request.args.get('q', '').strip()
+    category_filter = request.args.get('category', '').strip()
+    status_filter = request.args.get('status', '').strip()
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
+    query = db.session.query(Item)
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
+    if search_query:
+        query = query.filter(
+            (Item.item_name.ilike(f'%{search_query}%')) |
+            (Item.item_code.ilike(f'%{search_query}%'))
+        )
+
+    if category_filter:
+        query = query.filter(Item.category == category_filter)
+
+    all_items = query.order_by(Item.item_name.asc()).all()
+
+    # Filter stock status in Python since it's a property
+    if status_filter:
+        all_items = [i for i in all_items if i.stock_status == status_filter]
+
+    return render_template(
+        'items.html',
+        items=all_items,
+        categories=CATEGORIES,
+        search_query=search_query,
+        category_filter=category_filter,
+        status_filter=status_filter
     )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+
+@app.route('/admin/items/add', methods=['GET', 'POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
+def add_item():
+    if request.method == 'POST':
+        item_name = request.form.get('item_name', '').strip()
+        item_code = request.form.get('item_code', '').strip().upper()
+        category = request.form.get('category', '').strip()
+        quantity = request.form.get('quantity', type=int)
+        minimum_stock = request.form.get('minimum_stock', type=int)
+        unit = request.form.get('unit', '').strip()
+        location = request.form.get('location', '').strip()
+        added_date_str = request.form.get('added_date', '')
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
+        if not item_name or not item_code or not category or quantity is None or minimum_stock is None or not unit or not location:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('add_item'))
 
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+        if quantity < 0:
+            flash('Quantity cannot be negative.', 'danger')
+            return redirect(url_for('add_item'))
 
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
+        if minimum_stock < 0:
+            flash('Minimum stock threshold cannot be negative.', 'danger')
+            return redirect(url_for('add_item'))
+
+        existing_code = db.session.query(Item).filter_by(item_code=item_code).first()
+        if existing_code:
+            flash(f'An item with Item Code "{item_code}" already exists.', 'danger')
+            return redirect(url_for('add_item'))
+
+        try:
+            added_date = datetime.strptime(added_date_str, '%Y-%m-%d').date() if added_date_str else date.today()
+        except ValueError:
+            added_date = date.today()
+
+        new_item = Item(
+            item_name=item_name,
+            item_code=item_code,
+            category=category,
+            quantity=quantity,
+            minimum_stock=minimum_stock,
+            unit=unit,
+            location=location,
+            added_date=added_date
+        )
+        db.session.add(new_item)
+        db.session.commit()
+
+        # Record initial stock history
+        history = StockHistory(
+            item_id=new_item.id,
+            quantity=quantity,
+            transaction_type='Stock Added',
+            remarks='Initial stock entry on item creation'
+        )
+        db.session.add(history)
+        db.session.commit()
+
+        flash(f'Item "{item_name}" ({item_code}) added successfully!', 'success')
+        return redirect(url_for('items_list'))
+
+    today_str = date.today().isoformat()
+    return render_template('add_item.html', categories=CATEGORIES, today=today_str)
+
+
+@app.route('/admin/items/edit/<int:item_id>', methods=['GET', 'POST'])
 @admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
+def edit_item(item_id):
+    item = db.session.get(Item, item_id)
+    if not item:
+        flash('Item not found.', 'danger')
+        return redirect(url_for('items_list'))
 
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
+    if request.method == 'POST':
+        item_name = request.form.get('item_name', '').strip()
+        item_code = request.form.get('item_code', '').strip().upper()
+        category = request.form.get('category', '').strip()
+        minimum_stock = request.form.get('minimum_stock', type=int)
+        unit = request.form.get('unit', '').strip()
+        location = request.form.get('location', '').strip()
+
+        if not item_name or not item_code or not category or minimum_stock is None or not unit or not location:
+            flash('All required fields must be filled.', 'danger')
+            return redirect(url_for('edit_item', item_id=item_id))
+
+        if minimum_stock < 0:
+            flash('Minimum stock threshold cannot be negative.', 'danger')
+            return redirect(url_for('edit_item', item_id=item_id))
+
+        # Check unique code among other items
+        existing = db.session.query(Item).filter(Item.item_code == item_code, Item.id != item_id).first()
+        if existing:
+            flash(f'Another item with Item Code "{item_code}" already exists.', 'danger')
+            return redirect(url_for('edit_item', item_id=item_id))
+
+        item.item_name = item_name
+        item.item_code = item_code
+        item.category = category
+        item.minimum_stock = minimum_stock
+        item.unit = unit
+        item.location = location
+
+        db.session.commit()
+        flash(f'Item "{item.item_name}" details updated successfully!', 'success')
+        return redirect(url_for('items_list'))
+
+    return render_template('edit_item.html', item=item, categories=CATEGORIES)
+
+
+@app.route('/admin/items/delete/<int:item_id>', methods=['POST'])
 @admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def delete_item(item_id):
+    item = db.session.get(Item, item_id)
+    if not item:
+        flash('Item not found.', 'danger')
+        return redirect(url_for('items_list'))
 
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
+    item_name = item.item_name
+    db.session.delete(item)
     db.session.commit()
 
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+    flash(f'Item "{item_name}" has been deleted.', 'info')
+    return redirect(url_for('items_list'))
 
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
+
+@app.route('/admin/stock/update', methods=['GET', 'POST'])
 @admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def stock_update():
+    items = db.session.query(Item).order_by(Item.item_name.asc()).all()
 
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
+    if request.method == 'POST':
+        item_id = request.form.get('item_id', type=int)
+        transaction_type = request.form.get('transaction_type', '').strip()
+        quantity = request.form.get('quantity', type=int)
+        remarks = request.form.get('remarks', '').strip()
 
-    booking.status = 'Rejected'
-    db.session.commit()
+        if not item_id or not transaction_type or quantity is None:
+            flash('Please select an item, transaction type, and enter quantity.', 'danger')
+            return redirect(url_for('stock_update'))
 
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
+        if quantity <= 0:
+            flash('Transaction quantity must be greater than zero.', 'danger')
+            return redirect(url_for('stock_update'))
 
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
+        item = db.session.get(Item, item_id)
+        if not item:
+            flash('Selected item not found.', 'danger')
+            return redirect(url_for('stock_update'))
+
+        if transaction_type == 'Stock Added':
+            item.quantity += quantity
+        elif transaction_type == 'Stock Used':
+            if quantity > item.quantity:
+                flash(f'Cannot reduce stock by {quantity}. Only {item.quantity} {item.unit} available in stock!', 'danger')
+                return redirect(url_for('stock_update'))
+            item.quantity -= quantity
+        else:
+            flash('Invalid transaction type.', 'danger')
+            return redirect(url_for('stock_update'))
+
+        # Record stock history
+        history = StockHistory(
+            item_id=item.id,
+            quantity=quantity,
+            transaction_type=transaction_type,
+            remarks=remarks if remarks else f'{transaction_type} operation'
+        )
+        db.session.add(history)
+        db.session.commit()
+
+        flash(f'Stock updated successfully for "{item.item_name}". New Quantity: {item.quantity} {item.unit}.', 'success')
+        return redirect(url_for('items_list'))
+
+    selected_item_id = request.args.get('item_id', type=int)
+    return render_template('stock_update.html', items=items, selected_item_id=selected_item_id)
+
+
+@app.route('/admin/stock/history')
 @admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def stock_history():
+    item_id = request.args.get('item_id', type=int)
+    query = db.session.query(StockHistory).join(Item)
 
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
+    if item_id:
+        query = query.filter(StockHistory.item_id == item_id)
 
-    booking.status = 'Returned'
-    db.session.commit()
+    history_logs = query.order_by(StockHistory.date.desc()).all()
+    items = db.session.query(Item).order_by(Item.item_name.asc()).all()
 
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+    return render_template('stock_history.html', history_logs=history_logs, items=items, selected_item_id=item_id)
+
 
 if __name__ == '__main__':
     with app.app_context():

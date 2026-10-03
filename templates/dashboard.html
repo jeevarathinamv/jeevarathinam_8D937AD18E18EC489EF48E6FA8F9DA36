@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Laboratory Stock Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="page-title mb-1">Admin Dashboard</h2>
+        <p class="text-muted mb-0">Overview of inventory stats, stock alerts, and recent activities</p>
+    </div>
+    <div>
+        <a href="{{ url_for('add_item') }}" class="btn btn-teal fw-bold shadow-sm me-2">
+            <i class="bi bi-plus-circle me-1"></i> Add New Item
+        </a>
+        <a href="{{ url_for('stock_update') }}" class="btn btn-warning fw-bold text-dark shadow-sm">
+            <i class="bi bi-arrow-left-right me-1"></i> Update Stock
+        </a>
+    </div>
+</div>
+
+<!-- 4 Summary Metric Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total Items -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card bg-stat-total shadow-sm">
+            <h6 class="text-uppercase fw-bold opacity-75 mb-1">Total Items</h6>
+            <h2 class="display-6 fw-bold mb-0">{{ total_items }}</h2>
+            <i class="bi bi-boxes stat-icon"></i>
+            <a href="{{ url_for('items_list') }}" class="text-white text-decoration-underline small mt-2 d-inline-block">View All Items &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Available Items (In Stock) -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card bg-stat-available shadow-sm">
+            <h6 class="text-uppercase fw-bold opacity-75 mb-1">Available Items</h6>
+            <h2 class="display-6 fw-bold mb-0">{{ available_items }}</h2>
+            <i class="bi bi-check-circle stat-icon"></i>
+            <a href="{{ url_for('items_list', status='In Stock') }}" class="text-white text-decoration-underline small mt-2 d-inline-block">View In Stock &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Low Stock Items -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card bg-stat-low shadow-sm">
+            <h6 class="text-uppercase fw-bold opacity-75 mb-1">Low Stock Items</h6>
+            <h2 class="display-6 fw-bold mb-0">{{ low_stock_items }}</h2>
+            <i class="bi bi-exclamation-triangle stat-icon"></i>
+            <a href="{{ url_for('items_list', status='Low Stock') }}" class="text-white text-decoration-underline small mt-2 d-inline-block">View Low Stock &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Out of Stock Items -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card bg-stat-out shadow-sm">
+            <h6 class="text-uppercase fw-bold opacity-75 mb-1">Out of Stock Items</h6>
+            <h2 class="display-6 fw-bold mb-0">{{ out_of_stock_items }}</h2>
+            <i class="bi bi-x-circle stat-icon"></i>
+            <a href="{{ url_for('items_list', status='Out of Stock') }}" class="text-white text-decoration-underline small mt-2 d-inline-block">View Out of Stock &rarr;</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Quick Actions Grid -->
+    <div class="col-lg-5">
+        <div class="card card-custom p-4 h-100">
+            <h5 class="fw-bold text-teal mb-3"><i class="bi bi-lightning-charge me-2 text-warning"></i> Quick Operations</h5>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('add_item') }}" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0 rounded mb-2 bg-light">
+                    <div class="p-2 rounded bg-teal text-white me-3" style="background-color: var(--primary-teal) !important;">
+                        <i class="bi bi-plus-lg fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Add Laboratory Item</h6>
+                        <small class="text-muted">Register a new item with code, category, and minimum threshold.</small>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('stock_update') }}" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0 rounded mb-2 bg-light">
+                    <div class="p-2 rounded bg-warning text-dark me-3">
+                        <i class="bi bi-arrow-down-up fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Update Item Stock</h6>
+                        <small class="text-muted">Add new stock or record consumed stock for an existing item.</small>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('stock_history') }}" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0 rounded bg-light">
+                    <div class="p-2 rounded bg-info text-white me-3">
+                        <i class="bi bi-clock-history fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">View Transaction History</h6>
+                        <small class="text-muted">Review full audit logs of stock movements and remarks.</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Stock Activity -->
+    <div class="col-lg-7">
+        <div class="card card-custom p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-teal mb-0"><i class="bi bi-clock-history me-2 text-sky"></i> Recent Stock Transactions</h5>
+                <a href="{{ url_for('stock_history') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+            </div>
+
+            {% if recent_history %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_history %}
+                        <tr>
+                            <td>
+                                <strong>{{ log.item.item_name }}</strong><br>
+                                <small class="text-muted">{{ log.item.item_code }}</small>
+                            </td>
+                            <td>
+                                {% if log.transaction_type == 'Stock Added' %}
+                                    <span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-plus-circle me-1"></i> Added</span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-dash-circle me-1"></i> Used</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">{{ log.quantity }} {{ log.item.unit }}</td>
+                            <td><small class="text-muted">{{ log.date.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox display-6"></i>
+                <p class="mt-2 mb-0">No stock history transactions recorded yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
