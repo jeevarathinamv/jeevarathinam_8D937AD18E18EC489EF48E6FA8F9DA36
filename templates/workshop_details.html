@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ workshop.title }} - Workshop Details{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-3">
+        <a href="{{ url_for('workshops') }}" class="text-indigo text-decoration-none fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Workshops
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Workshop Detail Card -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-custom p-4 p-md-5 rounded-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <span class="badge bg-indigo-subtle text-indigo rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-tag-fill me-1"></i> {{ workshop.category }}
+                    </span>
+                    <span class="badge {% if workshop.status == 'Cancelled' %}bg-danger text-white{% elif workshop.is_completed %}bg-secondary text-white{% elif workshop.available_seats > 0 %}bg-mint-subtle text-mint{% else %}bg-warning text-dark{% endif %} rounded-pill px-3 py-2 fw-semibold">
+                        {% if workshop.status == 'Cancelled' %}
+                            Cancelled
+                        {% elif workshop.is_completed %}
+                            Completed
+                        {% elif workshop.available_seats > 0 %}
+                            {{ workshop.available_seats }} Seats Available
+                        {% else %}
+                            Houseful (0 Seats Left)
+                        {% endif %}
+                    </span>
+                </div>
+
+                <h2 class="fw-bold text-dark mb-3">{{ workshop.title }}</h2>
+
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-info-circle text-indigo me-2"></i>Description</h6>
+                    <p class="text-secondary mb-0 leading-relaxed">{{ workshop.description or 'No detailed description available for this workshop.' }}</p>
+                </div>
+
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-calendar-check text-indigo me-2"></i>Schedule & Venue</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 border rounded-3 bg-white h-100">
+                            <span class="text-muted small d-block mb-1"><i class="bi bi-person text-indigo me-1"></i> Trainer Name</span>
+                            <strong class="text-dark">{{ workshop.trainer_name }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 border rounded-3 bg-white h-100">
+                            <span class="text-muted small d-block mb-1"><i class="bi bi-calendar-event text-indigo me-1"></i> Date</span>
+                            <strong class="text-dark">{{ workshop.date.strftime('%B %d, %Y') }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <div class="p-3 border rounded-3 bg-white h-100">
+                            <span class="text-muted small d-block mb-1"><i class="bi bi-clock text-indigo me-1"></i> Time</span>
+                            <strong class="text-dark">{{ workshop.time }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-6">
+                        <div class="p-3 border rounded-3 bg-white h-100">
+                            <span class="text-muted small d-block mb-1"><i class="bi bi-geo-alt text-indigo me-1"></i> Venue / Location</span>
+                            <strong class="text-dark">{{ workshop.venue }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-6">
+                        <div class="p-3 border rounded-3 bg-white h-100">
+                            <span class="text-muted small d-block mb-1"><i class="bi bi-people text-indigo me-1"></i> Capacity & Seats</span>
+                            <strong class="text-dark">{{ workshop.available_seats }} Available / {{ workshop.total_seats }} Total Seats</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action / Registration Box Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-custom p-4 rounded-4 sticky-top" style="top: 90px;">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-bookmark-check text-indigo me-2"></i>Workshop Registration</h5>
+
+                {% if is_registered %}
+                    <div class="alert alert-success border-0 rounded-3 p-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>You are registered!</strong>
+                        <div class="small text-muted mt-1">Registration Date: {{ registration.registration_date.strftime('%b %d, %Y') }}</div>
+                    </div>
+                    <form action="{{ url_for('cancel_workshop_registration', workshop_id=workshop.id) }}" method="POST">
+                        <button type="submit" class="btn btn-outline-danger w-100 py-2 fw-semibold rounded-pill" onclick="return confirm('Are you sure you want to cancel your registration?');">
+                            <i class="bi bi-x-circle me-1"></i> Cancel Registration
+                        </button>
+                    </form>
+                {% else %}
+                    {% if session.get('user_type') == 'student' %}
+                        {% if workshop.status == 'Cancelled' %}
+                            <div class="alert alert-danger border-0 rounded-3 p-3 mb-0">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> This workshop has been cancelled by the admin.
+                            </div>
+                        {% elif workshop.is_completed %}
+                            <div class="alert alert-secondary border-0 rounded-3 p-3 mb-0">
+                                <i class="bi bi-info-circle-fill me-2"></i> This workshop has already concluded.
+                            </div>
+                        {% elif workshop.available_seats <= 0 %}
+                            <div class="alert alert-warning border-0 rounded-3 p-3 mb-0">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i> Registrations closed. No seats available.
+                            </div>
+                        {% else %}
+                            <p class="text-muted small mb-4">Click below to confirm your seat reservation for this skill workshop.</p>
+                            <form action="{{ url_for('register_workshop', workshop_id=workshop.id) }}" method="POST">
+                                <button type="submit" class="btn btn-mint w-100 py-2.5 fw-semibold rounded-pill shadow-sm">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Register Now
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% elif session.get('user_type') == 'admin' %}
+                        <div class="alert alert-info border-0 rounded-3 p-3 mb-3 small">
+                            <i class="bi bi-shield-lock-fill me-1"></i> You are logged in as Admin.
+                        </div>
+                        <a href="{{ url_for('edit_workshop', workshop_id=workshop.id) }}" class="btn btn-indigo w-100 mb-2 py-2 rounded-pill fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Workshop
+                        </a>
+                    {% else %}
+                        <div class="alert alert-light border p-3 rounded-3 mb-3 text-center">
+                            <p class="small text-muted mb-2">You must be logged in as a student to register.</p>
+                            <a href="{{ url_for('login') }}" class="btn btn-indigo btn-sm w-100 rounded-pill mb-2 fw-semibold">Login to Register</a>
+                            <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">New Student? Register</a>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Skill Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-0 shadow-custom p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="bg-indigo-subtle text-indigo rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:50px; height:50px;">
+                        <i class="bi bi-shield-lock-fill fs-3"></i>
+                    </span>
+                    <h3 class="fw-bold text-dark">Admin Login</h3>
+                    <p class="text-muted small">Access administrator management portal</p>
+                </div>
+
+                <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Admin Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person text-muted"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Username (e.g. admin)" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key text-muted"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password (e.g. admin123)" required>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-0 rounded-3 p-2.5 mb-3 small">
+                        <i class="bi bi-info-circle me-1"></i> Default Demo Credentials: <strong>admin</strong> / <strong>admin123</strong>
+                    </div>
+
+                    <button type="submit" class="btn btn-indigo w-100 py-2 fw-semibold shadow-sm mb-3">
+                        <i class="bi bi-shield-lock me-1"></i> Login as Administrator
+                    </button>
+
+                    <div class="text-center border-top pt-3">
+                        <p class="small text-muted mb-0">Are you a Student? <a href="{{ url_for('login') }}" class="text-indigo fw-semibold text-decoration-none">Student Login</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

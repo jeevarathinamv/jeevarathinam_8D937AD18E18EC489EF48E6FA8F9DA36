@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Skill Workshops - Workshop Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <span class="section-pill bg-indigo-subtle text-indigo mb-1">Catalog</span>
+            <h2 class="fw-bold text-dark mb-0">Explore Skill Workshops</h2>
+        </div>
+        {% if session.get('user_type') == 'admin' %}
+            <a href="{{ url_for('add_workshop') }}" class="btn btn-indigo rounded-pill px-4">
+                <i class="bi bi-plus-circle me-1"></i> Add New Workshop
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Filter & Search Card -->
+    <div class="card border-0 shadow-custom p-3 mb-4 rounded-4">
+        <form action="{{ url_for('workshops') }}" method="GET" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by title or trainer..." value="{{ search_query }}">
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-funnel text-muted"></i></span>
+                    <select name="category" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Skill Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-indigo w-100 fw-semibold">Filter</button>
+                {% if selected_category or search_query %}
+                    <a href="{{ url_for('workshops') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-x-circle"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Category Pills -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{{ url_for('workshops') }}" class="badge rounded-pill px-3 py-2 text-decoration-none {% if not selected_category %}bg-indigo text-white{% else %}bg-white text-dark shadow-sm{% endif %}">
+            All Categories
+        </a>
+        {% for cat in categories %}
+            <a href="{{ url_for('workshops', category=cat) }}" class="badge rounded-pill px-3 py-2 text-decoration-none {% if selected_category == cat %}bg-indigo text-white{% else %}bg-white text-dark shadow-sm{% endif %}">
+                {{ cat }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Workshop Cards Grid -->
+    <div class="row g-4">
+        {% for ws in workshops %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-custom card-hover-effect">
+                    <div class="card-body d-flex flex-column p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-indigo-subtle text-indigo rounded-pill px-3 py-1">
+                                {{ ws.category }}
+                            </span>
+                            <span class="badge {% if ws.status == 'Cancelled' %}bg-danger bg-opacity-10 text-danger{% elif ws.status == 'Completed' or ws.date < today_date %}bg-secondary bg-opacity-10 text-secondary{% elif ws.available_seats > 0 %}bg-mint-subtle text-mint{% else %}bg-warning bg-opacity-10 text-dark{% endif %} rounded-pill px-2.5 py-1 small">
+                                {% if ws.status == 'Cancelled' %}
+                                    Cancelled
+                                {% elif ws.status == 'Completed' or ws.date < today_date %}
+                                    Completed
+                                {% else %}
+                                    <i class="bi bi-person-workspace me-1"></i>{{ ws.available_seats }} Seats Left
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <h5 class="card-title fw-bold text-dark mt-2 mb-2">{{ ws.title }}</h5>
+                        <p class="card-text text-muted small flex-grow-1">
+                            {{ ws.description[:100] }}{% if ws.description and ws.description|length > 100 %}...{% endif %}
+                        </p>
+
+                        <div class="border-top pt-3 mt-3 text-muted small">
+                            <div class="mb-1"><i class="bi bi-person text-indigo me-2"></i><strong>Trainer:</strong> {{ ws.trainer_name }}</div>
+                            <div class="mb-1"><i class="bi bi-calendar-event text-indigo me-2"></i><strong>Date:</strong> {{ ws.date.strftime('%b %d, %Y') }}</div>
+                            <div class="mb-1"><i class="bi bi-clock text-indigo me-2"></i><strong>Time:</strong> {{ ws.time }}</div>
+                            <div class="mb-2"><i class="bi bi-geo-alt text-indigo me-2"></i><strong>Venue:</strong> {{ ws.venue }}</div>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2">
+                            <a href="{{ url_for('workshop_details', workshop_id=ws.id) }}" class="btn btn-outline-indigo btn-sm w-100 rounded-pill fw-semibold">
+                                View Details <i class="bi bi-arrow-right-short"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search display-4 text-muted"></i>
+                <h5 class="text-muted mt-3">No workshops found</h5>
+                <p class="text-muted small">Try searching with a different term or clearing filters.</p>
+                <a href="{{ url_for('workshops') }}" class="btn btn-indigo btn-sm rounded-pill px-4">View All Workshops</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
