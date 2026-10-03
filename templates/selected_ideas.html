@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Selected Ideas | College Entrepreneurship Portal{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-2">
+        <i class="bi bi-trophy-fill me-1"></i> Incubated & Selected Projects
+    </span>
+    <h2 class="fw-bold" style="color: var(--petrol-blue);">
+        Selected Entrepreneurship Ideas
+    </h2>
+    <p class="text-muted lead">Showcasing top-performing student business ideas selected for incubation support, mentoring, and grant seed funding.</p>
+</div>
+
+<div class="card card-custom shadow-sm">
+    <div class="card-body p-0">
+        {% if ideas %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Idea ID</th>
+                        <th>Idea Title</th>
+                        <th>Student Name</th>
+                        <th>Department</th>
+                        <th>Category</th>
+                        <th>Evaluation Score</th>
+                        <th>Selection Status</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for idea in ideas %}
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary">{{ idea.idea_id }}</td>
+                        <td class="fw-bold text-dark">{{ idea.title }}</td>
+                        <td class="fw-semibold">{{ idea.student.name }}</td>
+                        <td><small>{{ idea.student.department }}</small></td>
+                        <td><span class="badge bg-light text-dark border">{{ idea.category }}</span></td>
+                        <td>
+                            {% if idea.evaluation %}
+                                <span class="badge bg-success fs-6"><i class="bi bi-star-fill text-warning me-1"></i> {{ idea.evaluation.total_score }} / 40</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Pending Score</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-status text-white" style="background-color: var(--coral);">
+                                <i class="bi bi-trophy-fill me-1"></i> Selected
+                            </span>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a href="{{ url_for('idea_details', id=idea.id) }}" class="btn btn-sm btn-petrol">
+                                <i class="bi bi-eye-fill me-1"></i> Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <i class="bi bi-trophy fs-1 d-block mb-3 text-warning"></i>
+            <h5 class="text-muted">No ideas have been marked as 'Selected' yet.</h5>
+            <p class="text-muted small">As the admin committee evaluates and selects top entrepreneurship proposals, they will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

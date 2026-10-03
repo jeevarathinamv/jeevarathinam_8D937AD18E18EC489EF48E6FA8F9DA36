@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Idea Details - {{ idea.idea_id }} | College Entrepreneurship Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+    <div>
+        <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary mb-2">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <h2 class="fw-bold mb-0" style="color: var(--petrol-blue);">
+            <i class="bi bi-file-text-fill me-2"></i> {{ idea.title }}
+        </h2>
+        <span class="badge bg-primary me-2"><i class="bi bi-hash"></i> {{ idea.idea_id }}</span>
+        <span class="badge bg-light text-dark border me-2"><i class="bi bi-tag"></i> {{ idea.category }}</span>
+        <span class="text-muted"><i class="bi bi-calendar-event"></i> Submitted: {{ idea.submission_date.strftime('%Y-%m-%d') }}</span>
+    </div>
+    <div class="mt-3 mt-md-0">
+        {% if session.get('user_type') == 'admin' %}
+            <a href="{{ url_for('evaluate_idea', id=idea.id) }}" class="btn btn-warning fw-bold">
+                <i class="bi bi-star-fill me-1"></i> Evaluate Idea
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Idea Status Tracking Section -->
+<div class="card card-custom shadow-sm mb-4">
+    <div class="card-header card-lilac-header p-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-activity me-2"></i> Idea Status Tracking</h5>
+    </div>
+    <div class="card-body p-4">
+        {% set status = idea.status %}
+
+        <div class="timeline-steps">
+            <!-- Step 1: Submitted -->
+            <div class="timeline-step completed">
+                <div class="timeline-icon"><i class="bi bi-check-lg"></i></div>
+                <div class="timeline-text">Submitted</div>
+            </div>
+
+            <!-- Step 2: Under Review -->
+            <div class="timeline-step {% if status in ['Under Review', 'Approved', 'Selected'] %}completed{% elif status == 'Pending' %}active{% elif status == 'Rejected' %}rejected{% endif %}">
+                <div class="timeline-icon">
+                    {% if status in ['Under Review', 'Approved', 'Selected'] %}<i class="bi bi-check-lg"></i>
+                    {% elif status == 'Pending' %}<i class="bi bi-hourglass-split"></i>
+                    {% else %}<i class="bi bi-x-lg"></i>{% endif %}
+                </div>
+                <div class="timeline-text">Under Review</div>
+            </div>
+
+            <!-- Step 3: Approved -->
+            <div class="timeline-step {% if status in ['Approved', 'Selected'] %}completed{% elif status == 'Under Review' %}active{% elif status == 'Rejected' %}rejected{% endif %}">
+                <div class="timeline-icon">
+                    {% if status in ['Approved', 'Selected'] %}<i class="bi bi-check-lg"></i>
+                    {% elif status == 'Rejected' %}<i class="bi bi-x-lg"></i>
+                    {% else %}<i class="bi bi-dash"></i>{% endif %}
+                </div>
+                <div class="timeline-text">Approved</div>
+            </div>
+
+            <!-- Step 4: Selected -->
+            <div class="timeline-step {% if status == 'Selected' %}active{% endif %}">
+                <div class="timeline-icon">
+                    {% if status == 'Selected' %}<i class="bi bi-trophy-fill text-white"></i>
+                    {% else %}<i class="bi bi-circle"></i>{% endif %}
+                </div>
+                <div class="timeline-text">Selected</div>
+            </div>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between">
+            <div>
+                <strong>Current Status:</strong>
+                {% if status == 'Pending' %}
+                    <span class="badge bg-warning text-dark badge-status ms-2"><i class="bi bi-hourglass-split"></i> Pending Review</span>
+                {% elif status == 'Under Review' %}
+                    <span class="badge bg-info text-dark badge-status ms-2"><i class="bi bi-search"></i> Under Review</span>
+                {% elif status == 'Approved' %}
+                    <span class="badge bg-success badge-status ms-2"><i class="bi bi-check-circle"></i> Approved</span>
+                {% elif status == 'Rejected' %}
+                    <span class="badge bg-danger badge-status ms-2"><i class="bi bi-x-circle"></i> Rejected</span>
+                {% elif status == 'Selected' %}
+                    <span class="badge badge-status text-white ms-2" style="background-color: var(--coral);"><i class="bi bi-trophy-fill"></i> Selected for Incubation</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if idea.admin_remarks %}
+        <div class="alert alert-info mt-3 mb-0">
+            <h6 class="fw-bold mb-1"><i class="bi bi-chat-left-text-fill me-2"></i> Admin Remarks:</h6>
+            <p class="mb-0">{{ idea.admin_remarks }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Complete Details View -->
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card card-custom shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom p-3">
+                <h5 class="mb-0 fw-bold" style="color: var(--petrol-blue);"><i class="bi bi-journal-text me-2"></i> Proposal Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase small">Problem Statement</h6>
+                    <p class="fs-6">{{ idea.problem_statement }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase small">Proposed Solution</h6>
+                    <p class="fs-6">{{ idea.proposed_solution }}</p>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <h6 class="fw-bold text-muted text-uppercase small mb-1">Target Customers</h6>
+                            <p class="mb-0">{{ idea.target_customers }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <h6 class="fw-bold text-muted text-uppercase small mb-1">Estimated Budget</h6>
+                            <p class="mb-0 fw-bold text-success">{{ idea.estimated_budget }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase small">Required Resources</h6>
+                    <p class="fs-6">{{ idea.required_resources }}</p>
+                </div>
+
+                <div>
+                    <h6 class="fw-bold text-muted text-uppercase small">Expected Benefits & Impact</h6>
+                    <p class="fs-6">{{ idea.expected_benefits }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Student Info Card -->
+        <div class="card card-custom shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom p-3">
+                <h5 class="mb-0 fw-bold" style="color: var(--petrol-blue);"><i class="bi bi-person-circle me-2"></i> Student Details</h5>
+            </div>
+            <div class="card-body p-3">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="text-muted">Name</span>
+                        <span class="fw-bold">{{ idea.student.name }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="text-muted">Register No</span>
+                        <span class="fw-bold">{{ idea.student.register_number }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="text-muted">Department</span>
+                        <span class="fw-bold">{{ idea.student.department }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="text-muted">Year</span>
+                        <span class="fw-bold">{{ idea.student.year }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <span class="text-muted">Email</span>
+                        <span class="small">{{ idea.student.email }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Evaluation Results Card (If evaluated) -->
+        {% if idea.evaluation %}
+        <div class="card card-custom shadow-sm border-warning">
+            <div class="card-header bg-warning text-dark p-3 fw-bold">
+                <i class="bi bi-calculator me-2"></i> Evaluation Score Card
+            </div>
+            <div class="card-body p-3">
+                <div class="text-center mb-3 p-3 bg-light rounded-3">
+                    <span class="display-6 fw-bold text-primary">{{ idea.evaluation.total_score }}</span>
+                    <span class="text-muted fs-5"> / 40</span>
+                    <div class="small text-muted fw-bold mt-1">Total Evaluation Score</div>
+                </div>
+
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Innovation Score:</span>
+                        <span class="fw-bold">{{ idea.evaluation.innovation_score }}/10</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Feasibility Score:</span>
+                        <span class="fw-bold">{{ idea.evaluation.feasibility_score }}/10</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Market Potential Score:</span>
+                        <span class="fw-bold">{{ idea.evaluation.market_potential_score }}/10</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Social Impact Score:</span>
+                        <span class="fw-bold">{{ idea.evaluation.social_impact_score }}/10</span>
+                    </div>
+                </div>
+
+                {% if idea.evaluation.overall_remarks %}
+                <div class="border-top pt-2 mt-2">
+                    <small class="fw-bold text-muted">Evaluation Remarks:</small>
+                    <p class="small mb-0 text-dark">{{ idea.evaluation.overall_remarks }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

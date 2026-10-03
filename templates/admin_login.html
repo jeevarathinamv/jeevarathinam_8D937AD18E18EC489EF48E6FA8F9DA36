@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login | College Entrepreneurship Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom shadow-lg">
+            <div class="card-header card-petrol-header p-3 text-center">
+                <h4 class="mb-0 text-white"><i class="bi bi-shield-lock-fill text-warning me-2"></i> Admin Login</h4>
+                <small class="text-white-50">Authorized Portal Administrator Access</small>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-bold">Admin Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Username (default: admin)" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-bold">Admin Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password (default: admin123)" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-coral w-100 py-2 fs-6">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Admin Log In
+                    </button>
+
+                    <div class="alert alert-light border mt-4 mb-0 text-center text-muted small">
+                        <i class="bi bi-info-circle me-1 text-primary"></i> Default Admin Credentials:
+                        <br><strong>Username:</strong> <code>admin</code> | <strong>Password:</strong> <code>admin123</code>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

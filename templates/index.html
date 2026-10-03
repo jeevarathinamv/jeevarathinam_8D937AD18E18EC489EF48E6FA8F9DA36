@@ -1,74 +1,76 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Welcome | College Entrepreneurship Portal{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+<div class="hero-banner mb-5 text-center text-md-start">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-3 fw-bold">
+                <i class="bi bi-award-fill me-1"></i> Student Entrepreneurship Initiative
+            </span>
+            <h1 class="display-4 fw-bold text-white mb-3">College Entrepreneurship Idea Submission Portal</h1>
+            <p class="lead text-white-50 mb-4">
+                Transform your innovative ideas into real-world business solutions. Submit your business concepts, track evaluation status, and access essential startup resources.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{{ url_for('register') }}" class="btn btn-coral btn-lg">
+                    <i class="bi bi-person-plus-fill me-2"></i> Get Started / Register
                 </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
                 </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
+                <a href="{{ url_for('resources') }}" class="btn bg-white text-dark btn-lg">
+                    <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i> Resources
                 </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block">
+            <i class="bi bi-lightbulb-fill text-warning" style="font-size: 10rem; opacity: 0.9;"></i>
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-4 text-center">
+            <div class="mb-3 text-primary">
+                <i class="bi bi-send-check-fill fs-1" style="color: var(--petrol-blue);"></i>
+            </div>
+            <h4 class="fw-bold mb-2">1. Submit Idea</h4>
+            <p class="text-muted">Fill out a simple structured form describing your problem statement, solution, target market, and budget.</p>
         </div>
     </div>
-
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-4 text-center">
+            <div class="mb-3 text-success">
+                <i class="bi bi-search-heart fs-1" style="color: var(--coral);"></i>
             </div>
+            <h4 class="fw-bold mb-2">2. Expert Evaluation</h4>
+            <p class="text-muted">Faculty and experts evaluate your proposal on innovation, feasibility, market potential, and social impact.</p>
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom h-100 p-4 text-center">
+            <div class="mb-3 text-warning">
+                <i class="bi bi-trophy-fill fs-1 text-warning"></i>
             </div>
+            <h4 class="fw-bold mb-2">3. Incubation Selection</h4>
+            <p class="text-muted">Top-performing entrepreneurship ideas get selected for college incubation support, mentorship, and funding.</p>
         </div>
+    </div>
+</div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
-            </div>
+<div class="card card-custom p-4 bg-white border-0 shadow-sm rounded-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h3 class="fw-bold mb-2" style="color: var(--petrol-blue);"><i class="bi bi-shield-lock-fill me-2 text-warning"></i> Administrator Portal Access</h3>
+            <p class="text-muted mb-0">College administrators and evaluation committee members can log in to review submissions, update status, and score proposals.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{{ url_for('admin_login') }}" class="btn btn-petrol">
+                <i class="bi bi-shield-lock me-1"></i> Admin Login
+            </a>
         </div>
     </div>
 </div>
