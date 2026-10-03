@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Computer Fault - Lab Fault Reporter{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card custom-card shadow-sm border-0">
+            <div class="card-header bg-warning text-dark text-center py-3 rounded-top">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Report Computer Fault</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('report_fault') }}" method="POST">
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="lab_name" class="form-label fw-semibold"><i class="bi bi-building me-1"></i> Lab Name</label>
+                            <input type="text" class="form-control" id="lab_name" name="lab_name" list="lab_list" placeholder="e.g. Computer Lab 1" required>
+                            <datalist id="lab_list">
+                                <option value="Computer Lab 1">
+                                <option value="Computer Lab 2">
+                                <option value="MCA Programming Lab">
+                                <option value="Networks & Hardware Lab">
+                                <option value="AI & Data Science Lab">
+                            </datalist>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="computer_number" class="form-label fw-semibold"><i class="bi bi-pc-display me-1"></i> Computer Number</label>
+                            <input type="text" class="form-control" id="computer_number" name="computer_number" list="comp_list" placeholder="e.g. COMP-101" required>
+                            <datalist id="comp_list">
+                                {% for comp in computers %}
+                                    <option value="{{ comp.computer_number }}"> ({{ comp.lab_name }})
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fault_type" class="form-label fw-semibold"><i class="bi bi-bug-fill me-1"></i> Fault Type</label>
+                        <select class="form-select" id="fault_type" name="fault_type" required>
+                            <option value="" disabled selected>-- Select Fault Category --</option>
+                            {% for type in fault_types %}
+                                <option value="{{ type }}">{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="problem_description" class="form-label fw-semibold"><i class="bi bi-card-text me-1"></i> Problem Description</label>
+                        <textarea class="form-control" id="problem_description" name="problem_description" rows="4" placeholder="Describe the problem in detail (e.g., monitor displays blue screen, keyboard 'Enter' key non-functional, etc.)" required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="report_date" class="form-label fw-semibold"><i class="bi bi-calendar-event me-1"></i> Report Date</label>
+                        <input type="date" class="form-control" id="report_date" name="report_date" value="{{ today }}" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg fw-bold text-dark">
+                            <i class="bi bg-send me-1"></i> Submit Fault Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer bg-light text-center py-3">
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i> A unique Complaint ID will be generated automatically upon submission.</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

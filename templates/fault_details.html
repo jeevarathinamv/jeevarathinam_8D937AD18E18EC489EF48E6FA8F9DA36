@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Fault Details - {{ report.complaint_id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-md-9 col-lg-8">
+        <div class="card custom-card shadow-sm border-0">
+            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center rounded-top">
+                <h4 class="mb-0 fw-bold">
+                    <i class="bi bi-file-earmark-text me-2 text-warning"></i> Complaint ID: {{ report.complaint_id }}
+                </h4>
+                <div>
+                    {% if report.status == 'Pending' %}
+                        <span class="badge badge-pending fs-6 px-3 py-2">Pending</span>
+                    {% elif report.status == 'In Progress' %}
+                        <span class="badge badge-in-progress fs-6 px-3 py-2">In Progress</span>
+                    {% elif report.status == 'Resolved' %}
+                        <span class="badge badge-resolved fs-6 px-3 py-2">Resolved</span>
+                    {% else %}
+                        <span class="badge badge-rejected fs-6 px-3 py-2">Rejected</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <!-- Student Info -->
+                    <div class="col-12">
+                        <h5 class="fw-bold text-primary border-bottom pb-2"><i class="bi bi-person-circle me-2"></i> Student Details</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Student Name</p>
+                        <p class="fw-bold fs-6">{{ report.student.student_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Register Number</p>
+                        <p class="fw-bold fs-6"><span class="badge bg-light text-dark border px-2 py-1">{{ report.student.register_number }}</span></p>
+                    </div>
+
+                    <!-- Fault Info -->
+                    <div class="col-12 mt-4">
+                        <h5 class="fw-bold text-primary border-bottom pb-2"><i class="bi bi-pc-display-horizontal me-2"></i> Computer & Fault Information</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Lab Name</p>
+                        <p class="fw-bold fs-6">{{ report.lab_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Computer Number</p>
+                        <p class="fw-bold fs-6"><span class="badge bg-secondary px-2 py-1">{{ report.computer_number }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Fault Type</p>
+                        <p class="fw-bold fs-6 text-danger"><i class="bi bi-bug me-1"></i> {{ report.fault_type }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Report Date</p>
+                        <p class="fw-bold fs-6">{{ report.report_date.strftime('%d-%b-%Y') }}</p>
+                    </div>
+
+                    <div class="col-12">
+                        <p class="mb-1 text-muted small fw-semibold">Problem Description</p>
+                        <div class="p-3 bg-light rounded border text-dark">
+                            {{ report.problem_description }}
+                        </div>
+                    </div>
+
+                    <!-- Admin Remarks & Status Info -->
+                    <div class="col-12 mt-4">
+                        <h5 class="fw-bold text-teal border-bottom pb-2"><i class="bi bi-shield-check me-2"></i> Resolution & Admin Action</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Current Status</p>
+                        <p class="fw-bold fs-6">{{ report.status }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small fw-semibold">Resolved Date</p>
+                        <p class="fw-bold fs-6">
+                            {% if report.resolved_date %}
+                                <span class="text-success"><i class="bi bi-check2-circle me-1"></i> {{ report.resolved_date.strftime('%d-%b-%Y') }}</span>
+                            {% else %}
+                                <span class="text-muted">Not Resolved Yet</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p class="mb-1 text-muted small fw-semibold">Admin Remarks</p>
+                        <div class="p-3 bg-white rounded border border-warning text-dark">
+                            {% if report.admin_remarks %}
+                                {{ report.admin_remarks }}
+                            {% else %}
+                                <em class="text-muted">No remarks entered by Administrator yet.</em>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Action Modal/Form trigger if logged in as Admin -->
+                {% if session.get('user_type') == 'admin' %}
+                    <hr class="my-4">
+                    <div class="card bg-light border-warning p-3">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-pencil-square text-warning me-2"></i> Update Complaint Status</h5>
+                        <form action="{{ url_for('update_report', report_id=report.id) }}" method="POST">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="status" class="form-label fw-semibold">Status</label>
+                                    <select name="status" id="status" class="form-select" required>
+                                        <option value="Pending" {% if report.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="In Progress" {% if report.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="Resolved" {% if report.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                        <option value="Rejected" {% if report.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <label for="admin_remarks" class="form-label fw-semibold">Admin Remarks</label>
+                                    <input type="text" name="admin_remarks" id="admin_remarks" class="form-control" placeholder="Add remarks or action taken details..." value="{{ report.admin_remarks or '' }}">
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-warning fw-bold text-dark px-4">
+                                        <i class="bi bi-check-lg me-1"></i> Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="card-footer bg-light py-3 d-flex justify-content-between align-items-center">
+                {% if session.get('user_type') == 'admin' %}
+                    <a href="{{ url_for('manage_reports') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Fault Reports
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('my_reports') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to My Reports
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
