@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Academic Calendar - College Academic Calendar Management System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1"><i class="bi bi-calendar3-range text-teal-main me-2"></i>College Academic Calendar</h2>
+            <p class="text-muted mb-0">Browse college events, exams, seminars, assignment deadlines, and official holidays.</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <span class="badge header-gradient-blue px-3 py-2 fs-6 rounded-pill">
+                <i class="bi bi-calendar-check me-1"></i> Today: {{ today.strftime('%d %B %Y') }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Search & Filter Form -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-funnel-fill me-2"></i>Filter Academic Events</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('calendar') }}" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="event_type" class="form-label small fw-bold text-secondary">Event Type</label>
+                    <select class="form-select form-select-sm" id="event_type" name="event_type">
+                        <option value="All" {% if not selected_type or selected_type == 'All' %}selected{% endif %}>All Event Types</option>
+                        {% for type in event_types %}
+                            <option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="department" class="form-label small fw-bold text-secondary">Department</label>
+                    <select class="form-select form-select-sm" id="department" name="department">
+                        <option value="All" {% if not selected_dept or selected_dept == 'All' %}selected{% endif %}>All Departments</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept }}" {% if selected_dept == dept %}selected{% endif %}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="semester" class="form-label small fw-bold text-secondary">Semester</label>
+                    <select class="form-select form-select-sm" id="semester" name="semester">
+                        <option value="All" {% if not selected_semester or selected_semester == 'All' %}selected{% endif %}>All Semesters</option>
+                        {% for sem in semesters %}
+                            <option value="{{ sem }}" {% if selected_semester == sem %}selected{% endif %}>{{ sem }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="month" class="form-label small fw-bold text-secondary">Month</label>
+                    <select class="form-select form-select-sm" id="month" name="month">
+                        <option value="" {% if not selected_month %}selected{% endif %}>All Months</option>
+                        <option value="1" {% if selected_month == '1' %}selected{% endif %}>January</option>
+                        <option value="2" {% if selected_month == '2' %}selected{% endif %}>February</option>
+                        <option value="3" {% if selected_month == '3' %}selected{% endif %}>March</option>
+                        <option value="4" {% if selected_month == '4' %}selected{% endif %}>April</option>
+                        <option value="5" {% if selected_month == '5' %}selected{% endif %}>May</option>
+                        <option value="6" {% if selected_month == '6' %}selected{% endif %}>June</option>
+                        <option value="7" {% if selected_month == '7' %}selected{% endif %}>July</option>
+                        <option value="8" {% if selected_month == '8' %}selected{% endif %}>August</option>
+                        <option value="9" {% if selected_month == '9' %}selected{% endif %}>September</option>
+                        <option value="10" {% if selected_month == '10' %}selected{% endif %}>October</option>
+                        <option value="11" {% if selected_month == '11' %}selected{% endif %}>November</option>
+                        <option value="12" {% if selected_month == '12' %}selected{% endif %}>December</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-teal btn-sm fw-bold w-100 rounded-pill">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                    <a href="{{ url_for('calendar') }}" class="btn btn-outline-secondary btn-sm rounded-pill" title="Reset Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Today's Highlighted Events Section -->
+    {% if today_events %}
+    <div class="card shadow-sm border-0 mb-4 event-card-today">
+        <div class="card-header header-gradient-peach text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-lightning-charge-fill me-2"></i>Today's Featured Events</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {% for event in today_events %}
+                <div class="col-md-6">
+                    <div class="card border-0 bg-white shadow-sm p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge badge-today">TODAY</span>
+                            <span class="badge badge-event-type badge-{{ event.event_type.lower().replace(' ', '-') }}">{{ event.event_type }}</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-1">{{ event.event_title }}</h5>
+                        <p class="small text-muted mb-2"><i class="bi bi-building me-1 text-primary"></i> {{ event.department }} | <i class="bi bi-bookmark me-1"></i> {{ event.semester }}</p>
+                        <p class="small text-secondary mb-2">{{ event.description or 'No description provided.' }}</p>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
+                            <span class="small fw-semibold text-danger"><i class="bi bi-geo-alt-fill me-1"></i> {{ event.venue }}</span>
+                            <a href="{{ url_for('event_details', event_id=event.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Academic Events Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header header-gradient-blue text-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-list-task me-2"></i>All Scheduled Events ({{ events|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if events %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 table-custom">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Event Title</th>
+                                <th>Event Type</th>
+                                <th>Department</th>
+                                <th>Semester</th>
+                                <th>Date Range</th>
+                                <th>Venue</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            {% set is_today = (event.start_date <= today <= event.end_date) %}
+                            <tr class="{% if is_today %}table-warning{% endif %}">
+                                <td class="fw-bold">{{ loop.index }}</td>
+                                <td>
+                                    <strong class="text-dark">{{ event.event_title }}</strong>
+                                    {% if is_today %}
+                                        <span class="badge badge-today ms-1">TODAY</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-event-type badge-{{ event.event_type.lower().replace(' ', '-') }}">
+                                        {{ event.event_type }}
+                                    </span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">{{ event.department }}</span></td>
+                                <td><span class="badge bg-secondary-subtle text-dark">{{ event.semester }}</span></td>
+                                <td>
+                                    <i class="bi bi-calendar3 me-1 text-primary"></i>
+                                    {{ event.start_date.strftime('%d %b %Y') }}
+                                    {% if event.start_date != event.end_date %}
+                                        <br><small class="text-muted">to {{ event.end_date.strftime('%d %b %Y') }}</small>
+                                    {% endif %}
+                                </td>
+                                <td><i class="bi bi-geo-alt text-danger me-1"></i> {{ event.venue }}</td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('event_details', event_id=event.id) }}" class="btn btn-sm btn-teal rounded-pill px-3">
+                                        <i class="bi bi-info-circle me-1"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
+                    <h5>No events match your search criteria.</h5>
+                    <p class="small mb-3">Try adjusting your filters to find events.</p>
+                    <a href="{{ url_for('calendar') }}" class="btn btn-sm btn-outline-primary rounded-pill">Reset Filters</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

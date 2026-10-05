@@ -1,20 +1,20 @@
 import os
-from datetime import datetime, date
+from datetime import datetime, timedelta, date
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_academic_calendar_secret_key_987')
 
 # Admin Hardcoded Credentials
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 # Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/academic_calendar_db')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'academic_calendar.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,66 +22,118 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# Database Models
+class Admin(db.Model):
+    __tablename__ = 'admins'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    student_name = db.Column(db.String(100), nullable=False)
     register_number = db.Column(db.String(50), unique=True, nullable=False)
     department = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='student', lazy=True)
-
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+class AcademicEvent(db.Model):
+    __tablename__ = 'academic_events'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
+    event_title = db.Column(db.String(150), nullable=False)
+    event_type = db.Column(db.String(50), nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    semester = db.Column(db.String(20), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    venue = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
-
-class Booking(db.Model):
-    __tablename__ = 'bookings'
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
 def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
+    admin = db.session.query(Admin).filter_by(username=ADMIN_USERNAME).first()
+    if not admin:
+        admin = Admin(username=ADMIN_USERNAME)
+        admin.set_password(ADMIN_PASSWORD)
+        db.session.add(admin)
+        db.session.commit()
+
+    if db.session.query(AcademicEvent).count() == 0:
+        today = date.today()
+        sample_events = [
+            AcademicEvent(
+                event_title='Semester Orientation Program',
+                event_type='College Event',
+                department='All Departments',
+                semester='Semester 1',
+                start_date=today,
+                end_date=today,
+                venue='Main Auditorium',
+                description='Welcoming first semester MCA students and introducing college faculty and campus amenities.'
+            ),
+            AcademicEvent(
+                event_title='Mid-Semester Internal Examination',
+                event_type='Internal Exam',
+                department='Computer Applications (MCA)',
+                semester='Semester 2',
+                start_date=today + timedelta(days=5),
+                end_date=today + timedelta(days=10),
+                venue='Exam Hall B',
+                description='Mid-semester assessment covering Units 1, 2, and 3.'
+            ),
+            AcademicEvent(
+                event_title='National Seminar on Cloud Computing & AI',
+                event_type='Seminar',
+                department='Computer Applications (MCA)',
+                semester='All Semesters',
+                start_date=today + timedelta(days=15),
+                end_date=today + timedelta(days=15),
+                venue='Seminar Hall 1',
+                description='Expert lectures by industry experts on cloud infrastructure and artificial intelligence applications.'
+            ),
+            AcademicEvent(
+                event_title='National Youth Day Holiday',
+                event_type='Holiday',
+                department='All Departments',
+                semester='All Semesters',
+                start_date=today + timedelta(days=20),
+                end_date=today + timedelta(days=20),
+                venue='N/A',
+                description='College holiday on account of National Youth Day.'
+            ),
+            AcademicEvent(
+                event_title='End-Semester Practical Examinations',
+                event_type='Semester Exam',
+                department='Computer Science',
+                semester='Semester 4',
+                start_date=today + timedelta(days=30),
+                end_date=today + timedelta(days=35),
+                venue='Computer Lab 3',
+                description='Practical lab examinations for Web Development and Database Lab.'
+            )
         ]
-        db.session.add_all(items)
+        db.session.add_all(sample_events)
         db.session.commit()
 
 # Auth Decorators
 def student_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'student':
+        if session.get('user_type') != 'student':
             flash('Please log in as a student to access this page.', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
@@ -90,40 +142,45 @@ def student_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'admin':
-            flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+        if session.get('user_type') != 'admin':
+            flash('Administrator access required.', 'warning')
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
+# Public Index Page
 @app.route('/')
 def index():
-    return render_template('index.html')
+    today = date.today()
+    all_events = db.session.query(AcademicEvent).order_by(AcademicEvent.start_date.asc()).all()
+    today_events = [e for e in all_events if e.start_date <= today <= e.end_date]
+    upcoming_events = [e for e in all_events if e.start_date > today][:4]
+    return render_template('index.html', today_events=today_events, upcoming_events=upcoming_events, today=today)
 
 # Student Registration
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
+        student_name = request.form.get('student_name', '').strip()
         register_number = request.form.get('register_number', '').strip()
         department = request.form.get('department', '').strip()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
 
-        if not name or not register_number or not department or not email or not password:
+        if not student_name or not register_number or not department or not email or not password:
             flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
 
-        existing_student = Student.query.filter(
+        existing_student = db.session.query(Student).filter(
             (Student.email == email) | (Student.register_number == register_number)
         ).first()
 
         if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
+            flash('A student with this Email or Register Number already exists.', 'danger')
             return redirect(url_for('register'))
 
         student = Student(
-            name=name,
+            student_name=student_name,
             register_number=register_number,
             department=department,
             email=email
@@ -132,47 +189,66 @@ def register():
         db.session.add(student)
         db.session.commit()
 
-        flash('Registration successful! Please log in.', 'success')
+        flash('Registration successful! Please log in to continue.', 'success')
         return redirect(url_for('login'))
 
     return render_template('register.html')
 
-# Student & Admin Login
+# Student Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        email_or_reg = request.form.get('email_or_reg', '').strip()
+        password = request.form.get('password', '')
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
+        if not email_or_reg or not password:
+            flash('Please enter your email/register number and password.', 'danger')
+            return redirect(url_for('login'))
+
+        student = db.session.query(Student).filter(
+            (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
+        ).first()
+
+        if student and student.check_password(password):
+            session['user_type'] = 'student'
+            session['user_id'] = student.id
+            session['user_name'] = student.student_name
+            session['department'] = student.department
+            flash(f'Welcome back, {student.student_name}!', 'success')
+            return redirect(url_for('student_dashboard'))
         else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
-
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
-
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
+            flash('Invalid credentials. Please check your details and try again.', 'danger')
+            return redirect(url_for('login'))
 
     return render_template('login.html')
+
+# Admin Login
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        if not username or not password:
+            flash('Please enter username and password.', 'danger')
+            return redirect(url_for('admin_login'))
+
+        admin = db.session.query(Admin).filter_by(username=username).first()
+        if admin and admin.check_password(password):
+            session['user_type'] = 'admin'
+            session['user_name'] = admin.username
+            flash('Logged in successfully as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        elif username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['user_type'] = 'admin'
+            session['user_name'] = 'admin'
+            flash('Logged in successfully as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid admin credentials.', 'danger')
+            return redirect(url_for('admin_login'))
+
+    return render_template('admin_login.html')
 
 # Logout
 @app.route('/logout')
@@ -181,206 +257,340 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
+# Student Dashboard
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
     student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student = db.session.get(Student, student_id)
+    today = date.today()
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+    all_events = db.session.query(AcademicEvent).order_by(AcademicEvent.start_date.asc()).all()
+    today_events = [e for e in all_events if e.start_date <= today <= e.end_date]
+    upcoming_events = [e for e in all_events if e.start_date > today]
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    total_events_count = len(all_events)
+    today_events_count = len(today_events)
+    upcoming_events_count = len(upcoming_events)
 
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
+    return render_template(
+        'student_dashboard.html',
+        student=student,
+        today_events=today_events,
+        upcoming_events=upcoming_events[:5],
+        total_events_count=total_events_count,
+        today_events_count=today_events_count,
+        upcoming_events_count=upcoming_events_count,
+        today=today
     )
-    db.session.add(booking)
-    db.session.commit()
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
+# Academic Calendar View & Filter
+@app.route('/calendar')
+@student_required
+def calendar():
+    today = date.today()
+    selected_type = request.args.get('event_type', '').strip()
+    selected_dept = request.args.get('department', '').strip()
+    selected_semester = request.args.get('semester', '').strip()
+    selected_month = request.args.get('month', '').strip()
 
-# Admin Dashboard & Equipment Management
+    query = db.session.query(AcademicEvent)
+
+    if selected_type and selected_type != 'All':
+        query = query.filter(AcademicEvent.event_type == selected_type)
+
+    if selected_dept and selected_dept != 'All':
+        query = query.filter(
+            (AcademicEvent.department == selected_dept) | (AcademicEvent.department == 'All Departments')
+        )
+
+    if selected_semester and selected_semester != 'All':
+        query = query.filter(
+            (AcademicEvent.semester == selected_semester) | (AcademicEvent.semester == 'All Semesters')
+        )
+
+    events = query.order_by(AcademicEvent.start_date.asc()).all()
+
+    # Filter by month if provided
+    if selected_month and selected_month.isdigit():
+        month_num = int(selected_month)
+        events = [e for e in events if e.start_date.month == month_num or e.end_date.month == month_num]
+
+    today_events = [e for e in events if e.start_date <= today <= e.end_date]
+    upcoming_events = [e for e in events if e.start_date > today]
+
+    event_types = [
+        'College Event', 'Semester Exam', 'Internal Exam', 'Holiday',
+        'Workshop', 'Seminar', 'Assignment Deadline', 'Result Date', 'Other'
+    ]
+    departments = [
+        'All Departments', 'Computer Applications (MCA)', 'Computer Science',
+        'Information Technology', 'Business Administration', 'Commerce', 'Mathematics'
+    ]
+    semesters = [
+        'All Semesters', 'Semester 1', 'Semester 2', 'Semester 3',
+        'Semester 4', 'Semester 5', 'Semester 6'
+    ]
+
+    return render_template(
+        'calendar.html',
+        events=events,
+        today_events=today_events,
+        upcoming_events=upcoming_events,
+        today=today,
+        event_types=event_types,
+        departments=departments,
+        semesters=semesters,
+        selected_type=selected_type,
+        selected_dept=selected_dept,
+        selected_semester=selected_semester,
+        selected_month=selected_month
+    )
+
+# Event Details View
+@app.route('/event/<int:event_id>')
+def event_details(event_id):
+    event = db.session.get(AcademicEvent, event_id)
+    if not event:
+        flash('Event not found.', 'danger')
+        return redirect(url_for('index'))
+
+    today = date.today()
+    is_today = event.start_date <= today <= event.end_date
+    is_upcoming = event.start_date > today
+    is_past = event.end_date < today
+
+    return render_template(
+        'event_details.html',
+        event=event,
+        is_today=is_today,
+        is_upcoming=is_upcoming,
+        is_past=is_past,
+        today=today
+    )
+
+# Admin Dashboard
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    today = date.today()
+    total_students_count = db.session.query(Student).count()
+    total_events_count = db.session.query(AcademicEvent).count()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    all_events = db.session.query(AcademicEvent).order_by(AcademicEvent.start_date.asc()).all()
+    today_events = [e for e in all_events if e.start_date <= today <= e.end_date]
+    upcoming_events = [e for e in all_events if e.start_date > today]
+
+    today_events_count = len(today_events)
+    upcoming_events_count = len(upcoming_events)
+
+    recent_students = db.session.query(Student).order_by(Student.created_at.desc()).limit(5).all()
+    recent_events = all_events[:5]
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        total_students_count=total_students_count,
+        total_events_count=total_events_count,
+        today_events_count=today_events_count,
+        upcoming_events_count=upcoming_events_count,
+        today_events=today_events,
+        upcoming_events=upcoming_events[:5],
+        recent_students=recent_students,
+        recent_events=recent_events,
+        today=today
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+# Admin: Manage Events
+@app.route('/admin/events')
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+def manage_events():
+    search_query = request.args.get('q', '').strip()
+    query = db.session.query(AcademicEvent)
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
+    if search_query:
+        query = query.filter(
+            (AcademicEvent.event_title.ilike(f'%{search_query}%')) |
+            (AcademicEvent.department.ilike(f'%{search_query}%')) |
+            (AcademicEvent.event_type.ilike(f'%{search_query}%'))
+        )
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
+    events = query.order_by(AcademicEvent.start_date.asc()).all()
+    today = date.today()
+    return render_template('manage_events.html', events=events, search_query=search_query, today=today)
+
+# Admin: Add Event
+@app.route('/admin/event/add', methods=['GET', 'POST'])
+@admin_required
+def add_event():
+    if request.method == 'POST':
+        event_title = request.form.get('event_title', '').strip()
+        event_type = request.form.get('event_type', '').strip()
+        department = request.form.get('department', '').strip()
+        semester = request.form.get('semester', '').strip()
+        start_date_str = request.form.get('start_date', '').strip()
+        end_date_str = request.form.get('end_date', '').strip()
+        venue = request.form.get('venue', '').strip()
+        description = request.form.get('description', '').strip()
+
+        if not event_title or not event_type or not department or not semester or not start_date_str or not end_date_str or not venue:
+            flash('All required fields must be filled out.', 'danger')
+            return redirect(url_for('add_event'))
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format provided.', 'danger')
+            return redirect(url_for('add_event'))
+
+        if end_date < start_date:
+            flash('End Date cannot be earlier than Start Date.', 'danger')
+            return redirect(url_for('add_event'))
+
+        event = AcademicEvent(
+            event_title=event_title,
+            event_type=event_type,
+            department=department,
+            semester=semester,
+            start_date=start_date,
+            end_date=end_date,
+            venue=venue,
+            description=description
+        )
+        db.session.add(event)
+        db.session.commit()
+
+        flash(f'Academic Event "{event_title}" created successfully.', 'success')
+        return redirect(url_for('manage_events'))
+
+    event_types = [
+        'College Event', 'Semester Exam', 'Internal Exam', 'Holiday',
+        'Workshop', 'Seminar', 'Assignment Deadline', 'Result Date', 'Other'
+    ]
+    departments = [
+        'All Departments', 'Computer Applications (MCA)', 'Computer Science',
+        'Information Technology', 'Business Administration', 'Commerce', 'Mathematics'
+    ]
+    semesters = [
+        'All Semesters', 'Semester 1', 'Semester 2', 'Semester 3',
+        'Semester 4', 'Semester 5', 'Semester 6'
+    ]
+
+    return render_template('add_event.html', event_types=event_types, departments=departments, semesters=semesters)
+
+# Admin: Edit Event
+@app.route('/admin/event/edit/<int:event_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_event(event_id):
+    event = db.session.get(AcademicEvent, event_id)
+    if not event:
+        flash('Event not found.', 'danger')
+        return redirect(url_for('manage_events'))
+
+    if request.method == 'POST':
+        event_title = request.form.get('event_title', '').strip()
+        event_type = request.form.get('event_type', '').strip()
+        department = request.form.get('department', '').strip()
+        semester = request.form.get('semester', '').strip()
+        start_date_str = request.form.get('start_date', '').strip()
+        end_date_str = request.form.get('end_date', '').strip()
+        venue = request.form.get('venue', '').strip()
+        description = request.form.get('description', '').strip()
+
+        if not event_title or not event_type or not department or not semester or not start_date_str or not end_date_str or not venue:
+            flash('All required fields must be filled out.', 'danger')
+            return redirect(url_for('edit_event', event_id=event_id))
+
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format provided.', 'danger')
+            return redirect(url_for('edit_event', event_id=event_id))
+
+        if end_date < start_date:
+            flash('End Date cannot be earlier than Start Date.', 'danger')
+            return redirect(url_for('edit_event', event_id=event_id))
+
+        event.event_title = event_title
+        event.event_type = event_type
+        event.department = department
+        event.semester = semester
+        event.start_date = start_date
+        event.end_date = end_date
+        event.venue = venue
+        event.description = description
+
+        db.session.commit()
+        flash(f'Academic Event "{event_title}" updated successfully.', 'success')
+        return redirect(url_for('manage_events'))
+
+    event_types = [
+        'College Event', 'Semester Exam', 'Internal Exam', 'Holiday',
+        'Workshop', 'Seminar', 'Assignment Deadline', 'Result Date', 'Other'
+    ]
+    departments = [
+        'All Departments', 'Computer Applications (MCA)', 'Computer Science',
+        'Information Technology', 'Business Administration', 'Commerce', 'Mathematics'
+    ]
+    semesters = [
+        'All Semesters', 'Semester 1', 'Semester 2', 'Semester 3',
+        'Semester 4', 'Semester 5', 'Semester 6'
+    ]
+
+    return render_template(
+        'edit_event.html',
+        event=event,
+        event_types=event_types,
+        departments=departments,
+        semesters=semesters
     )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+# Admin: Delete Event
+@app.route('/admin/event/delete/<int:event_id>', methods=['POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
+def delete_event(event_id):
+    event = db.session.get(AcademicEvent, event_id)
+    if event:
+        title = event.event_title
+        db.session.delete(event)
+        db.session.commit()
+        flash(f'Event "{title}" deleted successfully.', 'info')
+    else:
+        flash('Event not found.', 'danger')
+    return redirect(url_for('manage_events'))
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
-
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
+# Admin: Manage Students
+@app.route('/admin/students')
 @admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
+def manage_students():
+    search_query = request.args.get('q', '').strip()
+    query = db.session.query(Student)
 
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
+    if search_query:
+        query = query.filter(
+            (Student.student_name.ilike(f'%{search_query}%')) |
+            (Student.register_number.ilike(f'%{search_query}%')) |
+            (Student.department.ilike(f'%{search_query}%')) |
+            (Student.email.ilike(f'%{search_query}%'))
+        )
+
+    students = query.order_by(Student.student_name.asc()).all()
+    return render_template('manage_students.html', students=students, search_query=search_query)
+
+# Admin: Delete Student
+@app.route('/admin/student/delete/<int:student_id>', methods=['POST'])
 @admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+def delete_student(student_id):
+    student = db.session.get(Student, student_id)
+    if student:
+        name = student.student_name
+        db.session.delete(student)
+        db.session.commit()
+        flash(f'Student record for "{name}" deleted successfully.', 'info')
+    else:
+        flash('Student record not found.', 'danger')
+    return redirect(url_for('manage_students'))
 
 if __name__ == '__main__':
     with app.app_context():

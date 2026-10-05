@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Academic Event - College Academic Calendar Management System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header header-gradient-blue text-white py-3">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Academic Event</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('edit_event', event_id=event.id) }}" id="eventForm">
+                        <div class="mb-3">
+                            <label for="event_title" class="form-label fw-semibold">Event Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="event_title" name="event_title" value="{{ event.event_title }}" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="event_type" class="form-label fw-semibold">Event Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="event_type" name="event_type" required>
+                                    {% for type in event_types %}
+                                        <option value="{{ type }}" {% if event.event_type == type %}selected{% endif %}>{{ type }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="department" class="form-label fw-semibold">Department <span class="text-danger">*</span></label>
+                                <select class="form-select" id="department" name="department" required>
+                                    {% for dept in departments %}
+                                        <option value="{{ dept }}" {% if event.department == dept %}selected{% endif %}>{{ dept }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="semester" class="form-label fw-semibold">Semester <span class="text-danger">*</span></label>
+                                <select class="form-select" id="semester" name="semester" required>
+                                    {% for sem in semesters %}
+                                        <option value="{{ sem }}" {% if event.semester == sem %}selected{% endif %}>{{ sem }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label fw-semibold">Start Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ event.start_date.strftime('%Y-%m-%d') }}" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="end_date" class="form-label fw-semibold">End Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ event.end_date.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="venue" class="form-label fw-semibold">Venue / Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="venue" name="venue" value="{{ event.venue }}" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">Event Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ event.description or '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a href="{{ url_for('manage_events') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-royal btn-lg fw-bold rounded-pill shadow-sm px-5">
+                                <i class="bi bi-save me-1"></i> Update Event
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
