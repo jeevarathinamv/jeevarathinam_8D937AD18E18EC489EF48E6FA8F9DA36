@@ -1,175 +1,143 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Student Dashboard - College Sports Hub{% endblock %}
+{% block title %}Student Dashboard - College Digital Document Verification System{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm bg-gradient-primary text-white rounded-4 p-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+<div class="container my-4">
+    <!-- Student Header Banner -->
+    <div class="card border-0 bg-navy text-white p-4 rounded-4 shadow-sm mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h3 class="fw-bold mb-1"><i class="bi bi-person-circle text-info me-2"></i>Welcome, {{ student.name }}</h3>
+                <p class="text-light mb-0 small">
+                    <i class="bi bi-card-heading me-1"></i> Reg No: <strong>{{ student.register_number }}</strong> |
+                    <i class="bi bi-building me-1"></i> Department: <strong>{{ student.department }}</strong>
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('upload_document') }}" class="btn btn-green rounded-pill px-3 me-2 shadow-sm">
+                    <i class="bi bi-cloud-upload-fill me-1"></i> Upload Document
+                </a>
+                <a href="{{ url_for('my_documents') }}" class="btn btn-cyan rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-folder-check me-1"></i> My Documents
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+            <div class="card stat-card total card-hover p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h2 class="fw-bold mb-1"><i class="bi bi-person-badge-fill text-warning me-2"></i> Welcome, {{ student.name }}!</h2>
-                        <p class="mb-0 text-white-50">
-                            <strong>Register No:</strong> {{ student.register_number }} &nbsp;|&nbsp;
-                            <strong>Department:</strong> {{ student.department }}
-                        </p>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Documents</span>
+                        <h2 class="fw-bold text-dark my-1">{{ total_docs }}</h2>
                     </div>
-                    <div class="mt-3 mt-md-0">
-                        <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-journal-text me-1"></i> Total Bookings: {{ bookings|length }}
-                        </span>
+                    <div class="icon-shape icon-navy">
+                        <i class="bi bi-files"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-3">
+            <div class="card stat-card pending card-hover p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Pending</span>
+                        <h2 class="fw-bold text-warning my-1">{{ pending_docs }}</h2>
+                    </div>
+                    <div class="icon-shape icon-warning">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-3">
+            <div class="card stat-card verified card-hover p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Verified</span>
+                        <h2 class="fw-bold text-success my-1">{{ verified_docs }}</h2>
+                    </div>
+                    <div class="icon-shape icon-green">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-3">
+            <div class="card stat-card rejected card-hover p-3 h-100">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Rejected</span>
+                        <h2 class="fw-bold text-danger my-1">{{ rejected_docs }}</h2>
+                    </div>
+                    <div class="icon-shape icon-danger">
+                        <i class="bi bi-x-circle-fill"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Available Equipment Grid -->
-    <div class="row mb-5">
-        <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold text-primary mb-0"><i class="bi bi-collection-fill me-2"></i> Available Sports Equipment</h4>
-            <span class="text-muted small">Select equipment to submit a booking request</span>
+    <!-- Recent Documents Table -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history text-info me-2"></i>Recent Document Uploads</h5>
+            <a href="{{ url_for('my_documents') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View All Documents</a>
         </div>
-
-        {% if equipments %}
-            {% for item in equipments %}
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="card h-100 border-0 shadow-sm card-hover rounded-4 overflow-hidden">
-                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-semibold">{{ item.category }}</span>
-                            {% if item.available_quantity > 0 %}
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> In Stock</span>
-                            {% else %}
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i> Out of Stock</span>
-                            {% endif %}
-                        </div>
-                        <div class="card-body px-4 py-3">
-                            <h5 class="fw-bold text-dark mb-2">{{ item.name }}</h5>
-                            <p class="text-muted small mb-3">{{ item.description or 'High quality sports gear for college athletic activities.' }}</p>
-                            <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3">
-                                <span class="small text-muted fw-semibold">Available Quantity:</span>
-                                <span class="fw-bold fs-5 {% if item.available_quantity > 0 %}text-success{% else %}text-danger{% endif %}">
-                                    {{ item.available_quantity }} / {{ item.total_quantity }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
-                            {% if item.available_quantity > 0 %}
-                                <button type="button" class="btn btn-primary w-100 rounded-pill fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#bookModal{{ item.id }}">
-                                    <i class="bi bi-calendar-plus me-1"></i> Book Now
-                                </button>
-                            {% else %}
-                                <button class="btn btn-secondary w-100 rounded-pill fw-semibold disabled" disabled>
-                                    Unavailable
-                                </button>
-                            {% endif %}
-                        </div>
-                    </div>
+        <div class="card-body p-0">
+            {% if recent_documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Document Name</th>
+                                <th>Document Type</th>
+                                <th>Uploaded Date</th>
+                                <th>Status</th>
+                                <th>Admin Remark</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in recent_documents %}
+                                <tr>
+                                    <td class="fw-bold">{{ loop.index }}</td>
+                                    <td>
+                                        <i class="bi bi-file-earmark-text text-primary me-1"></i>
+                                        <strong>{{ doc.document_name }}</strong>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">{{ doc.document_type }}</span></td>
+                                    <td>{{ doc.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if doc.status == 'Pending' %}
+                                            <span class="badge badge-pending px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                                        {% elif doc.status == 'Verified' %}
+                                            <span class="badge badge-verified px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
+                                        {% elif doc.status == 'Rejected' %}
+                                            <span class="badge badge-rejected px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i>Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">
+                                        {{ doc.admin_remark or 'No remark yet.' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-
-                <!-- Booking Modal for Item -->
-                <div class="modal fade" id="bookModal{{ item.id }}" tabindex="-1" aria-labelledby="bookModalLabel{{ item.id }}" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-4 border-0 shadow">
-                            <div class="modal-header bg-primary text-white rounded-top-4">
-                                <h5 class="modal-title fw-bold" id="bookModalLabel{{ item.id }}">
-                                    <i class="bi bi-calendar-event me-2"></i> Request Booking: {{ item.name }}
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form action="{{ url_for('book_equipment') }}" method="POST">
-                                <div class="modal-body p-4">
-                                    <input type="hidden" name="equipment_id" value="{{ item.id }}">
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Equipment</label>
-                                        <input type="text" class="form-control bg-light" value="{{ item.name }} ({{ item.category }})" readonly>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="booking_date{{ item.id }}" class="form-label fw-semibold">Booking Date</label>
-                                        <input type="date" class="form-control" id="booking_date{{ item.id }}" name="booking_date" min="{{ today }}" value="{{ today }}" required>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="quantity{{ item.id }}" class="form-label fw-semibold">Quantity</label>
-                                        <input type="number" class="form-control" id="quantity{{ item.id }}" name="quantity" min="1" max="{{ item.available_quantity }}" value="1" required>
-                                        <div class="form-text text-muted">Max available right now: {{ item.available_quantity }}</div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer bg-light rounded-bottom-4">
-                                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Submit Booking Request</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-folder-x fs-1 text-muted d-block mb-2"></i>
+                    <p class="text-muted mb-3">You haven't uploaded any documents yet.</p>
+                    <a href="{{ url_for('upload_document') }}" class="btn btn-green rounded-pill px-4"><i class="bi bi-cloud-upload me-1"></i>Upload Your First Document</a>
                 </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12 text-center py-5">
-                <p class="text-muted fs-5">No sports equipment currently registered in system.</p>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- My Booking Details & Track Status -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
-                    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-primary me-2"></i> My Booking History & Status</h4>
-                </div>
-                <div class="card-body p-0">
-                    {% if bookings %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-4">Booking ID</th>
-                                        <th>Equipment Name</th>
-                                        <th>Booking Date</th>
-                                        <th>Quantity</th>
-                                        <th>Requested On</th>
-                                        <th class="pe-4 text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for b in bookings %}
-                                        <tr>
-                                            <td class="ps-4 fw-bold">#{{ b.id }}</td>
-                                            <td class="fw-semibold text-primary">{{ b.equipment.name }}</td>
-                                            <td><i class="bi bi-calendar3 me-1 text-muted"></i> {{ b.booking_date.strftime('%Y-%m-%d') }}</td>
-                                            <td><span class="badge bg-secondary bg-opacity-10 text-dark border px-3 py-1">{{ b.quantity }}</span></td>
-                                            <td class="small text-muted">{{ b.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                            <td class="pe-4 text-center">
-                                                {% if b.status == 'Pending' %}
-                                                    <span class="badge badge-pending px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
-                                                {% elif b.status == 'Approved' %}
-                                                    <span class="badge badge-approved px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
-                                                {% elif b.status == 'Rejected' %}
-                                                    <span class="badge badge-rejected px-3 py-2 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
-                                                {% elif b.status == 'Returned' %}
-                                                    <span class="badge badge-returned px-3 py-2 rounded-pill"><i class="bi bi-arrow-return-left me-1"></i> Returned</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">{{ b.status }}</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <p class="mb-0">You haven't submitted any booking requests yet.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 </div>

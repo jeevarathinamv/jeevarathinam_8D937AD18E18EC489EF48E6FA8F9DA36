@@ -1,73 +1,83 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - College Digital Document Verification System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<div class="hero-header text-center mb-5">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-3"><i class="bi bi-file-earmark-check me-2 text-info"></i>College Digital Document Verification System</h1>
+        <p class="lead text-light max-w-75 mx-auto mb-4">
+            A simple, secure, and efficient platform for students to upload academic documents and for administrators to verify or reject them digitally.
         </p>
         <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
+            {% if not session.get('user_type') %}
+                <a href="{{ url_for('register') }}" class="btn btn-green btn-lg rounded-pill px-4 shadow"><i class="bi bi-person-plus-fill me-2"></i>Student Register</a>
+                <a href="{{ url_for('login') }}" class="btn btn-cyan btn-lg rounded-pill px-4 shadow"><i class="bi bi-box-arrow-in-right me-2"></i>Student Login</a>
+                <a href="{{ url_for('admin_login') }}" class="btn btn-outline-light btn-lg rounded-pill px-4 shadow"><i class="bi bi-shield-lock me-2"></i>Admin Login</a>
+            {% elif session.get('user_type') == 'student' %}
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-cyan btn-lg rounded-pill px-4 shadow"><i class="bi bi-speedometer2 me-2"></i>Go to Student Dashboard</a>
+                <a href="{{ url_for('upload_document') }}" class="btn btn-green btn-lg rounded-pill px-4 shadow"><i class="bi bi-cloud-upload me-2"></i>Upload New Document</a>
             {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-cyan btn-lg rounded-pill px-4 shadow"><i class="bi bi-speedometer2 me-2"></i>Go to Admin Dashboard</a>
+                <a href="{{ url_for('manage_documents') }}" class="btn btn-green btn-lg rounded-pill px-4 shadow"><i class="bi bi-files me-2"></i>Manage All Documents</a>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="container my-4">
+    <!-- Key Features Section -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 card-hover p-4 text-center border-0">
+                <div class="icon-shape icon-cyan mx-auto mb-3">
+                    <i class="bi bi-upload"></i>
+                </div>
+                <h5 class="fw-bold">Easy Document Upload</h5>
+                <p class="text-muted small mb-0">
+                    Students can upload ID Proofs, Mark Sheets, Bonafide Certificates, Transfer Certificates, and other documents in PDF, JPG, or PNG format.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 card-hover p-4 text-center border-0">
+                <div class="icon-shape icon-green mx-auto mb-3">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <h5 class="fw-bold">Fast Digital Verification</h5>
+                <p class="text-muted small mb-0">
+                    Administrators review uploaded documents, update status to Verified or Rejected, and add clear remarks for student reference.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 card-hover p-4 text-center border-0">
+                <div class="icon-shape icon-warning mx-auto mb-3">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h5 class="fw-bold">Real-time Status Tracking</h5>
+                <p class="text-muted small mb-0">
+                    Students can check status (Pending, Verified, Rejected) and view admin remarks directly on their personal dashboard.
+                </p>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+    <!-- Supported Document Types Banner -->
+    <div class="card border-0 bg-white p-4 shadow-sm rounded-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="fw-bold text-dark mb-2"><i class="bi bi-folder2-open text-info me-2"></i>Supported Document Types</h5>
+                <p class="text-muted mb-0">
+                    ID Proof &bull; Mark Sheet &bull; Bonafide Certificate &bull; Transfer Certificate &bull; Other Academic Documents
+                </p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="badge bg-light text-dark border p-2"><i class="bi bi-filetype-pdf text-danger me-1"></i> PDF</span>
+                <span class="badge bg-light text-dark border p-2 ms-1"><i class="bi bi-filetype-jpg text-primary me-1"></i> JPG</span>
+                <span class="badge bg-light text-dark border p-2 ms-1"><i class="bi bi-filetype-png text-success me-1"></i> PNG</span>
             </div>
         </div>
     </div>

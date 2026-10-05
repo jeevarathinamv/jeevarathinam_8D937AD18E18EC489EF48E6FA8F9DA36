@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Verification Details - College Digital Document Verification System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-info me-2"></i>Document Verification Details</h3>
+            <p class="text-muted small mb-0">Review student details and verify or reject uploaded document</p>
+        </div>
+        <div>
+            <a href="{{ url_for('manage_documents') }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Manage Documents
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Document & Student Information -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-navy text-white py-3 rounded-top-4">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-person-badge-fill text-info me-2"></i>Student Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Student Name</span>
+                            <span class="fw-bold text-dark fs-6">{{ document.student.name }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Register Number</span>
+                            <span class="fw-bold text-dark fs-6">{{ document.student.register_number }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Department</span>
+                            <span class="fw-bold text-dark fs-6">{{ document.student.department }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Email Address</span>
+                            <span class="fw-bold text-dark fs-6">{{ document.student.email }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-navy text-white py-3 rounded-top-4">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-text-fill text-info me-2"></i>Document Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Document Name</span>
+                            <span class="fw-bold text-dark fs-6">{{ document.document_name }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Document Type</span>
+                            <span class="badge bg-light text-dark border p-2">{{ document.document_type }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Upload Date</span>
+                            <span class="fw-semibold text-dark">{{ document.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small text-uppercase fw-semibold d-block">Current Status</span>
+                            {% if document.status == 'Pending' %}
+                                <span class="badge badge-pending px-3 py-2 fs-6"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                            {% elif document.status == 'Verified' %}
+                                <span class="badge badge-verified px-3 py-2 fs-6"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
+                            {% elif document.status == 'Rejected' %}
+                                <span class="badge badge-rejected px-3 py-2 fs-6"><i class="bi bi-x-circle-fill me-1"></i>Rejected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Uploaded File</span>
+                        <a href="{{ url_for('static', filename=document.file_path) }}" target="_blank" class="btn btn-cyan btn-sm rounded-pill px-3">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Open / Download Uploaded File
+                        </a>
+                    </div>
+
+                    {% if document.admin_remark %}
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small text-uppercase fw-semibold d-block mb-1">Current Admin Remark</span>
+                            <p class="mb-0 text-dark fw-medium">{{ document.admin_remark }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Verification Action Panel -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-navy text-white py-3 rounded-top-4">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-check2-square text-info me-2"></i>Verification Action</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('document_details', doc_id=document.id) }}" method="POST">
+                        <div class="mb-4">
+                            <label for="admin_remark" class="form-label fw-bold text-dark">
+                                Admin Remark <span class="text-muted fw-normal">(Optional for verification, recommended for rejection)</span>
+                            </label>
+                            <textarea class="form-control" id="admin_remark" name="admin_remark" rows="4" placeholder="Enter remarks (e.g., 'Document verified successfully' or 'Document is not clear.')">{{ document.admin_remark or '' }}</textarea>
+                            <div class="form-text text-muted">
+                                Example remark for rejection: "Document is not clear." or "Name mismatch on certificate."
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" name="action" value="verify" class="btn btn-green btn-lg rounded-pill fw-bold">
+                                <i class="bi bi-check-circle-fill me-2"></i> Verify Document (Approve)
+                            </button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger btn-lg rounded-pill fw-bold">
+                                <i class="bi bi-x-circle-fill me-2"></i> Reject Document
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <!-- Delete Document Option -->
+                    <div class="text-center">
+                        <p class="small text-muted mb-2">Need to remove this document permanently?</p>
+                        <form action="{{ url_for('document_details', doc_id=document.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this document?');">
+                            <input type="hidden" name="action" value="delete">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-4">
+                                <i class="bi bi-trash-fill me-1"></i> Delete Document
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

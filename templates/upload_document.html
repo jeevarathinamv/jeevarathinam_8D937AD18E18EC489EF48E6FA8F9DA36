@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Document - College Digital Document Verification System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-navy text-white p-4 text-center rounded-top-4">
+                    <h4 class="fw-bold mb-1"><i class="bi bi-cloud-upload-fill text-info me-2"></i>Upload New Document</h4>
+                    <p class="text-light small mb-0">Select and upload your document for administrator verification</p>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('upload_document') }}" method="POST" enctype="multipart/form-data">
+
+                        <div class="mb-3">
+                            <label for="document_name" class="form-label fw-medium">Document Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-tag-fill"></i></span>
+                                <input type="text" class="form-control" id="document_name" name="document_name" placeholder="e.g. 10th Marksheet / Aadhar Card" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="document_type" class="form-label fw-medium">Document Type <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-list-task"></i></span>
+                                <select class="form-select" id="document_type" name="document_type" required>
+                                    <option value="" disabled selected>-- Select Document Type --</option>
+                                    <option value="ID Proof">ID Proof</option>
+                                    <option value="Mark Sheet">Mark Sheet</option>
+                                    <option value="Bonafide Certificate">Bonafide Certificate</option>
+                                    <option value="Transfer Certificate">Transfer Certificate</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="document_file" class="form-label fw-medium">Select Document File <span class="text-danger">*</span></label>
+                            <input class="form-control" type="file" id="document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png" required>
+                            <div class="form-text small text-muted mt-2">
+                                <i class="bi bi-info-circle text-primary me-1"></i> Allowed File Formats: <strong>PDF, JPG, PNG</strong> (Max file size: 16MB)
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-green flex-grow-1 py-2 rounded-pill fw-bold">
+                                <i class="bi bi-cloud-upload me-1"></i> Upload Document
+                            </button>
+                            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary py-2 rounded-pill px-4">Cancel</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

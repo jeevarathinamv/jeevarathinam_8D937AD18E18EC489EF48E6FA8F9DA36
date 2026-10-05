@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - College Digital Document Verification System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-navy text-white p-4 text-center rounded-top-4">
+                    <h4 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill text-info me-2"></i>Admin Login</h4>
+                    <p class="text-light small mb-0">Administrator Portal Access</p>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('admin_login') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-medium">Admin Username <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-shield"></i></span>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Enter admin username" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-medium">Admin Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-key-fill"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Enter admin password" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-cyan w-100 py-2 rounded-pill fw-bold fs-6">
+                            <i class="bi bi-shield-check me-2"></i>Login as Administrator
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer bg-light text-center py-3 border-0 rounded-bottom-4">
+                    <span class="badge bg-secondary p-2"><i class="bi bi-info-circle me-1"></i> Default Demo Credentials: admin / admin123</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
