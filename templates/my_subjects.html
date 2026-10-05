@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Registered Subjects - SubjectReg{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col-md-7">
+        <h2 class="fw-bold text-indigo"><i class="bi bi-bookmark-star me-2"></i>My Registered Subjects</h2>
+        <p class="text-muted">Viewing registered courses for <strong>{{ student.student_name }}</strong> ({{ student.register_number }})</p>
+    </div>
+    <div class="col-md-5 text-md-end">
+        <div class="card card-custom d-inline-block bg-indigo text-white px-3 py-2 shadow-sm">
+            <span class="fs-6 opacity-75">Total Registered Credits:</span>
+            <strong class="fs-4 text-warning ms-2">{{ total_credits }}</strong>
+        </div>
+    </div>
+</div>
+
+{% if registrations %}
+<div class="table-responsive table-custom">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Subject Name</th>
+                <th>Subject Code</th>
+                <th>Subject Type</th>
+                <th>Credits</th>
+                <th>Registration Date</th>
+                <th>Status</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td class="fw-bold">{{ reg.subject.subject_name }}</td>
+                <td><span class="badge bg-light text-dark border">{{ reg.subject.subject_code }}</span></td>
+                <td>
+                    {% if reg.subject.subject_type == 'Core' %}
+                        <span class="badge badge-core">Core</span>
+                    {% elif reg.subject.subject_type == 'Elective' %}
+                        <span class="badge badge-elective">Elective</span>
+                    {% else %}
+                        <span class="badge badge-practical">Practical</span>
+                    {% endif %}
+                </td>
+                <td><span class="fw-bold text-indigo">{{ reg.subject.credits }}</span> Credits</td>
+                <td class="small text-muted">{{ reg.registration_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if reg.status == 'Registered' %}
+                        <span class="badge badge-registered"><i class="bi bi-check-circle me-1"></i>Registered</span>
+                    {% else %}
+                        <span class="badge badge-cancelled"><i class="bi bi-x-circle me-1"></i>Cancelled</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if reg.status == 'Registered' %}
+                        <form action="{{ url_for('cancel_registration', registration_id=reg.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this registration?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg me-1"></i>Cancel</button>
+                        </form>
+                    {% else %}
+                        <span class="text-muted small">Cancelled</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info text-center shadow-sm p-4">
+    <i class="bi bi-folder2-open display-6 d-block mb-2 text-info"></i>
+    <h5>No registrations yet</h5>
+    <p class="text-muted mb-3">You haven't registered for any subjects yet.</p>
+    <a href="{{ url_for('subjects') }}" class="btn btn-indigo shadow-sm"><i class="bi bi-plus-circle me-1"></i>Browse Available Subjects</a>
+</div>
+{% endif %}
+{% endblock %}

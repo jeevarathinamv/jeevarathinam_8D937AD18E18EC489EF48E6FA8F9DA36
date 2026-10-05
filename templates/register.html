@@ -1,76 +1,72 @@
 {% extends "base.html" %}
 
-{% block title %}Student Registration - College Sports Hub{% endblock %}
+{% block title %}Student Registration - SubjectReg{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="bg-gradient-primary text-white text-center py-4 px-3">
-                    <i class="bi bi-person-plus-fill fs-1 text-warning mb-2 d-block"></i>
-                    <h3 class="fw-bold mb-0">Student Registration</h3>
-                    <p class="small text-white-50 mb-0">Create your account to book sports equipment</p>
-                </div>
-                <div class="card-body p-4 p-md-5">
-                    <form action="{{ url_for('register') }}" method="POST">
-                        <div class="mb-3">
-                            <label for="name" class="form-label fw-semibold">Student Name</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-0" id="name" name="name" placeholder="John Doe" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="register_number" class="form-label fw-semibold">Register Number</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-card-text text-muted"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-0" id="register_number" name="register_number" placeholder="2023MCA101" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="department" class="form-label fw-semibold">Department</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-building text-muted"></i></span>
-                                <select class="form-select border-start-0 ps-0" id="department" name="department" required>
-                                    <option value="" selected disabled>Select Department</option>
-                                    <option value="Computer Applications (MCA)">Computer Applications (MCA)</option>
-                                    <option value="Computer Science & Eng">Computer Science & Eng</option>
-                                    <option value="Information Technology">Information Technology</option>
-                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
-                                    <option value="Civil Engineering">Civil Engineering</option>
-                                    <option value="Electrical & Electronics">Electrical & Electronics</option>
-                                    <option value="Management Studies (MBA)">Management Studies (MBA)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="email" class="form-label fw-semibold">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
-                                <input type="email" class="form-control border-start-0 ps-0" id="email" name="email" placeholder="student@college.edu" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="password" class="form-label fw-semibold">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
-                                <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" placeholder="••••••••" required>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold shadow-sm">
-                            <i class="bi bi-check-circle-fill me-2"></i> Register Account
-                        </button>
-                    </form>
-
-                    <div class="text-center mt-4">
-                        <p class="small text-muted mb-0">Already have an account? <a href="{{ url_for('login') }}" class="text-primary fw-bold text-decoration-none">Log in here</a></p>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card card-custom p-4 shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title text-center text-indigo fw-bold mb-4">
+                    <i class="bi bi-person-plus-fill me-2"></i>Student Registration
+                </h3>
+                <form action="{{ url_for('register') }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="student_name" class="form-label fw-semibold">Student Name</label>
+                        <input type="text" class="form-control" id="student_name" name="student_name" placeholder="Enter full name" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="register_number" class="form-label fw-semibold">Register Number</label>
+                        <input type="text" class="form-control" id="register_number" name="register_number" placeholder="e.g. MCA2025001" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="department" class="form-label fw-semibold">Department</label>
+                        <select class="form-select" id="department" name="department" required>
+                            <option value="" selected disabled>Select Department</option>
+                            <option value="Computer Applications">Computer Applications</option>
+                            <option value="Information Technology">Information Technology</option>
+                            <option value="Computer Science">Computer Science</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="year" class="form-label fw-semibold">Year</label>
+                            <select class="form-select" id="year" name="year" required>
+                                <option value="" selected disabled>Select Year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="semester" class="form-label fw-semibold">Semester</label>
+                            <select class="form-select" id="semester" name="semester" required>
+                                <option value="" selected disabled>Select Semester</option>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3">Semester 3</option>
+                                <option value="4">Semester 4</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="student@college.edu" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Choose a strong password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-indigo w-100 py-2 shadow-sm"><i class="bi bi-check-circle me-1"></i>Register Now</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <small>Already registered? <a href="{{ url_for('login') }}" class="text-indigo fw-bold">Login here</a></small>
                 </div>
             </div>
         </div>

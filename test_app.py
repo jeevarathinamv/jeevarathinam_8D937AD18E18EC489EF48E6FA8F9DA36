@@ -1,8 +1,7 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Subject, Registration, Admin
 
-class SportsBookingTestCase(unittest.TestCase):
+class StudentSubjectRegistrationTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +10,20 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+
+            # Seed Admin if not present
+            if not Admin.query.filter_by(username='admin').first():
+                admin = Admin(username='admin')
+                admin.set_password('admin123')
+                db.session.add(admin)
+
+            # Seed Subjects
+            if not Subject.query.filter_by(subject_code='MCA101').first():
+                subj1 = Subject(subject_name='Advanced Java', subject_code='MCA101', department='Computer Applications', semester=1, subject_type='Core', credits=4)
+                subj2 = Subject(subject_name='DBMS', subject_code='MCA102', department='Computer Applications', semester=1, subject_type='Core', credits=4)
+                subj3 = Subject(subject_name='Data Structures', subject_code='CS101', department='Computer Science', semester=1, subject_type='Core', credits=4)
+                db.session.add_all([subj1, subj2, subj3])
+
             db.session.commit()
 
     def tearDown(self):
@@ -23,94 +32,100 @@ class SportsBookingTestCase(unittest.TestCase):
             db.drop_all()
 
     def test_student_registration_and_login(self):
-        # Register student
+        # Register Student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'student_name': 'John Doe',
+            'register_number': 'REG202501',
+            'department': 'Computer Applications',
+            'year': 1,
+            'semester': 1,
+            'email': 'john@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
-        # Login student
+        # Login Student
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'john@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'Welcome back, John Doe!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
+        self.assertIn(b'Logged in successfully as Admin', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_subject_registration_workflow(self):
+        # Register & Login Student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
+            'student_name': 'Alice Smith',
+            'register_number': 'REG202502',
+            'department': 'Computer Applications',
+            'year': 1,
+            'semester': 1,
+            'email': 'alice@college.edu',
+            'password': 'password123'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
+            'email_or_reg': 'alice@college.edu',
+            'password': 'password123'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        # Register for Subject 1 (MCA101 - 4 credits)
+        response = self.client.post('/student/register_subject/1', follow_redirects=True)
+        self.assertIn(b'Successfully registered for Advanced Java', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        # Prevent duplicate registration
+        response = self.client.post('/student/register_subject/1', follow_redirects=True)
+        self.assertIn(b'already registered for Advanced Java', response.data)
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # Try registering for subject in different department (CS101)
+        response = self.client.post('/student/register_subject/3', follow_redirects=True)
+        self.assertIn(b'You can only register for subjects in your department and semester', response.data)
 
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+        # View My Registered Subjects & check total credits
+        response = self.client.get('/student/my_subjects')
+        self.assertIn(b'Total Registered Credits:', response.data)
+
+        # Cancel registration
+        response = self.client.post('/student/cancel_registration/1', follow_redirects=True)
+        self.assertIn(b'Registration for Advanced Java has been cancelled', response.data)
+
+    def test_admin_subject_and_student_management(self):
+        # Admin Login
+        self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        # Add new subject
+        response = self.client.post('/admin/subjects/add', data={
+            'subject_name': 'Web Tech Lab',
+            'subject_code': 'MCA103',
+            'department': 'Computer Applications',
+            'semester': 1,
+            'subject_type': 'Practical',
+            'credits': 2
+        }, follow_redirects=True)
+        self.assertIn(b'added successfully', response.data)
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+        # Edit subject
+        response = self.client.post('/admin/subjects/edit/1', data={
+            'subject_name': 'Advanced Java Programming',
+            'subject_code': 'MCA101',
+            'department': 'Computer Applications',
+            'semester': 1,
+            'subject_type': 'Core',
+            'credits': 4
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+        # Delete subject
+        response = self.client.post('/admin/subjects/delete/2', follow_redirects=True)
+        self.assertIn(b'Subject deleted successfully', response.data)
 
 if __name__ == '__main__':
     unittest.main()
