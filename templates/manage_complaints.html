@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Complaints - WaterCare Admin{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h3 class="fw-bold text-teal mb-1"><i class="bi bi-tools me-2"></i>Maintenance Management</h3>
+            <p class="text-muted small mb-0">Review, search, filter, and update status of all water complaints across campus</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-teal rounded-pill px-3">
+                <i class="bi bi-speedometer2 me-1"></i>Back to Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form action="{{ url_for('manage_complaints') }}" method="GET" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-teal"></i></span>
+                        <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="Search by Complaint ID, Name, Reg No, Type, Location..." value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="status" class="form-select bg-light">
+                        <option value="">-- Filter by Status (All) --</option>
+                        <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Resolved" {% if status_filter == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-teal text-white rounded-pill flex-grow-1">
+                        <i class="bi bi-funnel me-1"></i>Apply Filter
+                    </button>
+                    {% if search_query or status_filter %}
+                        <a href="{{ url_for('manage_complaints') }}" class="btn btn-outline-secondary rounded-pill" title="Reset Search">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Complaints Table -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            {% if complaints %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted small text-uppercase">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>Student Details</th>
+                                <th>Type & Location</th>
+                                <th>Date Submitted</th>
+                                <th>Status</th>
+                                <th>Admin Remarks</th>
+                                <th>Resolved Date</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in complaints %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-teal">{{ complaint.complaint_id }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ complaint.student.name }}</div>
+                                        <div class="small text-muted">Reg: {{ complaint.student.register_number }}</div>
+                                        <div class="small text-muted">{{ complaint.student.department }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border d-inline-block mb-1">{{ complaint.complaint_type }}</span>
+                                        <div class="small text-muted"><i class="bi bi-geo-alt me-1 text-teal"></i>{{ complaint.location }}</div>
+                                    </td>
+                                    <td class="small">{{ complaint.complaint_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if complaint.status == 'Pending' %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>
+                                        {% elif complaint.status == 'In Progress' %}
+                                            <span class="badge bg-info text-white"><i class="bi bi-gear-wide-connected me-1"></i>In Progress</span>
+                                        {% elif complaint.status == 'Resolved' %}
+                                            <span class="badge bg-emerald text-white"><i class="bi bi-check-circle me-1"></i>Resolved</span>
+                                        {% elif complaint.status == 'Rejected' %}
+                                            <span class="badge bg-danger text-white"><i class="bi bi-x-circle me-1"></i>Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">
+                                        {% if complaint.admin_remarks %}
+                                            <span class="d-inline-block text-truncate" style="max-width: 150px;">{{ complaint.admin_remarks }}</span>
+                                        {% else %}
+                                            <span class="fst-italic text-black-50">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">
+                                        {% if complaint.resolved_date %}
+                                            <span class="text-success"><i class="bi bi-check2 me-1"></i>{{ complaint.resolved_date.strftime('%Y-%m-%d') }}</span>
+                                        {% else %}
+                                            <span class="text-black-50">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('complaint_details', id=complaint.id) }}" class="btn btn-sm btn-outline-teal" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <!-- Update Status Button triggering Modal -->
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updateModal{{ complaint.id }}" title="Update Status">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <!-- Delete Button triggering Modal -->
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ complaint.id }}" title="Delete Complaint">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Update Status Modal -->
+                                        <div class="modal fade text-start" id="updateModal{{ complaint.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ complaint.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content rounded-4 border-0">
+                                                    <div class="modal-header bg-theme text-white rounded-top-4">
+                                                        <h5 class="modal-title fw-bold" id="updateModalLabel{{ complaint.id }}">Update Maintenance Status - {{ complaint.complaint_id }}</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form action="{{ url_for('update_complaint_status', id=complaint.id) }}" method="POST">
+                                                        <div class="modal-body p-4">
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Complaint Status</label>
+                                                                <select name="status" class="form-select bg-light" required>
+                                                                    <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                                    <option value="In Progress" {% if complaint.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                                                    <option value="Resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                                                    <option value="Rejected" {% if complaint.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Admin Remarks / Maintenance Action</label>
+                                                                <textarea name="admin_remarks" class="form-control bg-light" rows="3" placeholder="e.g., Plumber dispatched; overhead tank cleaned; filter replaced...">{{ complaint.admin_remarks or '' }}</textarea>
+                                                            </div>
+                                                            <p class="small text-muted mb-0"><i class="bi bi-info-circle me-1 text-teal"></i>Selecting "Resolved" will automatically set the Resolved Date to today.</p>
+                                                        </div>
+                                                        <div class="modal-footer bg-light rounded-bottom-4">
+                                                            <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-emerald rounded-pill px-4 shadow-sm">Save Changes</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Delete Confirmation Modal -->
+                                        <div class="modal fade text-start" id="deleteModal{{ complaint.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ complaint.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                                <div class="modal-content rounded-4 border-0">
+                                                    <div class="modal-header bg-danger text-white rounded-top-4">
+                                                        <h5 class="modal-title fw-bold fs-6" id="deleteModalLabel{{ complaint.id }}">Confirm Delete</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body p-4 text-center">
+                                                        <i class="bi bi-exclamation-triangle text-danger display-4 mb-2 d-block"></i>
+                                                        <p class="mb-0">Are you sure you want to delete complaint <strong>{{ complaint.complaint_id }}</strong>?</p>
+                                                    </div>
+                                                    <div class="modal-footer bg-light justify-content-center rounded-bottom-4">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                        <form action="{{ url_for('delete_complaint', id=complaint.id) }}" method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-search text-muted display-4 d-block mb-3"></i>
+                    <h5 class="text-muted">No complaints found matching criteria.</h5>
+                    {% if search_query or status_filter %}
+                        <a href="{{ url_for('manage_complaints') }}" class="btn btn-outline-teal rounded-pill mt-2">Clear Search Filters</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

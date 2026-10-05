@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - WaterCare System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-dark-theme text-white p-4 rounded-top-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white text-dark rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                            <i class="bi bi-shield-lock-fill fs-4 text-teal"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 fw-bold">Admin Portal Login</h4>
+                            <p class="mb-0 small text-light opacity-90">Maintenance Administrator Access</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold">Admin Username <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-person text-teal"></i></span>
+                                <input type="text" class="form-control bg-light border-start-0" id="username" name="username" placeholder="admin" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold">Admin Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-teal"></i></span>
+                                <input type="password" class="form-control bg-light border-start-0" id="password" name="password" placeholder="admin123" required>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 mb-4 border border-light">
+                            <span class="small text-muted d-block"><i class="bi bi-info-circle me-1 text-teal"></i><strong>Default Credentials:</strong></span>
+                            <span class="small text-muted">Username: <code>admin</code> | Password: <code>admin123</code></span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-teal btn-lg rounded-pill fw-semibold shadow-sm text-white">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Admin Login
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
