@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Add New Book - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card form-card p-4 p-md-5 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-plus text-orange me-2"></i> Add Digital Book</h3>
+                        <p class="text-muted small mb-0">Upload new book details and PDF file to the library repository.</p>
+                    </div>
+                    <a href="{{ url_for('manage_books') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Manage Books
+                    </a>
+                </div>
+
+                <form action="{{ url_for('add_book') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Book Name / Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g., Python Programming Fundamentals" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="author" class="form-label">Author Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="author" name="author" placeholder="e.g., Guido van Rossum" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="" disabled selected>Select Category...</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Book Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Brief synopsis or description of the book content..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Upload PDF File <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".pdf,application/pdf" required>
+                        <div class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i> Only PDF files (.pdf) are allowed. Max size: 16 MB.
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 pt-2">
+                        <button type="submit" class="btn btn-orange px-4 rounded-pill fw-bold">
+                            <i class="bi bi-upload me-1"></i> Upload Book
+                        </button>
+                        <a href="{{ url_for('manage_books') }}" class="btn btn-light px-4 rounded-pill">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
