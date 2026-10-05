@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Room Change - Hostel Room Change System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="page-header-card mb-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold text-purple-dark mb-1">Submit Room Change Request</h3>
+                    <p class="text-muted mb-0 small">Select your desired room and provide a valid reason</p>
+                </div>
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+
+            {% if existing_pending %}
+                <div class="alert alert-warning shadow-sm border-0 rounded-3 p-4 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill fs-2 me-3 text-warning"></i>
+                        <div>
+                            <h5 class="fw-bold mb-1">Active Pending Request Exists</h5>
+                            <p class="mb-2 small">
+                                You already have an active pending room change request (<strong>Request ID: {{ existing_pending.request_id }}</strong>). Students can only have one active request at a time.
+                            </p>
+                            <a href="{{ url_for('my_requests') }}" class="btn btn-warning btn-sm fw-semibold rounded-pill px-3">
+                                <i class="bi bi-eye me-1"></i> View My Pending Request
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card card-custom p-4 p-md-5">
+                    <form action="{{ url_for('request_change') }}" method="POST" class="needs-validation" novalidate>
+
+                        <!-- Display Info Card -->
+                        <div class="row g-3 mb-4 p-3 bg-light rounded-3">
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Request ID (Generated)</small>
+                                <strong class="text-purple-dark font-monospace fs-6"><i class="bi bi-hash"></i>{{ generated_id }}</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Request Date</small>
+                                <strong><i class="bi bi-calendar3 me-1"></i>{{ today_str }}</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Student Name</small>
+                                <strong>{{ student.name }} ({{ student.register_number }})</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted d-block">Current Room</small>
+                                <strong class="text-primary">
+                                    {% if active_allocation and active_allocation.room %}
+                                        Room {{ active_allocation.room.room_number }} ({{ active_allocation.room.hostel_name }})
+                                    {% else %}
+                                        <span class="text-danger">Room Not Allocated</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <!-- Requested Room Selection -->
+                        <div class="mb-4">
+                            <label for="requested_room_id" class="form-label fw-semibold">Select Requested Room <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-lg" id="requested_room_id" name="requested_room_id" required>
+                                <option value="" selected disabled>-- Select a Room --</option>
+                                {% for rm in rooms %}
+                                    {% set is_current = (active_allocation and active_allocation.room_id == rm.id) %}
+                                    <option value="{{ rm.id }}" {% if is_current %}disabled{% endif %}>
+                                        Room {{ rm.room_number }} - {{ rm.hostel_name }} ({{ rm.room_type }} Sharing, Available Beds: {{ rm.available_beds }})
+                                        {% if is_current %} [Current Room]{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Choose the room you would like to move to. Rooms with available beds are preferred.</div>
+                        </div>
+
+                        <!-- Reason Selection -->
+                        <div class="mb-4">
+                            <label for="reason" class="form-label fw-semibold">Reason for Change <span class="text-danger">*</span></label>
+                            <select class="form-select" id="reason" name="reason" required>
+                                <option value="" selected disabled>-- Select Reason --</option>
+                                <option value="Roommate Issue">Roommate Issue</option>
+                                <option value="Maintenance Problem">Maintenance Problem</option>
+                                <option value="Personal Reason">Personal Reason</option>
+                                <option value="Medical Reason">Medical Reason</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-mint py-2 shadow-sm">
+                                <i class="bi bi-send-fill me-1"></i> Submit Room Change Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

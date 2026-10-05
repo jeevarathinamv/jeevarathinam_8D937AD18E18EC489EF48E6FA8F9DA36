@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}My Room Change Requests - Hostel Room Change System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="page-header-card mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+        <div>
+            <h3 class="fw-bold text-purple-dark mb-1">My Room Change Requests</h3>
+            <p class="text-muted mb-0 small">View status and remarks for your room change applications</p>
+        </div>
+        <a href="{{ url_for('request_change') }}" class="btn btn-mint btn-sm rounded-pill px-3 shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> New Change Request
+        </a>
+    </div>
+
+    {% if requests %}
+        <div class="card card-custom p-3 p-md-4">
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Current Room</th>
+                            <th>Requested Room</th>
+                            <th>Reason</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
+                            <th>Admin Remarks</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold font-monospace text-purple-dark">{{ req.request_id }}</span>
+                                </td>
+                                <td>
+                                    {% if req.current_room %}
+                                        Room {{ req.current_room.room_number }}
+                                    {% else %}
+                                        <span class="text-muted">Not Allocated</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.requested_room %}
+                                        <strong>Room {{ req.requested_room.room_number }}</strong>
+                                        <small class="text-muted d-block">{{ req.requested_room.hostel_name }}</small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ req.reason }}</td>
+                                <td>{{ req.request_date.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    {% if req.status == 'Pending' %}
+                                        <span class="badge-status-pending"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                                    {% elif req.status == 'Approved' %}
+                                        <span class="badge-status-approved"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
+                                    {% else %}
+                                        <span class="badge-status-rejected"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.admin_remarks %}
+                                        <span class="small text-dark">{{ req.admin_remarks }}</span>
+                                    {% else %}
+                                        <span class="text-muted small"><em>None</em></span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('request_details', request_id=req.request_id) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="bi bi-eye-fill me-1"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="card card-custom p-5 text-center">
+            <div class="icon-box-purple mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+                <i class="bi bi-inbox-fill"></i>
+            </div>
+            <h4 class="fw-bold mb-2">No Requests Found</h4>
+            <p class="text-muted mb-4">You have not submitted any room change requests yet.</p>
+            <div>
+                <a href="{{ url_for('request_change') }}" class="btn btn-mint rounded-pill px-4">
+                    <i class="bi bi-pencil-square me-1"></i> Submit First Change Request
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

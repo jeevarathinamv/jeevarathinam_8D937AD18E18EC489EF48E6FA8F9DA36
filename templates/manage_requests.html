@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Requests - Admin - Hostel Room Change System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="page-header-card mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+        <div>
+            <h3 class="fw-bold text-purple-dark mb-1">Room Change Requests</h3>
+            <p class="text-muted mb-0 small">Review, search, approve, or reject student room change applications</p>
+        </div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="card card-custom p-3 mb-4">
+        <form action="{{ url_for('manage_requests') }}" method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search Request ID, Student Name, Reg No..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
+                    <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
+                    <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-purple btn-sm w-100 py-2">
+                    <i class="bi bi-funnel-fill me-1"></i> Filter
+                </button>
+                <a href="{{ url_for('manage_requests') }}" class="btn btn-outline-secondary btn-sm py-2">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="card card-custom p-3 p-md-4">
+        {% if requests %}
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Student Details</th>
+                            <th>Current Room</th>
+                            <th>Requested Room</th>
+                            <th>Reason</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                            <tr>
+                                <td>
+                                    <strong class="font-monospace text-purple-dark">{{ req.request_id }}</strong>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-dark d-block">{{ req.student.name }}</span>
+                                    <small class="text-muted">{{ req.student.register_number }}</small>
+                                </td>
+                                <td>
+                                    {% if req.current_room %}
+                                        Room {{ req.current_room.room_number }}
+                                    {% else %}
+                                        <span class="text-muted">Not Allocated</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.requested_room %}
+                                        <strong class="text-primary">Room {{ req.requested_room.room_number }}</strong>
+                                        <small class="text-muted d-block">
+                                            Beds:
+                                            {% if req.requested_room.available_beds > 0 %}
+                                                <span class="text-success fw-bold">{{ req.requested_room.available_beds }} available</span>
+                                            {% else %}
+                                                <span class="text-danger fw-bold">Full (0)</span>
+                                            {% endif %}
+                                        </small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ req.reason }}</td>
+                                <td>{{ req.request_date.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    {% if req.status == 'Pending' %}
+                                        <span class="badge-status-pending"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                                    {% elif req.status == 'Approved' %}
+                                        <span class="badge-status-approved"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
+                                    {% else %}
+                                        <span class="badge-status-rejected"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="dropdown d-inline">
+                                        <button class="btn btn-sm btn-outline-secondary rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                            <li>
+                                                <a class="dropdown-menu-item dropdown-item" href="{{ url_for('request_details', request_id=req.request_id) }}">
+                                                    <i class="bi bi-eye text-primary me-2"></i> View Details
+                                                </a>
+                                            </li>
+                                            {% if req.status == 'Pending' %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button class="dropdown-item text-success" data-bs-toggle="modal" data-bs-target="#approveModal{{ req.id }}">
+                                                        <i class="bi bi-check-circle me-2"></i> Approve Request
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item text-warning" data-bs-toggle="modal" data-bs-target="#rejectModal{{ req.id }}">
+                                                        <i class="bi bi-x-circle me-2"></i> Reject Request
+                                                    </button>
+                                                </li>
+                                            {% endif %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ url_for('delete_request', request_db_id=req.id) }}" method="POST" onsubmit="return confirm('Delete Request {{ req.request_id }}?');">
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash me-2"></i> Delete Request
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Approve Modal -->
+                            <div class="modal fade" id="approveModal{{ req.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ url_for('approve_request', request_db_id=req.id) }}" method="POST">
+                                            <div class="modal-header bg-success text-white">
+                                                <h5 class="modal-title"><i class="bi bi-check-circle-fill me-2"></i> Approve Request {{ req.request_id }}</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <p>Are you sure you want to approve this room change request for <strong>{{ req.student.name }}</strong>?</p>
+                                                <p class="small text-muted mb-3">
+                                                    Moving to <strong>Room {{ req.requested_room.room_number }}</strong> ({{ req.requested_room.hostel_name }}). Student's room allocation will automatically update.
+                                                </p>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Admin Remarks</label>
+                                                    <input type="text" name="admin_remarks" class="form-control" value="Approved by Admin. Available room assigned." placeholder="Add remarks">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success rounded-pill px-4">Confirm Approval</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reject Modal -->
+                            <div class="modal fade" id="rejectModal{{ req.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ url_for('reject_request', request_db_id=req.id) }}" method="POST">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title"><i class="bi bi-x-circle-fill me-2"></i> Reject Request {{ req.request_id }}</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <p>Reject room change request for <strong>{{ req.student.name }}</strong>?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Reason for Rejection / Remarks</label>
+                                                    <input type="text" name="admin_remarks" class="form-control" value="Rejected by Admin due to capacity/policy constraints." required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger rounded-pill px-4">Confirm Rejection</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="icon-box-purple mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h4 class="fw-bold mb-2">No Room Change Requests Found</h4>
+                <p class="text-muted mb-0">Try clearing search filters or wait for student submissions.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
