@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Hostel System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card card-custom shadow">
+                <div class="card-header bg-dark text-white text-center py-3">
+                    <h4 class="mb-0"><i class="fa-solid fa-user-shield me-2"></i>Admin Login</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-medium">Admin Username</label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+                            <div class="invalid-feedback">Please enter username.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-medium">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                            <div class="invalid-feedback">Please enter password.</div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-dark btn-lg rounded-pill fw-bold">
+                                <i class="fa-solid fa-lock me-2"></i> Admin Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center bg-light py-3 border-0">
+                    <small class="text-muted">Default Demo Credentials: <strong>admin</strong> / <strong>admin123</strong></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

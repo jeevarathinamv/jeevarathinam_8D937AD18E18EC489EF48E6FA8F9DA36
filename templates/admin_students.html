@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Registered Students - Hostel System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary mb-0"><i class="fa-solid fa-users me-2"></i>Registered Students</h3>
+        <a href="{{ url_for('allocate_room') }}" class="btn btn-success rounded-pill fw-bold">
+            <i class="fa-solid fa-user-plus me-1"></i> Allocate Room
+        </a>
+    </div>
+
+    <div class="card card-custom shadow-sm">
+        <div class="card-header card-header-blue py-3">
+            <h5 class="mb-0"><i class="fa-solid fa-graduation-cap me-2"></i>Student List</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">S.No</th>
+                            <th>Student Name</th>
+                            <th>Register No</th>
+                            <th>Department</th>
+                            <th>Email</th>
+                            <th>Current Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if students %}
+                            {% for student in students %}
+                                {% set active_alloc = student.allocations | selectattr('status', 'equalto', 'Allocated') | first %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">{{ loop.index }}</td>
+                                    <td class="fw-medium">{{ student.name }}</td>
+                                    <td><code>{{ student.register_number }}</code></td>
+                                    <td>{{ student.department }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td>
+                                        {% if active_alloc %}
+                                            <span class="badge bg-success fs-6">{{ active_alloc.room.hostel_name }} ({{ active_alloc.room.room_number }})</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary fs-6">Not Allocated</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No students registered yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

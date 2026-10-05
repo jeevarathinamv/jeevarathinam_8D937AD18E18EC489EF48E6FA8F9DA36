@@ -1,87 +1,39 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Login - College Sports Hub{% endblock %}
+{% block title %}Student Login - Hostel System{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container my-4">
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="bg-gradient-primary text-white text-center py-4 px-3">
-                    <i class="bi bi-box-arrow-in-right fs-1 text-warning mb-2 d-block"></i>
-                    <h3 class="fw-bold mb-0">Portal Login</h3>
-                    <p class="small text-white-50 mb-0">Select role and enter your credentials</p>
+        <div class="col-md-5 col-lg-4">
+            <div class="card card-custom shadow">
+                <div class="card-header card-header-blue text-center py-3">
+                    <h4 class="mb-0"><i class="fa-solid fa-right-to-bracket me-2"></i>Student Login</h4>
                 </div>
-                <div class="card-body p-4 p-md-5">
-                    <!-- Nav tabs for role selection -->
-                    <ul class="nav nav-pills nav-justified mb-4 bg-light p-1 rounded-pill" id="loginTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active rounded-pill fw-semibold py-2" id="student-tab" data-bs-toggle="pill" data-bs-target="#student-login" type="button" role="tab">
-                                <i class="bi bi-person-fill me-1"></i> Student
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link rounded-pill fw-semibold py-2" id="admin-tab" data-bs-toggle="pill" data-bs-target="#admin-login" type="button" role="tab">
-                                <i class="bi bi-shield-lock-fill me-1"></i> Admin
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="loginTabsContent">
-                        <!-- Student Login Form -->
-                        <div class="tab-pane fade show active" id="student-login" role="tabpanel">
-                            <form action="{{ url_for('login') }}" method="POST">
-                                <input type="hidden" name="login_type" value="student">
-                                <div class="mb-3">
-                                    <label for="email_or_reg" class="form-label fw-semibold">Email or Register No.</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
-                                        <input type="text" class="form-control border-start-0 ps-0" id="email_or_reg" name="email_or_reg" placeholder="student@college.edu or Reg No" required>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="student_password" class="form-label fw-semibold">Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
-                                        <input type="password" class="form-control border-start-0 ps-0" id="student_password" name="password" placeholder="••••••••" required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold shadow-sm">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
-                                </button>
-                            </form>
-                            <div class="text-center mt-4">
-                                <p class="small text-muted mb-0">Don't have an account? <a href="{{ url_for('register') }}" class="text-primary fw-bold text-decoration-none">Register here</a></p>
-                            </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('login') }}" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="email_or_reg" class="form-label fw-medium">Email or Register Number</label>
+                            <input type="text" class="form-control" id="email_or_reg" name="email_or_reg" placeholder="Enter Email or Register No" required>
+                            <div class="invalid-feedback">Please enter your Email or Register Number.</div>
                         </div>
 
-                        <!-- Admin Login Form -->
-                        <div class="tab-pane fade" id="admin-login" role="tabpanel">
-                            <form action="{{ url_for('login') }}" method="POST">
-                                <input type="hidden" name="login_type" value="admin">
-                                <div class="mb-3">
-                                    <label for="username" class="form-label fw-semibold">Admin Username</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-person text-muted"></i></span>
-                                        <input type="text" class="form-control border-start-0 ps-0" id="username" name="username" placeholder="admin" required>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="admin_password" class="form-label fw-semibold">Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
-                                        <input type="password" class="form-control border-start-0 ps-0" id="admin_password" name="password" placeholder="••••••••" required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-dark w-100 py-2 rounded-pill fw-bold shadow-sm">
-                                    <i class="bi bi-shield-check me-2"></i> Admin Login
-                                </button>
-                            </form>
-                            <div class="text-center mt-3">
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal">Default Admin: admin / admin123</span>
-                            </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-medium">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                            <div class="invalid-feedback">Please enter your password.</div>
                         </div>
-                    </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i> Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center bg-white py-3 border-0">
+                    <span class="text-muted">Don't have an account?</span>
+                    <a href="{{ url_for('register') }}" class="text-primary fw-bold text-decoration-none">Register here</a>
                 </div>
             </div>
         </div>

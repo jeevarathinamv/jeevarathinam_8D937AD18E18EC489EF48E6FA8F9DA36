@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}My Room - Hostel System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h3 class="fw-bold mb-4 text-primary"><i class="fa-solid fa-bed me-2"></i>My Room Details</h3>
+
+            <!-- Active Room Card -->
+            <div class="card card-custom mb-4 shadow-sm">
+                <div class="card-header card-header-green py-3">
+                    <h5 class="mb-0"><i class="fa-solid fa-house-user me-2"></i>Current Room Allocation</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if active_allocation %}
+                        <div class="row g-4">
+                            <div class="col-sm-6 col-md-4">
+                                <div class="p-3 bg-light rounded border">
+                                    <small class="text-muted d-block mb-1">Hostel Name</small>
+                                    <span class="fw-bold fs-6 text-dark">{{ active_allocation.room.hostel_name }}</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="p-3 bg-light rounded border">
+                                    <small class="text-muted d-block mb-1">Room Number</small>
+                                    <span class="badge bg-primary fs-6">{{ active_allocation.room.room_number }}</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-4">
+                                <div class="p-3 bg-light rounded border">
+                                    <small class="text-muted d-block mb-1">Room Type</small>
+                                    <span class="fw-bold fs-6 text-dark">{{ active_allocation.room.room_type }}</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <small class="text-muted d-block mb-1">Allocation Date</small>
+                                    <span class="fw-bold fs-6 text-dark">{{ active_allocation.allocation_date.strftime('%d-%b-%Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <small class="text-muted d-block mb-1">Allocation Status</small>
+                                    <span class="badge badge-allocated px-3 py-2 fs-6">Allocated</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fa-solid fa-circle-exclamation text-warning display-4 mb-3 d-block"></i>
+                            <h4 class="fw-bold text-muted mb-2">Room Not Allocated</h4>
+                            <p class="text-secondary">You currently do not have an active hostel room. Please contact the Hostel Administrator.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Allocation History Card -->
+            <div class="card card-custom shadow-sm">
+                <div class="card-header card-header-blue py-3">
+                    <h5 class="mb-0"><i class="fa-solid fa-history me-2"></i>Allocation History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">S.No</th>
+                                    <th>Hostel Name</th>
+                                    <th>Room No</th>
+                                    <th>Room Type</th>
+                                    <th>Allocation Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if allocations %}
+                                    {% for alloc in allocations %}
+                                        <tr>
+                                            <td class="ps-4 fw-bold">{{ loop.index }}</td>
+                                            <td>{{ alloc.room.hostel_name }}</td>
+                                            <td><span class="badge bg-light text-dark border">{{ alloc.room.room_number }}</span></td>
+                                            <td>{{ alloc.room.room_type }}</td>
+                                            <td>{{ alloc.allocation_date.strftime('%d-%b-%Y') }}</td>
+                                            <td>
+                                                {% if alloc.status == 'Allocated' %}
+                                                    <span class="badge badge-allocated">Allocated</span>
+                                                {% else %}
+                                                    <span class="badge badge-cancelled">Cancelled</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">No allocation history available.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
