@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Complaint - College Canteen Feedback & Complaint System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-canteen-orange text-white py-3 text-center">
+                    <h4 class="fw-bold mb-0"><i class="bi bi-exclamation-octagon-fill me-2 text-warning"></i> Lodge Canteen Complaint</h4>
+                    <p class="small text-cream mb-0">Lodge an official grievance for canteen administration review</p>
+                </div>
+                <div class="card-body p-4 bg-white">
+                    <div class="alert alert-warning py-2 rounded-3 border-0 small mb-4">
+                        <i class="bi bi-info-circle-fill me-1"></i> A unique <strong>Complaint ID</strong> will be generated automatically upon submission for live status tracking.
+                    </div>
+
+                    <form method="POST" action="{{ url_for('submit_complaint') }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-tags-fill me-1 text-canteen-orange"></i> Complaint Type</label>
+                            <select name="complaint_type" class="form-select rounded-3" required>
+                                <option value="" selected disabled>-- Select Complaint Category --</option>
+                                <option value="Food Quality">Food Quality (Hygiene, Raw Food, Unfresh)</option>
+                                <option value="Cleanliness">Cleanliness (Tables, Utensils, Kitchen)</option>
+                                <option value="Service">Service Delay & Queuing</option>
+                                <option value="Price">Price / Overcharging Issues</option>
+                                <option value="Staff Behaviour">Staff Behaviour / Misconduct</option>
+                                <option value="Other">Other Grievance</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a complaint type.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-calendar-event me-1 text-canteen-orange"></i> Incident Date</label>
+                            <input type="date" name="complaint_date" class="form-control rounded-3" value="{{ today }}" required>
+                            <div class="invalid-feedback">Please select the incident date.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold"><i class="bi bi-card-text me-1 text-canteen-orange"></i> Complaint Description</label>
+                            <textarea name="description" class="form-control rounded-3" rows="5" placeholder="Provide full details of your complaint (e.g. food item name, time of issue, specific staff behavior, or hygiene concern)..." required minlength="10"></textarea>
+                            <div class="invalid-feedback">Please provide a detailed description (min 10 characters).</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-canteen-green text-white w-100 py-2 rounded-3 fw-bold fs-6 shadow-sm">
+                            <i class="bi bi-shield-exclamation me-1"></i> Submit Complaint Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
