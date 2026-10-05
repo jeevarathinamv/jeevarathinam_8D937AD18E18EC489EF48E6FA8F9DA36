@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Request New Book - Library New Book Request System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-gradient-orange text-white text-center py-3.5 rounded-top-4">
+                    <h4 class="fw-bold mb-1"><i class="bi bi-book-half me-2"></i> Request a New Book</h4>
+                    <p class="small mb-0 opacity-90">Fill in the details of the book you would like the library to purchase</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form action="{{ url_for('request_book') }}" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="book_name" class="form-label fw-semibold">Book Name / Title <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-journal-bookmark"></i></span>
+                                <input type="text" class="form-control" id="book_name" name="book_name" placeholder="e.g., Clean Code: A Handbook of Agile Software Craftsmanship" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="author_name" class="form-label fw-semibold">Author Name <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="author_name" name="author_name" placeholder="e.g., Robert C. Martin" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category" class="form-label fw-semibold">Book Category <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-tag"></i></span>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="" selected disabled>-- Select Category --</option>
+                                    {% for cat in categories %}
+                                        <option value="{{ cat }}">{{ cat }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="reason" class="form-label fw-semibold">Reason for Request <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="Explain why this book is required for your studies, coursework, or research project..." required></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary w-50 py-2 rounded-3 fw-semibold">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-orange w-50 py-2 rounded-3 fw-bold text-uppercase shadow-sm">
+                                <i class="bi bi-send-fill me-1"></i> Submit Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

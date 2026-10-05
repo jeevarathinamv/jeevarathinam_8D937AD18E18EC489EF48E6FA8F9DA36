@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Request Details - Library New Book Request System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-gradient-purple text-white py-3.5 d-flex justify-content-between align-items-center rounded-top-4">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-text me-2"></i> Book Request Details</h5>
+                    <span class="badge bg-white text-purple fw-bold fs-6 px-3 py-1.5 rounded-pill">{{ req.request_id }}</span>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <!-- Status Header Banner -->
+                    <div class="text-center p-3 mb-4 rounded-3
+                        {% if req.status == 'Pending' %}bg-warning bg-opacity-10 text-dark border border-warning
+                        {% elif req.status == 'Approved' %}bg-success bg-opacity-10 text-success border border-success
+                        {% elif req.status == 'Rejected' %}bg-danger bg-opacity-10 text-danger border border-danger{% endif %}">
+                        <span class="fw-bold text-uppercase fs-5">
+                            Status: {{ req.status }}
+                        </span>
+                    </div>
+
+                    <!-- Details Table -->
+                    <table class="table table-bordered align-middle">
+                        <tbody>
+                            <tr>
+                                <th class="bg-light w-35"><i class="bi bi-hash me-1"></i> Request ID</th>
+                                <td class="fw-bold text-purple">{{ req.request_id }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-person me-1"></i> Student Name</th>
+                                <td class="fw-semibold">{{ req.student.name }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-card-heading me-1"></i> Register Number</th>
+                                <td>{{ req.student.register_number }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-book me-1"></i> Book Name</th>
+                                <td class="fw-bold fs-6 text-primary">{{ req.book_name }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-person-author me-1"></i> Author Name</th>
+                                <td>{{ req.author_name }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-tag me-1"></i> Category</th>
+                                <td><span class="badge bg-secondary rounded-pill">{{ req.category }}</span></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-calendar-event me-1"></i> Request Date</th>
+                                <td>{{ req.request_date.strftime('%d %B %Y') }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-chat-square-text me-1"></i> Reason for Request</th>
+                                <td class="text-wrap">{{ req.reason }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light"><i class="bi bi-chat-left-quote me-1"></i> Admin Remarks</th>
+                                <td>
+                                    {% if req.admin_remarks %}
+                                        <div class="alert alert-info py-2 px-3 mb-0 small rounded-3">
+                                            {{ req.admin_remarks }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted"><em>No remarks updated by admin yet.</em></span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="mt-4 text-center">
+                        {% if session.get('user_type') == 'admin' %}
+                            <a href="{{ url_for('manage_requests') }}" class="btn btn-primary rounded-pill px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Manage Requests
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('my_requests') }}" class="btn btn-purple rounded-pill px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Back to My Requests
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

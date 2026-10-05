@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Admin, BookRequest
 
-class SportsBookingTestCase(unittest.TestCase):
+class LibraryBookRequestTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +11,10 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Create test admin
+            admin = Admin(username='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
             db.session.commit()
 
     def tearDown(self):
@@ -27,7 +27,7 @@ class SportsBookingTestCase(unittest.TestCase):
         response = self.client.post('/register', data={
             'name': 'Alex Johnson',
             'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
+            'department': 'Computer Applications',
             'email': 'alex@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
@@ -35,22 +35,20 @@ class SportsBookingTestCase(unittest.TestCase):
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
             'email_or_reg': 'alex@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Welcome back, Alex Johnson!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_book_request_workflow_and_admin_management(self):
+        # 1. Register and login student
         self.client.post('/register', data={
             'name': 'Sam',
             'register_number': 'REG456',
@@ -59,58 +57,58 @@ class SportsBookingTestCase(unittest.TestCase):
             'password': 'pass'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
             'email_or_reg': 'sam@college.edu',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # 2. Submit book request
+        response = self.client.post('/request_book', data={
+            'book_name': 'Designing Data-Intensive Applications',
+            'author_name': 'Martin Kleppmann',
+            'category': 'Database',
+            'reason': 'Required for database architecture course.'
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn(b'Book request submitted successfully', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        with app.app_context():
+            req = BookRequest.query.first()
+            self.assertIsNotNone(req)
+            self.assertTrue(req.request_id.startswith('REQ-'))
+            self.assertEqual(req.status, 'Pending')
+            req_id_num = req.id
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # 3. View student request details
+        response = self.client.get(f'/request_details/{req_id_num}')
+        self.assertIn(b'Designing Data-Intensive Applications', response.data)
 
-        # Admin login and approval
+        # 4. Admin login and manage request (Approve)
         self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+        self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        response = self.client.post(f'/admin/request/update/{req_id_num}', data={
+            'action': 'Approved',
+            'admin_remarks': 'Book will be purchased soon.'
+        }, follow_redirects=True)
+        self.assertIn(b'has been marked as Approved', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            updated_req = db.session.get(BookRequest, req_id_num)
+            self.assertEqual(updated_req.status, 'Approved')
+            self.assertEqual(updated_req.admin_remarks, 'Book will be purchased soon.')
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+        # 5. Test search and filter
+        response = self.client.get('/admin/manage_requests?status=Approved&search=Martin')
+        self.assertIn(b'Martin Kleppmann', response.data)
+
+        # 6. Delete request
+        response = self.client.post(f'/admin/request/delete/{req_id_num}', follow_redirects=True)
+        self.assertIn(b'deleted successfully', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            self.assertEqual(BookRequest.query.count(), 0)
 
 if __name__ == '__main__':
     unittest.main()
