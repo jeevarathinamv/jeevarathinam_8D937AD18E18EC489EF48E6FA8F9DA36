@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}My Documents - College Digital Document Verification System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-folder-check text-info me-2"></i>My Documents</h3>
+            <p class="text-muted small mb-0">List of all documents uploaded by you for digital verification</p>
+        </div>
+        <div>
+            <a href="{{ url_for('upload_document') }}" class="btn btn-green rounded-pill px-3 shadow-sm">
+                <i class="bi bi-cloud-upload-fill me-1"></i> Upload New Document
+            </a>
+            <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-3 ms-1 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            {% if documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Document Name</th>
+                                <th>Document Type</th>
+                                <th>Uploaded Date</th>
+                                <th>Verification Status</th>
+                                <th>Admin Remarks</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documents %}
+                                <tr>
+                                    <td class="fw-bold">{{ loop.index }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if doc.filename.endswith('.pdf') %}
+                                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-4 me-2"></i>
+                                            {% else %}
+                                                <i class="bi bi-file-earmark-image-fill text-primary fs-4 me-2"></i>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ doc.document_name }}</div>
+                                                <div class="small text-muted">{{ doc.filename }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border px-2 py-1">{{ doc.document_type }}</span>
+                                    </td>
+                                    <td>{{ doc.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if doc.status == 'Pending' %}
+                                            <span class="badge badge-pending px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                                        {% elif doc.status == 'Verified' %}
+                                            <span class="badge badge-verified px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
+                                        {% elif doc.status == 'Rejected' %}
+                                            <span class="badge badge-rejected px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i>Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if doc.admin_remark %}
+                                            <span class="text-dark">{{ doc.admin_remark }}</span>
+                                        {% else %}
+                                            <span class="text-muted small">No remark available.</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('static', filename=doc.file_path) }}" target="_blank" class="btn btn-sm btn-cyan rounded-pill px-3">
+                                            <i class="bi bi-eye-fill me-1"></i> View File
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-folder-x fs-1 text-muted d-block mb-2"></i>
+                    <h5 class="fw-bold text-dark">No Documents Found</h5>
+                    <p class="text-muted mb-3">You haven't uploaded any documents yet.</p>
+                    <a href="{{ url_for('upload_document') }}" class="btn btn-green rounded-pill px-4"><i class="bi bi-cloud-upload me-1"></i>Upload Document Now</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
