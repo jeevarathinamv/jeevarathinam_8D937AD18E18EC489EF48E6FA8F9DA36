@@ -1,20 +1,32 @@
+import os
+import io
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Admin, Book, Download
 
-class SportsBookingTestCase(unittest.TestCase):
+class CollegeDigitalLibraryTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         app.config['WTF_CSRF_ENABLED'] = False
+        app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
         self.client = app.test_client()
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Seed Admin
+            admin = Admin(username='admin', name='System Administrator')
+            admin.set_password('admin123')
+            db.session.add(admin)
+
+            # Seed Sample Book
+            book = Book(
+                title='Python Fundamentals',
+                author='Guido van Rossum',
+                category='Programming',
+                description='Learn Python 3 syntax and programming concepts.',
+                filename='sample_python_guide.pdf'
+            )
+            db.session.add(book)
             db.session.commit()
 
     def tearDown(self):
@@ -25,92 +37,106 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'name': 'Alice Smith',
+            'register_number': 'REG2025001',
+            'department': 'Computer Applications',
+            'email': 'alice@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'alice@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'Welcome back, Alice Smith!', response.data)
 
-    def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        # Logout
+        response = self.client.get('/logout', follow_redirects=True)
+        self.assertIn(b'You have been logged out', response.data)
+
+    def test_admin_login_and_dashboard(self):
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
+        self.assertIn(b'Successfully logged in as Administrator', response.data)
+        self.assertIn(b'Administrator Dashboard', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
+    def test_book_search_and_details(self):
+        # Test catalog search
+        response = self.client.get('/books?q=Python&category=Programming')
+        self.assertIn(b'Python Fundamentals', response.data)
+
+        # Test book details
+        response = self.client.get('/books/1')
+        self.assertIn(b'Guido van Rossum', response.data)
+
+    def test_pdf_upload_validation_and_book_crud(self):
+        # Admin login
+        self.client.post('/admin/login', data={
+            'username': 'admin',
+            'password': 'admin123'
+        })
+
+        # Try uploading invalid non-PDF file
+        txt_file = (io.BytesIO(b'invalid file content'), 'document.txt')
+        response = self.client.post('/admin/books/add', data={
+            'title': 'Invalid Book',
+            'author': 'Tester',
+            'category': 'Other',
+            'description': 'Text file test',
+            'file': txt_file
+        }, follow_redirects=True)
+        self.assertIn(b'Only PDF files (.pdf) are allowed', response.data)
+
+        # Upload valid PDF file
+        pdf_file = (io.BytesIO(b'%PDF-1.4 sample content'), 'valid_book.pdf')
+        response = self.client.post('/admin/books/add', data={
+            'title': 'Advanced Database Systems',
+            'author': 'C.J. Date',
+            'category': 'Database',
+            'description': 'Comprehensive SQL reference.',
+            'file': pdf_file
+        }, follow_redirects=True)
+        self.assertIn(b'added successfully', response.data)
+
+        # Edit book
+        response = self.client.post('/admin/books/edit/2', data={
+            'title': 'Advanced Relational Database Systems',
+            'author': 'C.J. Date',
+            'category': 'Database',
+            'description': 'Updated description.'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
+
+        # Delete book
+        response = self.client.post('/admin/books/delete/2', follow_redirects=True)
+        self.assertIn(b'deleted successfully', response.data)
+
+    def test_download_and_history_tracking(self):
         # Register and login student
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
+            'name': 'Bob Student',
+            'register_number': 'REG2025002',
+            'department': 'Computer Applications',
+            'email': 'bob@college.edu',
+            'password': 'password123'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
+            'email_or_reg': 'bob@college.edu',
+            'password': 'password123'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        # Download book #1
+        response = self.client.get('/books/download/1')
+        self.assertEqual(response.status_code, 200)
+        response.close()
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
-
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
-        })
-
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
-
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+        # Check student download history
+        response = self.client.get('/student/downloads')
+        self.assertIn(b'Python Fundamentals', response.data)
 
 if __name__ == '__main__':
     unittest.main()

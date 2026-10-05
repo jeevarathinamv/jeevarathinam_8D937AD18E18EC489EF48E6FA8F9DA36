@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }} - Book Details{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('books') }}" class="text-decoration-none">Digital Books</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Book Details Metadata Card -->
+        <div class="col-lg-5">
+            <div class="card form-card p-4 bg-white h-100">
+                <div class="mb-3">
+                    <span class="badge badge-category mb-2">{{ book.category }}</span>
+                    <h3 class="fw-bold text-dark mb-2">{{ book.title }}</h3>
+                    <p class="text-primary fw-semibold mb-3">
+                        <i class="bi bi-person me-1"></i> Author: {{ book.author }}
+                    </p>
+                </div>
+
+                <hr class="text-muted">
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark"><i class="bi bi-file-text me-1 text-info"></i> Book Description</h6>
+                    <p class="text-secondary small leading-relaxed">
+                        {{ book.description or 'No detailed description provided for this digital book.' }}
+                    </p>
+                </div>
+
+                <div class="mb-4 bg-light p-3 rounded-3 border">
+                    <div class="row g-2 text-center small text-muted">
+                        <div class="col-6 border-end">
+                            <span class="d-block text-dark fw-bold">Uploaded Date</span>
+                            {{ book.upload_date.strftime('%B %d, %Y') }}
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block text-dark fw-bold">File Format</span>
+                            <span class="text-danger fw-bold"><i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF Document</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto d-grid gap-2">
+                    <a href="{{ url_for('download_book', book_id=book.id) }}" class="btn btn-orange py-2 rounded-pill fw-bold">
+                        <i class="bi bi-download me-2"></i> Download Book PDF
+                    </a>
+                    <a href="{{ url_for('view_book', book_id=book.id) }}" target="_blank" class="btn btn-outline-cyan py-2 rounded-pill fw-bold">
+                        <i class="bi bi-box-arrow-up-right me-2"></i> Open PDF in New Tab
+                    </a>
+                    <a href="{{ url_for('books') }}" class="btn btn-light py-2 rounded-pill text-muted">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Catalog
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline PDF Reader Frame -->
+        <div class="col-lg-7">
+            <div class="card form-card p-3 bg-white h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3 px-2">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i> Document Preview
+                    </h5>
+                    <a href="{{ url_for('view_book', book_id=book.id) }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill">
+                        <i class="bi bi-fullscreen me-1"></i> Full View
+                    </a>
+                </div>
+                <div class="pdf-container">
+                    <iframe src="{{ url_for('view_book', book_id=book.id) }}" width="100%" height="100%" style="border: none;">
+                        <p class="p-4 text-center">Your browser does not support inline PDF viewing.
+                            <a href="{{ url_for('download_book', book_id=book.id) }}">Click here to download the PDF</a>.
+                        </p>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
