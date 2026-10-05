@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Add New Room - Hostel Room Change System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="page-header-card mb-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold text-purple-dark mb-1">Add New Room</h3>
+                    <p class="text-muted mb-0 small">Add a new room to hostel inventory</p>
+                </div>
+                <a href="{{ url_for('manage_rooms') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Cancel
+                </a>
+            </div>
+
+            <div class="card card-custom p-4 p-md-5">
+                <form action="{{ url_for('add_room') }}" method="POST" class="needs-validation" novalidate>
+
+                    <div class="mb-3">
+                        <label for="room_number" class="form-label fw-semibold">Room Number <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="room_number" name="room_number" placeholder="e.g. 101, 204B" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="hostel_name" class="form-label fw-semibold">Hostel Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="hostel_name" name="hostel_name" placeholder="e.g. A Block Hostel" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="room_type" class="form-label fw-semibold">Room Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="room_type" name="room_type" required>
+                            <option value="" selected disabled>-- Select Room Type --</option>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="Triple">Triple</option>
+                            <option value="Quad">Quad</option>
+                        </select>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label for="capacity" class="form-label fw-semibold">Total Capacity <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" min="1" max="10" value="2" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="available_beds" class="form-label fw-semibold">Available Beds <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="available_beds" name="available_beds" min="0" max="10" value="2" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-purple py-2">
+                            <i class="bi bi-check-circle me-1"></i> Save Room
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

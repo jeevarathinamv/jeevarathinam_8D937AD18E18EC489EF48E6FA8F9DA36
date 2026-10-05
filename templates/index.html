@@ -1,30 +1,33 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Hostel Room Change Request System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<!-- Hero Header -->
+<div class="hero-header text-center mb-5">
+    <div class="container">
+        <span class="badge mint-badge px-3 py-2 rounded-pill mb-3 fs-6">
+            <i class="bi bi-star-fill me-1"></i> Simple & Efficient Hostel Management
+        </span>
+        <h1 class="display-4 fw-bold text-white mb-3">Hostel Room Change Request System</h1>
+        <p class="lead text-white-50 mx-auto max-width-700 mb-4">
+            A seamless portal for hostel students to view current room allocations, submit room change requests, and track real-time approval status.
         </p>
         <div class="d-flex justify-content-center gap-3">
             {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-mint btn-lg rounded-pill px-4 shadow">
+                    <i class="bi bi-speedometer2 me-2"></i> Go to Student Dashboard
                 </a>
             {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-purple btn-lg rounded-pill px-4 shadow">
+                    <i class="bi bi-grid-fill me-2"></i> Go to Admin Dashboard
                 </a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
+                <a href="{{ url_for('login') }}" class="btn btn-mint btn-lg rounded-pill px-4 shadow">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
                 </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
+                <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                    <i class="bi bi-person-plus me-2"></i> Student Register
                 </a>
             {% endif %}
         </div>
@@ -32,42 +35,83 @@
 </div>
 
 <!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
-        </div>
+<div class="container mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-purple-dark">Key System Features</h2>
+        <p class="text-muted">Designed for fast, simple, and transparent hostel administration.</p>
     </div>
 
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+            <div class="card card-custom card-hover h-100 p-4 text-center">
+                <div class="icon-box-purple mx-auto mb-3">
+                    <i class="bi bi-door-open-fill"></i>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+                <h5 class="fw-bold mb-2">View Current Room</h5>
+                <p class="text-muted small mb-0">
+                    Students can instantly view their assigned Hostel Block, Room Number, Room Type, and Allocation Date.
+                </p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="card card-custom card-hover h-100 p-4 text-center">
+                <div class="icon-box-mint mx-auto mb-3">
+                    <i class="bi bi-pencil-square"></i>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+                <h5 class="fw-bold mb-2">Request Room Change</h5>
+                <p class="text-muted small mb-0">
+                    Submit requests choosing requested rooms and reasons such as Roommate Issue, Maintenance, or Medical grounds with automated Unique Request IDs.
+                </p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="card card-custom card-hover h-100 p-4 text-center">
+                <div class="icon-box-blue mx-auto mb-3">
+                    <i class="bi bi-shield-check"></i>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+                <h5 class="fw-bold mb-2">Admin Room Control</h5>
+                <p class="text-muted small mb-0">
+                    Admins manage room bed capacities, review requests, inspect room availability, and automatically update allocations upon approval.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow Steps -->
+<div class="container mb-5">
+    <div class="card card-custom p-4 p-md-5">
+        <h3 class="fw-bold text-center mb-4 text-purple-dark"><i class="bi bi-arrow-repeat me-2 text-primary"></i> Simple Project Flow</h3>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <span class="badge bg-purple text-white rounded-circle p-2 mb-2 fs-5">1</span>
+                    <h6 class="fw-bold">Student Register / Login</h6>
+                    <small class="text-muted">Register with name, reg number, department and email.</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <span class="badge bg-primary text-white rounded-circle p-2 mb-2 fs-5">2</span>
+                    <h6 class="fw-bold">View Current Allocation</h6>
+                    <small class="text-muted">Check current assigned hostel room details.</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <span class="badge bg-info text-white rounded-circle p-2 mb-2 fs-5">3</span>
+                    <h6 class="fw-bold">Submit Change Request</h6>
+                    <small class="text-muted">Select desired room and state reason for change.</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-light rounded-3 h-100">
+                    <span class="badge bg-success text-white rounded-circle p-2 mb-2 fs-5">4</span>
+                    <h6 class="fw-bold">Admin Review & Update</h6>
+                    <small class="text-muted">Admin checks bed availability and approves or rejects request.</small>
+                </div>
             </div>
         </div>
     </div>
