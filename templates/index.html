@@ -1,73 +1,71 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Library New Book Request System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<div class="hero-section text-center mb-5 shadow-sm">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">Library New Book Request System</h1>
+        <p class="lead mb-4 max-w-700 mx-auto opacity-90">
+            Easily request new books for your library, track approval status in real-time, and help expand our academic collection!
         </p>
         <div class="d-flex justify-content-center gap-3">
             {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+                <a href="{{ url_for('request_book') }}" class="btn btn-warning btn-lg px-4 rounded-pill fw-semibold shadow-sm text-dark">
+                    <i class="bi bi-plus-circle-fill me-2"></i> Request a New Book
+                </a>
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-light btn-lg px-4 rounded-pill fw-semibold">
+                    <i class="bi bi-speedometer2 me-2"></i> My Dashboard
                 </a>
             {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg px-4 rounded-pill fw-semibold shadow-sm text-dark">
+                    <i class="bi bi-speedometer2 me-2"></i> Admin Dashboard
                 </a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
+                <a href="{{ url_for('login') }}" class="btn btn-warning btn-lg px-4 rounded-pill fw-semibold shadow-sm text-dark">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
                 </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
+                <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4 rounded-pill fw-semibold">
+                    <i class="bi bi-person-plus me-2"></i> Register Now
                 </a>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
 <div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
+    <div class="row text-center g-4">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+            <div class="card h-100 border-0 shadow-sm p-4 rounded-4">
+                <div class="card-body">
+                    <div class="mb-3 text-primary">
+                        <i class="bi bi-journal-plus fs-1 text-purple"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">1. Submit Request</h5>
+                    <p class="card-text text-muted">Fill in book details including title, author, category, and reason for request.</p>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="card h-100 border-0 shadow-sm p-4 rounded-4">
+                <div class="card-body">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-qr-code fs-1 text-orange"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">2. Get Unique ID</h5>
+                    <p class="card-text text-muted">Receive a unique Request ID (e.g., REQ-849201) to track your request instantly.</p>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="card h-100 border-0 shadow-sm p-4 rounded-4">
+                <div class="card-body">
+                    <div class="mb-3 text-success">
+                        <i class="bi bi-check-circle fs-1 text-blue"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">3. Admin Review</h5>
+                    <p class="card-text text-muted">Librarians review, approve, or provide status remarks on your requested books.</p>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
             </div>
         </div>
     </div>

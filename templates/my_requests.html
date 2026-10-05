@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}My Book Requests - Library New Book Request System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h3 class="fw-bold text-primary mb-1"><i class="bi bi-journal-text me-2"></i> My Book Requests</h3>
+            <p class="text-muted mb-0">View and monitor all your submitted library book requests</p>
+        </div>
+        <a href="{{ url_for('request_book') }}" class="btn btn-warning px-4 py-2 rounded-pill fw-bold text-dark shadow-sm">
+            <i class="bi bi-plus-circle-fill me-1"></i> Request New Book
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            {% if requests %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Book Name</th>
+                                <th>Author Name</th>
+                                <th>Category</th>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                                <th>Admin Remarks</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in requests %}
+                                <tr>
+                                    <td class="fw-bold text-purple">{{ req.request_id }}</td>
+                                    <td class="fw-semibold">{{ req.book_name }}</td>
+                                    <td class="text-muted">{{ req.author_name }}</td>
+                                    <td><span class="badge bg-secondary rounded-pill">{{ req.category }}</span></td>
+                                    <td class="small">{{ req.request_date.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        {% if req.status == 'Pending' %}
+                                            <span class="badge badge-pending px-3 py-1 rounded-pill">Pending</span>
+                                        {% elif req.status == 'Approved' %}
+                                            <span class="badge badge-approved px-3 py-1 rounded-pill">Approved</span>
+                                        {% elif req.status == 'Rejected' %}
+                                            <span class="badge badge-rejected px-3 py-1 rounded-pill">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">
+                                        {% if req.admin_remarks %}
+                                            <i class="bi bi-chat-left-text me-1"></i> {{ req.admin_remarks }}
+                                        {% else %}
+                                            <span class="text-black-50"><em>No remarks yet</em></span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('request_details', id=req.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-x fs-1 text-muted d-block mb-2"></i>
+                    <h5 class="fw-bold text-muted">No Requests Found</h5>
+                    <p class="text-muted mb-3">You haven't submitted any book requests yet.</p>
+                    <a href="{{ url_for('request_book') }}" class="btn btn-purple rounded-pill px-4">
+                        <i class="bi bi-plus-circle me-1"></i> Submit a Book Request
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
