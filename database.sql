@@ -1,8 +1,16 @@
--- College Sports Equipment Booking System
+-- Classroom Maintenance Complaint Tracker
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `classroom_maintenance_db`;
+USE `classroom_maintenance_db`;
+
+-- Table structure for admins
+CREATE TABLE IF NOT EXISTS `admins` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password_hash` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Table structure for students
 CREATE TABLE IF NOT EXISTS `students` (
@@ -15,37 +23,21 @@ CREATE TABLE IF NOT EXISTS `students` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table structure for complaints
+CREATE TABLE IF NOT EXISTS `complaints` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `complaint_id` VARCHAR(20) UNIQUE NOT NULL,
     `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
+    `classroom_number` VARCHAR(50) NOT NULL,
+    `complaint_type` VARCHAR(100) NOT NULL,
+    `description` TEXT NOT NULL,
+    `complaint_date` DATE NOT NULL,
+    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, In Progress, Resolved, Rejected
+    `admin_remarks` TEXT,
+    `resolved_date` DATE,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE
 );
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Note: Default admin account will be created automatically on app startup.
+-- Default Credentials: Username: admin | Password: admin123

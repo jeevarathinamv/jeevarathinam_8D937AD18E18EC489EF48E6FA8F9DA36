@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Complaint Details - {{ complaint.complaint_id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card card-custom p-4 my-3">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                <div>
+                    <h3 class="fw-bold text-primary mb-1">
+                        <i class="fa-solid fa-file-lines me-2"></i>Complaint Details
+                    </h3>
+                    <span class="fs-5 text-muted">ID: <strong class="text-primary">{{ complaint.complaint_id }}</strong></span>
+                </div>
+                <div>
+                    {% if complaint.status == 'Pending' %}
+                        <span class="badge badge-pending fs-6 px-3 py-2"><i class="fa-solid fa-hourglass-start me-1"></i> Pending</span>
+                    {% elif complaint.status == 'In Progress' %}
+                        <span class="badge badge-in-progress fs-6 px-3 py-2"><i class="fa-solid fa-spinner fa-spin me-1"></i> In Progress</span>
+                    {% elif complaint.status == 'Resolved' %}
+                        <span class="badge badge-resolved fs-6 px-3 py-2"><i class="fa-solid fa-check-circle me-1"></i> Resolved</span>
+                    {% elif complaint.status == 'Rejected' %}
+                        <span class="badge badge-rejected fs-6 px-3 py-2"><i class="fa-solid fa-xmark-circle me-1"></i> Rejected</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Student Details -->
+            <div class="bg-light p-3 rounded mb-4 border">
+                <h5 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-user me-2"></i>Student Information</h5>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <strong>Student Name:</strong> {{ complaint.student.name }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Register Number:</strong> {{ complaint.student.register_number }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Department:</strong> {{ complaint.student.department }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Email:</strong> {{ complaint.student.email }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Info -->
+            <div class="bg-light p-3 rounded mb-4 border">
+                <h5 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-wrench me-2"></i>Complaint Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong>Classroom Number:</strong> <span class="badge bg-white text-dark border fs-6 ms-1">{{ complaint.classroom_number }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Complaint Type:</strong> <span class="badge bg-primary fs-6 ms-1">{{ complaint.complaint_type }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Submitted Date:</strong> {{ complaint.complaint_date.strftime('%Y-%m-%d') }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Resolved Date:</strong>
+                        {% if complaint.resolved_date %}
+                            <span class="text-success fw-bold">{{ complaint.resolved_date.strftime('%Y-%m-%d') }}</span>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-12">
+                        <strong>Problem Description:</strong>
+                        <p class="mt-1 mb-0 p-2 bg-white border rounded text-dark">{{ complaint.description }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Remarks -->
+            <div class="card bg-white border-warning mb-4">
+                <div class="card-header bg-warning bg-opacity-10 fw-bold text-dark">
+                    <i class="fa-solid fa-comment-dots me-2 text-warning"></i>Admin Remarks & Status Update
+                </div>
+                <div class="card-body">
+                    {% if complaint.admin_remarks %}
+                        <p class="card-text text-dark">{{ complaint.admin_remarks }}</p>
+                    {% else %}
+                        <p class="card-text text-muted italic">No remarks provided yet by administrator.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="d-flex justify-content-between align-items-center">
+                {% if session.get('user_type') == 'admin' %}
+                    <a href="{{ url_for('manage_complaints') }}" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Complaint Management
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('my_complaints') }}" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to My Complaints
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
