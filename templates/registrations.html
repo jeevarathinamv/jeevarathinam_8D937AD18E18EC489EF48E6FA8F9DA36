@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registrations - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-gradient-custom text-white rounded-4 p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="bi bi-list-stars text-warning me-2"></i> Student Registrations Report</h2>
+                        <p class="mb-0 text-white-50">View all course registrations submitted by students across departments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registrations Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 px-4">
+                    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-journal-check text-primary me-2"></i> Course Registrations Directory</h4>
+                </div>
+                <div class="card-body p-0">
+                    {% if registrations %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Student Name</th>
+                                        <th>Register Number</th>
+                                        <th>Course Name</th>
+                                        <th>Course Code</th>
+                                        <th>Registration Date</th>
+                                        <th class="pe-4 text-end">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reg in registrations %}
+                                        <tr>
+                                            <td class="ps-4 fw-semibold text-dark">{{ reg.student.name }}</td>
+                                            <td><span class="badge bg-light text-dark border px-3 py-1">{{ reg.student.register_number }}</span></td>
+                                            <td class="fw-semibold text-primary">{{ reg.course.course_name }}</td>
+                                            <td><span class="fw-bold text-dark">{{ reg.course.course_code }}</span></td>
+                                            <td class="small text-muted">{{ reg.registration_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td class="pe-4 text-end">
+                                                {% if reg.status == 'Registered' %}
+                                                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-1.5 rounded-pill fw-bold">
+                                                        <i class="bi bi-check-circle-fill me-1"></i> Registered
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-1.5 rounded-pill fw-bold">
+                                                        <i class="bi bi-x-circle-fill me-1"></i> Cancelled
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                            <p class="mb-0">No course registrations found in system.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

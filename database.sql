@@ -1,51 +1,65 @@
--- College Sports Equipment Booking System
+-- Student Semester Course Registration Portal
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `student_course_registration`;
+USE `student_course_registration`;
 
--- Table structure for students
+-- 1. Table structure for admins
+CREATE TABLE IF NOT EXISTS `admins` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password_hash` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Table structure for students
 CREATE TABLE IF NOT EXISTS `students` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(100) NOT NULL,
     `register_number` VARCHAR(50) UNIQUE NOT NULL,
     `department` VARCHAR(100) NOT NULL,
+    `year` INT NOT NULL,
+    `semester` INT NOT NULL,
     `email` VARCHAR(120) UNIQUE NOT NULL,
     `password_hash` VARCHAR(255) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- 3. Table structure for courses
+CREATE TABLE IF NOT EXISTS `courses` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
-    `description` TEXT,
+    `course_name` VARCHAR(100) NOT NULL,
+    `course_code` VARCHAR(50) UNIQUE NOT NULL,
+    `department` VARCHAR(100) NOT NULL,
+    `semester` INT NOT NULL,
+    `course_type` VARCHAR(50) NOT NULL, -- Core, Elective, Practical
+    `credits` INT NOT NULL DEFAULT 3,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
+-- 4. Table structure for registrations
+CREATE TABLE IF NOT EXISTS `registrations` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `course_id` INT NOT NULL,
+    `registration_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `status` VARCHAR(20) DEFAULT 'Registered', -- Registered, Cancelled
     FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`course_id`) REFERENCES `courses`(`id`) ON DELETE CASCADE
 );
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Seed default admin user (Username: admin, Password: admin123)
+-- Password hash corresponds to 'admin123'
+INSERT INTO `admins` (`username`, `password_hash`) VALUES
+('admin', 'scrypt:32768:8:1$uJ8n3x9Z$c7a3328f4142d1743e34b92b58832a82d02919c67ed19c8d0a84e6bd54a5c92e10dbbe8d715915d311d4e0ebf96d073845b5e7d4ee6b6805178bd302f30b91e9')
+ON DUPLICATE KEY UPDATE `username`=`username`;
+
+-- Seed sample courses
+INSERT INTO `courses` (`course_name`, `course_code`, `department`, `semester`, `course_type`, `credits`) VALUES
+('Advanced Java Programming', 'MCA101', 'Computer Applications (MCA)', 1, 'Core', 4),
+('Database Management Systems', 'MCA102', 'Computer Applications (MCA)', 1, 'Core', 4),
+('Web Technologies Lab', 'MCA103', 'Computer Applications (MCA)', 1, 'Practical', 2),
+('Software Engineering', 'MCA104', 'Computer Applications (MCA)', 1, 'Elective', 3),
+('Python Web Development', 'MCA201', 'Computer Applications (MCA)', 2, 'Core', 4),
+('Data Science & Analytics', 'MCA202', 'Computer Applications (MCA)', 2, 'Core', 4),
+('Cloud Computing Lab', 'MCA203', 'Computer Applications (MCA)', 2, 'Practical', 2);
