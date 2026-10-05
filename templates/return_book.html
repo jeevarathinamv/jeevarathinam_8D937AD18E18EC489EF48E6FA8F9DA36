@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Return Book - Library Fine System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header card-header-maroon py-3 text-center">
+                    <h4 class="fw-bold mb-0"><i class="bi bi-box-arrow-in-down-left text-gold me-2"></i>Return Issued Book</h4>
+                </div>
+                <div class="card-body p-4 bg-white">
+                    <form action="{{ url_for('return_book') }}" method="POST" class="needs-validation" novalidate>
+                        <!-- Select Active Issue Record -->
+                        <div class="mb-3">
+                            <label for="issue_id" class="form-label fw-semibold">Select Issued Book Record</label>
+                            <select class="form-select" id="issue_id" name="issue_id" required onchange="window.location.href='{{ url_for('return_book') }}/' + this.value">
+                                <option value="" disabled {% if not selected_issue %}selected{% endif %}>Choose issued book record...</option>
+                                {% for issue in active_issues %}
+                                    <option value="{{ issue.id }}" {% if selected_issue and selected_issue.id == issue.id %}selected{% endif %}>
+                                        #{{ issue.id }} &bull; {{ issue.student.name }} - "{{ issue.book.book_name }}" (Due: {{ issue.due_date.strftime('%d-%b-%Y') }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if not active_issues %}
+                                <div class="form-text text-success mt-2"><i class="bi bi-check-circle me-1"></i> No active unreturned book issues right now.</div>
+                            {% endif %}
+                        </div>
+
+                        {% if selected_issue %}
+                            <!-- Issue Details Summary Card -->
+                            <div class="card bg-cream border border-warning rounded-3 p-3 mb-3">
+                                <div class="row g-2 small text-dark">
+                                    <div class="col-6"><strong>Student:</strong> {{ selected_issue.student.name }} ({{ selected_issue.student.register_number }})</div>
+                                    <div class="col-6"><strong>Book:</strong> {{ selected_issue.book.book_name }}</div>
+                                    <div class="col-6"><strong>Issue Date:</strong> {{ selected_issue.issue_date.strftime('%d-%b-%Y') }}</div>
+                                    <div class="col-6">
+                                        <strong>Due Date:</strong>
+                                        <span id="selected_due_date" data-due-date="{{ selected_issue.due_date.isoformat() }}" class="fw-bold text-maroon">
+                                            {{ selected_issue.due_date.strftime('%d-%b-%Y') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Return Date -->
+                            <div class="mb-3">
+                                <label for="return_date" class="form-label fw-semibold">Return Date</label>
+                                <input type="date" class="form-control" id="return_date" name="return_date" value="{{ today }}" required>
+                            </div>
+
+                            <!-- Live Dynamic Fine Calculation Preview -->
+                            <div class="card border-0 bg-white p-3 shadow-sm rounded-3 mb-4 text-center border-start border-4 border-maroon">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-6">
+                                        <span class="text-muted small">Calculated Late Days:</span>
+                                        <h5 class="fw-bold text-dark mb-0" id="calculated_late_days">0 day(s)</h5>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="text-muted small">Automatic Fine (₹5/day):</span>
+                                        <h4 class="fw-bold text-danger mb-0" id="calculated_fine">₹0.00</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between align-items-center pt-2">
+                            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold" {% if not selected_issue and not active_issues %}disabled{% endif %}>
+                                <i class="bi bi-box-arrow-in-down-left me-1"></i> Process Book Return
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

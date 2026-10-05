@@ -1,79 +1,196 @@
-/* Custom Styles for College Sports Equipment Booking System */
+/* Maroon + Cream + Gold Theme for Library Book Fine Management System */
 
 :root {
-    --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    --accent-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-    --card-hover-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    --maroon-primary: #800000;
+    --maroon-dark: #5c0000;
+    --maroon-light: #a31c1c;
+    --cream-bg: #fdfbf7;
+    --cream-card: #f8f4eb;
+    --cream-border: #e8dfd1;
+    --gold-accent: #d4af37;
+    --gold-hover: #b59226;
+    --text-dark: #2b2b2b;
+    --card-shadow: 0 4px 12px rgba(128, 0, 0, 0.08);
+    --card-shadow-hover: 0 8px 20px rgba(128, 0, 0, 0.15);
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    color: #2b2d42;
-    background-color: #f8f9fa;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    color: var(--text-dark);
+    background-color: var(--cream-bg);
 }
 
-/* Navbar Styling */
-.bg-gradient-primary {
-    background: var(--primary-gradient) !important;
+/* Custom Navbar */
+.bg-maroon {
+    background-color: var(--maroon-primary) !important;
+}
+
+.navbar-maroon {
+    background: linear-gradient(135deg, var(--maroon-dark) 0%, var(--maroon-primary) 100%);
+    border-bottom: 3px solid var(--gold-accent);
 }
 
 .navbar-brand {
+    font-weight: 700;
     font-size: 1.35rem;
-    letter-spacing: 0.5px;
+    color: #ffffff !important;
 }
 
-/* Card Improvements */
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: color 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--gold-accent) !important;
+}
+
+/* Buttons */
+.btn-maroon {
+    background-color: var(--maroon-primary);
+    color: #ffffff;
+    border: 1px solid var(--maroon-dark);
+}
+
+.btn-maroon:hover {
+    background-color: var(--maroon-dark);
+    color: #ffffff;
+}
+
+.btn-gold {
+    background-color: var(--gold-accent);
+    color: #212529;
+    font-weight: 600;
+    border: 1px solid var(--gold-hover);
+}
+
+.btn-gold:hover {
+    background-color: var(--gold-hover);
+    color: #ffffff;
+}
+
+.btn-outline-maroon {
+    color: var(--maroon-primary);
+    border-color: var(--maroon-primary);
+}
+
+.btn-outline-maroon:hover {
+    background-color: var(--maroon-primary);
+    color: #ffffff;
+}
+
+/* Cards & Containers */
 .card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background-color: #ffffff;
+    border: 1px solid var(--cream-border);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card-hover:hover {
     transform: translateY(-4px);
-    box-shadow: var(--card-hover-shadow) !important;
+    box-shadow: var(--card-shadow-hover);
 }
 
-/* Modern Gradient Headers */
-.header-gradient {
-    background: var(--primary-gradient);
+.card-header-maroon {
+    background-color: var(--maroon-primary);
+    color: #ffffff;
+    border-top-left-radius: 11px !important;
+    border-top-right-radius: 11px !important;
+    border-bottom: 2px solid var(--gold-accent);
+}
+
+.stat-card-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Stat Cards Colors */
+.stat-primary {
+    background-color: rgba(128, 0, 0, 0.1);
+    color: var(--maroon-primary);
+}
+
+.stat-warning {
+    background-color: rgba(212, 175, 55, 0.15);
+    color: #997800;
+}
+
+.stat-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.stat-success {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+/* Tables */
+.table-maroon th {
+    background-color: var(--maroon-primary);
     color: #ffffff;
 }
 
-/* Custom Status Badges */
-.badge-pending {
-    background-color: #ffc107;
-    color: #212529;
+.table-hover tbody tr:hover {
+    background-color: #f3edd9;
 }
 
-.badge-approved {
+/* Status Badges */
+.badge-issued {
     background-color: #0d6efd;
-    color: #ffffff;
-}
-
-.badge-rejected {
-    background-color: #dc3545;
-    color: #ffffff;
+    color: #fff;
 }
 
 .badge-returned {
     background-color: #198754;
+    color: #fff;
+}
+
+.badge-overdue {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.badge-no-fine {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.badge-pending {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-paid {
+    background-color: #198754;
+    color: #fff;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(92, 0, 0, 0.88), rgba(128, 0, 0, 0.92)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
     color: #ffffff;
+    padding: 70px 0;
+    border-bottom: 4px solid var(--gold-accent);
 }
 
-/* Hero Banner */
-.hero-banner {
-    background: linear-gradient(rgba(30, 60, 114, 0.85), rgba(42, 82, 152, 0.9)), url('https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
-    color: white;
-    padding: 80px 0;
-    border-radius: 0 0 25px 25px;
+.text-gold {
+    color: var(--gold-accent) !important;
 }
 
-/* Feature Icon Box */
-.icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
+.bg-cream {
+    background-color: var(--cream-card) !important;
+}
+
+/* Footer */
+footer {
+    background-color: var(--maroon-dark);
+    border-top: 3px solid var(--gold-accent);
 }

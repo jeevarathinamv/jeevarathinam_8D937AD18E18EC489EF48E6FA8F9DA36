@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}My Fine Details - Library Fine System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-maroon mb-1"><i class="bi bi-cash-stack text-gold me-2"></i>My Fine Details</h3>
+            <p class="text-muted small mb-0">View late days and fine status calculations for your issued/returned books.</p>
+        </div>
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-maroon rounded-pill"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <!-- Fine Summary Banner -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-maroon">
+                <div class="d-flex align-items-center">
+                    <div class="stat-card-icon stat-warning me-3">
+                        <i class="bi bi-calculator"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-medium">Total Fine Accumulated</span>
+                        <h3 class="fw-bold text-maroon mb-0">₹{{ "%.2f"|format(total_fine) }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-danger">
+                <div class="d-flex align-items-center">
+                    <div class="stat-card-icon stat-danger me-3">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-medium">Pending Fine to Pay</span>
+                        <h3 class="fw-bold text-danger mb-0">₹{{ "%.2f"|format(pending_fine) }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fine Rule Info Callout -->
+    <div class="alert alert-warning border-0 shadow-sm rounded-3 d-flex align-items-center mb-4">
+        <i class="bi bi-info-circle-fill fs-4 text-warning me-3"></i>
+        <div>
+            <strong class="d-block text-dark">Fine Calculation Rule:</strong>
+            <span class="small text-dark">Fine = Number of Late Days &times; ₹5. Late days are automatically calculated based on the book due date and return date (or current date if unreturned).</span>
+        </div>
+    </div>
+
+    <!-- Fine Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header card-header-maroon py-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-list-check text-gold me-2"></i>Detailed Fine Records</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if my_issues %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-maroon">
+                            <tr>
+                                <th>#</th>
+                                <th>Book Name</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Late Days</th>
+                                <th>Fine Amount</th>
+                                <th>Fine Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for issue in my_issues %}
+                                <tr>
+                                    <td class="fw-bold text-muted">{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ issue.book.book_name }}</td>
+                                    <td>{{ issue.due_date.strftime('%d-%b-%Y') }}</td>
+                                    <td>
+                                        {% if issue.return_date %}
+                                            {{ issue.return_date.strftime('%d-%b-%Y') }}
+                                        {% else %}
+                                            <span class="text-muted">&mdash; (Not Returned)</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold {% if issue.late_days > 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        {{ issue.late_days }} Day(s)
+                                    </td>
+                                    <td class="fw-bold {% if issue.fine_amount > 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        ₹{{ "%.2f"|format(issue.fine_amount) }}
+                                    </td>
+                                    <td>
+                                        {% if issue.fine_status == 'No Fine' %}
+                                            <span class="badge badge-no-fine rounded-pill px-3 py-2"><i class="bi bi-dash-circle me-1"></i> No Fine</span>
+                                        {% elif issue.fine_status == 'Pending' %}
+                                            <span class="badge badge-pending rounded-pill px-3 py-2"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                                        {% elif issue.fine_status == 'Paid' %}
+                                            <span class="badge badge-paid rounded-pill px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> Paid</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-check display-4 text-muted mb-2"></i>
+                    <h5 class="text-muted">No fine records found.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
