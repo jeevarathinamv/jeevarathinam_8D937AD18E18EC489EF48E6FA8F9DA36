@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Department Information System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card card-custom shadow border-0">
+                <div class="card-header card-header-navy text-center py-3">
+                    <h4 class="mb-0 text-white"><i class="bi bi-shield-lock-fill me-2 text-warning"></i>Admin Portal Login</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('admin_login') }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="username" class="form-label font-weight-bold">Admin Username</label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                            <div class="invalid-feedback">Please enter admin username.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label font-weight-bold">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                            <div class="invalid-feedback">Please enter admin password.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-orange w-100 py-2 fw-bold shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login as Administrator
+                        </button>
+                    </form>
+
+                    <div class="alert alert-info mt-4 mb-0 py-2 text-center small">
+                        <strong>Default Admin Credentials:</strong><br>
+                        Username: <code>admin</code> | Password: <code>admin123</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

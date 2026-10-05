@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty Information - Department Information System{% endblock %}
+
+{% block content %}
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-6 fw-bold mb-2"><i class="bi bi-people-fill me-2 text-cyan"></i>Faculty Information</h1>
+        <p class="lead mb-0">Meet our dedicated faculty members and teaching staff</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if faculties %}
+        <div class="row g-4">
+            {% for faculty in faculties %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-custom h-100 shadow-sm border-0">
+                    <div class="card-header card-header-navy text-center py-3">
+                        <i class="bi bi-person-circle fs-1 text-cyan d-block mb-1"></i>
+                        <h5 class="mb-0 text-white fw-bold">{{ faculty.name }}</h5>
+                        <small class="text-light-50"><i class="bi bi-id-card me-1"></i>ID: {{ faculty.faculty_id }}</small>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <span class="badge badge-orange w-100 py-2 fs-6 mb-2">{{ faculty.designation }}</span>
+                        </div>
+                        <ul class="list-unstyled mb-0 fs-6">
+                            <li class="mb-2"><strong><i class="bi bi-building me-2 text-primary"></i>Department:</strong> {{ faculty.department }}</li>
+                            <li class="mb-2"><strong><i class="bi bi-envelope me-2 text-primary"></i>Email:</strong> <a href="mailto:{{ faculty.email }}" class="text-decoration-none">{{ faculty.email }}</a></li>
+                            <li class="mb-0"><strong><i class="bi bi-telephone me-2 text-primary"></i>Phone:</strong> {{ faculty.phone }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-light text-center py-5 border shadow-sm">
+            <i class="bi bi-person-x fs-1 text-muted d-block mb-2"></i>
+            <h5 class="text-muted">No faculty members listed at the moment.</h5>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

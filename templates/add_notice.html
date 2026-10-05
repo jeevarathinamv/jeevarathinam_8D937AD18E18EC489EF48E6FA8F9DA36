@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Notice - Department Information System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card card-custom shadow border-0">
+                <div class="card-header card-header-navy py-3 d-flex align-items-center justify-content-between">
+                    <h4 class="mb-0 text-white"><i class="bi bi-plus-circle-fill me-2"></i>Add New Notice</h4>
+                    <a href="{{ url_for('manage_notices') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to Notices</a>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('add_notice') }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="title" class="form-label font-weight-bold">Notice Title</label>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="Enter notice title" required>
+                            <div class="invalid-feedback">Please enter notice title.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notice_date" class="form-label font-weight-bold">Notice Date</label>
+                            <input type="date" class="form-control" id="notice_date" name="notice_date" value="{{ today }}" required>
+                            <div class="invalid-feedback">Please select notice date.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label font-weight-bold">Notice Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" placeholder="Enter detailed notice information" required></textarea>
+                            <div class="invalid-feedback">Please enter notice description.</div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-orange px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-megaphone me-1"></i>Publish Notice
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

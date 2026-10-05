@@ -1,75 +1,94 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - College Department Information Management System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-3"><i class="bi bi-mortarboard-fill me-2 text-cyan"></i>College Department Portal</h1>
+        <p class="lead max-w-700 mx-auto">Welcome to the College Department Information Management System. Access department details, faculty lists, and latest announcements all in one place.</p>
+        <div class="mt-4 d-flex justify-content-center gap-3">
+            {% if not session.get('user_type') %}
+                <a href="{{ url_for('register') }}" class="btn btn-orange btn-lg px-4 shadow-sm"><i class="bi bi-person-plus me-2"></i>Student Registration</a>
+                <a href="{{ url_for('login') }}" class="btn btn-cyan btn-lg px-4 shadow-sm"><i class="bi bi-box-arrow-in-right me-2"></i>Student Login</a>
+            {% elif session.get('user_type') == 'student' %}
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-cyan btn-lg px-4 shadow-sm"><i class="bi bi-speedometer2 me-2"></i>Go to Dashboard</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-orange btn-lg px-4 shadow-sm"><i class="bi bi-shield-lock me-2"></i>Admin Dashboard</a>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
 <div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+    <!-- Department Quick Overview -->
+    {% if department %}
+    <div class="card card-custom mb-5 border-0 shadow">
+        <div class="card-header card-header-navy py-3">
+            <h4 class="mb-0 text-white"><i class="bi bi-building me-2"></i>{{ department.name }} ({{ department.code }})</h4>
         </div>
+        <div class="card-body p-4">
+            <p class="card-text fs-5 text-secondary">{{ department.description }}</p>
+            <hr class="my-4">
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <i class="bi bi-person-badge fs-2 text-primary mb-2 d-block"></i>
+                        <h6 class="text-muted mb-1">Department Head</h6>
+                        <h5 class="fw-bold mb-0">{{ department.head }}</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <i class="bi bi-envelope-check fs-2 text-info mb-2 d-block"></i>
+                        <h6 class="text-muted mb-1">Email Contact</h6>
+                        <h5 class="fw-bold mb-0">{{ department.email }}</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <i class="bi bi-telephone fs-2 text-warning mb-2 d-block"></i>
+                        <h6 class="text-muted mb-1">Phone Number</h6>
+                        <h5 class="fw-bold mb-0">{{ department.phone }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('view_department') }}" class="btn btn-navy px-4"><i class="bi bi-arrow-right-circle me-1"></i>View Full Details</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Latest Notices Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-navy mb-0"><i class="bi bi-megaphone-fill me-2 text-warning"></i>Latest Department Notices</h3>
+        <a href="{{ url_for('view_notices') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-eye me-1"></i>View All Notices</a>
     </div>
 
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+        {% if recent_notices %}
+            {% for notice in recent_notices %}
+            <div class="col-md-4">
+                <div class="card card-custom h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge badge-cyan px-2 py-1"><i class="bi bi-calendar-event me-1"></i>{{ notice.notice_date }}</span>
+                        </div>
+                        <h5 class="card-title fw-bold text-navy mt-1">{{ notice.title }}</h5>
+                        <p class="card-text text-muted flex-grow-1">{{ notice.description[:120] }}{% if notice.description|length > 120 %}...{% endif %}</p>
+                        <a href="{{ url_for('view_notices') }}" class="text-cyan fw-bold text-decoration-none mt-2">Read Notice <i class="bi bi-arrow-right"></i></a>
+                    </div>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-light text-center py-4 border">
+                    <p class="mb-0 text-muted">No recent notices available at the moment.</p>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
-            </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

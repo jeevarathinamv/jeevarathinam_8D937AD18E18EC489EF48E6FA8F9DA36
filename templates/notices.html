@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Department Notices - Department Information System{% endblock %}
+
+{% block content %}
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-6 fw-bold mb-2"><i class="bi bi-megaphone-fill me-2 text-warning"></i>Department Notices</h1>
+        <p class="lead mb-0">Stay informed with official circulars, announcements, and notices</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if notices %}
+        <div class="row g-4 justify-content-center">
+            {% for notice in notices %}
+            <div class="col-lg-10">
+                <div class="card card-custom border-0 shadow-sm">
+                    <div class="card-header card-header-navy py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <h5 class="mb-0 text-white fw-bold"><i class="bi bi-bell-fill me-2 text-warning"></i>{{ notice.title }}</h5>
+                        <span class="badge badge-cyan fs-6 px-3 py-1"><i class="bi bi-calendar-check me-1"></i>Date: {{ notice.notice_date }}</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="card-text fs-5 text-secondary mb-0 leading-relaxed" style="white-space: pre-line;">
+                            {{ notice.description }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-light text-center py-5 border shadow-sm">
+            <i class="bi bi-bell-slash fs-1 text-muted d-block mb-2"></i>
+            <h5 class="text-muted">No notices have been published yet.</h5>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
