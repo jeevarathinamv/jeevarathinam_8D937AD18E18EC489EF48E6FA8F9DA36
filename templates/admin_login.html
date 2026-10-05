@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Exam Timetable Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-purple-gradient text-white p-4 border-0 text-center">
+                    <div class="header-icon-box bg-white bg-opacity-20 mx-auto mb-2 rounded-circle p-3 d-inline-flex">
+                        <i class="bi bi-shield-lock-fill fs-3 text-warning"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Administrator Login</h3>
+                    <p class="text-white-80 small mb-0">Authorized management portal access</p>
+                </div>
+                <div class="card-body p-4 p-md-5 bg-white">
+
+                    <!-- Admin Info Alert -->
+                    <div class="alert alert-info border-0 bg-info-subtle text-info-emphasis rounded-3 p-3 mb-4 small">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        <strong>Demo Credentials:</strong><br>
+                        Username: <code>admin</code> | Password: <code>admin123</code>
+                    </div>
+
+                    <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-person-badge me-1 text-purple"></i> Admin Username
+                            </label>
+                            <input type="text" class="form-control form-control-lg rounded-3" id="username" name="username" placeholder="Enter Admin Username" required>
+                            <div class="invalid-feedback">Please enter the admin username.</div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold text-dark">
+                                <i class="bi bi-key me-1 text-purple"></i> Admin Password
+                            </label>
+                            <input type="password" class="form-control form-control-lg rounded-3" id="password" name="password" placeholder="Enter Admin Password" required>
+                            <div class="invalid-feedback">Please enter the admin password.</div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-purple btn-lg fw-bold rounded-pill text-white shadow-sm">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Log In as Admin
+                            </button>
+                        </div>
+
+                        <!-- Back to Student Login -->
+                        <div class="text-center mt-3 pt-3 border-top">
+                            <a href="{{ url_for('login') }}" class="text-muted small text-decoration-none">
+                                <i class="bi bi-arrow-left me-1"></i> Back to Student Login
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

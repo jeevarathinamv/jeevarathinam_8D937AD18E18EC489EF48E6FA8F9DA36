@@ -1,8 +1,8 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from datetime import date, timedelta
+from app import app, db, Admin, Student, ExamTimetable
 
-class SportsBookingTestCase(unittest.TestCase):
+class ExamTimetableTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +11,33 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Seed default admin
+            admin = Admin(username='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+
+            # Seed sample timetable entries
+            exam1 = ExamTimetable(
+                exam_name='End Semester Examinations - May 2025',
+                department='Master of Computer Applications (MCA)',
+                semester='Semester 1',
+                subject_name='Data Structures and Algorithms',
+                subject_code='MCA101',
+                exam_date=date.today() + timedelta(days=5),
+                exam_time='10:00 AM - 01:00 PM',
+                exam_venue='Lab Hall A'
+            )
+            exam2 = ExamTimetable(
+                exam_name='Mid Term Examinations - March 2025',
+                department='Department of Information Technology',
+                semester='Semester 2',
+                subject_name='Cloud Computing',
+                subject_code='IT201',
+                exam_date=date.today() + timedelta(days=10),
+                exam_time='02:00 PM - 05:00 PM',
+                exam_venue='IT Hall 2'
+            )
+            db.session.add_all([exam1, exam2])
             db.session.commit()
 
     def tearDown(self):
@@ -22,95 +45,99 @@ class SportsBookingTestCase(unittest.TestCase):
             db.session.remove()
             db.drop_all()
 
+    def test_public_pages(self):
+        # Home page
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Student Exam Timetable Management System', response.data)
+
+        # Timetable page
+        response = self.client.get('/timetable')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'MCA101', response.data)
+
     def test_student_registration_and_login(self):
-        # Register student
+        # Register new student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'student_name': 'Ananya Roy',
+            'register_number': '2024MCA001',
+            'department': 'Master of Computer Applications (MCA)',
+            'email': 'ananya@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
         self.assertIn(b'Registration successful', response.data)
 
         # Login student
         response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+            'email_or_reg': 'ananya@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Welcome back, Ananya Roy!', response.data)
 
-    def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        # Access student dashboard
+        response = self.client.get('/student/dashboard')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Upcoming Exams', response.data)
+        self.assertIn(b'MCA101', response.data)
+
+    def test_admin_login_and_dashboard(self):
+        # Login admin
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Successfully logged in as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
-        self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
-        })
-        self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
-        })
+        # Access admin dashboard
+        response = self.client.get('/admin/dashboard')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Total Students', response.data)
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
-
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
-
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+    def test_admin_timetable_crud(self):
+        # Login as admin
+        self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        # Add exam
+        future_date = (date.today() + timedelta(days=15)).strftime('%Y-%m-%d')
+        response = self.client.post('/admin/timetable/add', data={
+            'exam_name': 'End Semester Examinations - May 2025',
+            'department': 'Master of Computer Applications (MCA)',
+            'semester': 'Semester 1',
+            'subject_name': 'Python Flask Web Dev',
+            'subject_code': 'MCA103',
+            'exam_date': future_date,
+            'exam_time': '10:00 AM - 01:00 PM',
+            'exam_venue': 'Computer Lab 1'
+        }, follow_redirects=True)
+        self.assertIn(b'added successfully', response.data)
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+        # Edit exam
+        response = self.client.post('/admin/timetable/edit/1', data={
+            'exam_name': 'End Semester Examinations - May 2025',
+            'department': 'Master of Computer Applications (MCA)',
+            'semester': 'Semester 1',
+            'subject_name': 'Data Structures and Algorithms - Advanced',
+            'subject_code': 'MCA101',
+            'exam_date': future_date,
+            'exam_time': '10:00 AM - 01:00 PM',
+            'exam_venue': 'Lab Hall A'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+        # Delete exam
+        response = self.client.post('/admin/timetable/delete/1', follow_redirects=True)
+        self.assertIn(b'deleted successfully', response.data)
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+    def test_timetable_filtering(self):
+        response = self.client.get('/timetable?department=Master+of+Computer+Applications+(MCA)')
+        self.assertIn(b'MCA101', response.data)
+        self.assertNotIn(b'IT201', response.data)
 
 if __name__ == '__main__':
     unittest.main()

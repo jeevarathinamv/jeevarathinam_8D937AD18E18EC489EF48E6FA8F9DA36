@@ -1,176 +1,232 @@
 {% extends "base.html" %}
 
-{% block title %}Student Dashboard - College Sports Hub{% endblock %}
+{% block title %}Student Dashboard - Exam Timetable Hub{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm bg-gradient-primary text-white rounded-4 p-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+
+    <!-- Student Profile Header Banner -->
+    <div class="card border-0 rounded-4 bg-theme-gradient text-white p-4 shadow-sm mb-4">
+        <div class="card-body p-0">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-box bg-white bg-opacity-20 rounded-circle p-3 d-inline-flex text-mint">
+                        <i class="bi bi-person-fill fs-2"></i>
+                    </div>
                     <div>
-                        <h2 class="fw-bold mb-1"><i class="bi bi-person-badge-fill text-warning me-2"></i> Welcome, {{ student.name }}!</h2>
-                        <p class="mb-0 text-white-50">
-                            <strong>Register No:</strong> {{ student.register_number }} &nbsp;|&nbsp;
-                            <strong>Department:</strong> {{ student.department }}
-                        </p>
+                        <h2 class="fw-bold mb-1">{{ student.student_name }}</h2>
+                        <div class="d-flex flex-wrap gap-2 align-items-center text-white-80 small">
+                            <span><i class="bi bi-card-heading text-mint me-1"></i> Reg No: <strong>{{ student.register_number }}</strong></span>
+                            <span>&bull;</span>
+                            <span><i class="bi bi-building text-mint me-1"></i> Dept: <strong>{{ student.department }}</strong></span>
+                            <span>&bull;</span>
+                            <span><i class="bi bi-envelope text-mint me-1"></i> {{ student.email }}</span>
+                        </div>
                     </div>
-                    <div class="mt-3 mt-md-0">
-                        <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-journal-text me-1"></i> Total Bookings: {{ bookings|length }}
-                        </span>
-                    </div>
+                </div>
+                <div>
+                    <a href="{{ url_for('timetable') }}" class="btn btn-mint fw-semibold rounded-pill px-4 text-dark shadow-sm">
+                        <i class="bi bi-search me-1"></i> View All Timetables
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Available Equipment Grid -->
-    <div class="row mb-5">
-        <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold text-primary mb-0"><i class="bi bi-collection-fill me-2"></i> Available Sports Equipment</h4>
-            <span class="text-muted small">Select equipment to submit a booking request</span>
+    <!-- Student Dashboard Overview Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Upcoming Exams -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm h-100 p-3 card-hover border-start border-4 border-primary">
+                <div class="card-body d-flex align-items-center justify-content-between p-2">
+                    <div>
+                        <h6 class="text-muted text-uppercase fw-semibold mb-1 fs-7">Upcoming Exams</h6>
+                        <h2 class="fw-bold text-primary mb-0">{{ upcoming_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-primary-subtle text-primary p-3 rounded-circle">
+                        <i class="bi bi-calendar-event fs-3"></i>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        {% if equipments %}
-            {% for item in equipments %}
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="card h-100 border-0 shadow-sm card-hover rounded-4 overflow-hidden">
-                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-semibold">{{ item.category }}</span>
-                            {% if item.available_quantity > 0 %}
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i> In Stock</span>
-                            {% else %}
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1"><i class="bi bi-x-circle-fill me-1"></i> Out of Stock</span>
-                            {% endif %}
-                        </div>
-                        <div class="card-body px-4 py-3">
-                            <h5 class="fw-bold text-dark mb-2">{{ item.name }}</h5>
-                            <p class="text-muted small mb-3">{{ item.description or 'High quality sports gear for college athletic activities.' }}</p>
-                            <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3">
-                                <span class="small text-muted fw-semibold">Available Quantity:</span>
-                                <span class="fw-bold fs-5 {% if item.available_quantity > 0 %}text-success{% else %}text-danger{% endif %}">
-                                    {{ item.available_quantity }} / {{ item.total_quantity }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
-                            {% if item.available_quantity > 0 %}
-                                <button type="button" class="btn btn-primary w-100 rounded-pill fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#bookModal{{ item.id }}">
-                                    <i class="bi bi-calendar-plus me-1"></i> Book Now
-                                </button>
-                            {% else %}
-                                <button class="btn btn-secondary w-100 rounded-pill fw-semibold disabled" disabled>
-                                    Unavailable
-                                </button>
-                            {% endif %}
-                        </div>
+        <!-- Total Subjects -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm h-100 p-3 card-hover border-start border-4 border-purple">
+                <div class="card-body d-flex align-items-center justify-content-between p-2">
+                    <div>
+                        <h6 class="text-muted text-uppercase fw-semibold mb-1 fs-7">Total Subjects</h6>
+                        <h2 class="fw-bold text-purple mb-0">{{ total_subjects_count }}</h2>
+                    </div>
+                    <div class="icon-circle bg-purple-subtle text-purple p-3 rounded-circle">
+                        <i class="bi bi-book fs-3"></i>
                     </div>
                 </div>
-
-                <!-- Booking Modal for Item -->
-                <div class="modal fade" id="bookModal{{ item.id }}" tabindex="-1" aria-labelledby="bookModalLabel{{ item.id }}" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-4 border-0 shadow">
-                            <div class="modal-header bg-primary text-white rounded-top-4">
-                                <h5 class="modal-title fw-bold" id="bookModalLabel{{ item.id }}">
-                                    <i class="bi bi-calendar-event me-2"></i> Request Booking: {{ item.name }}
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form action="{{ url_for('book_equipment') }}" method="POST">
-                                <div class="modal-body p-4">
-                                    <input type="hidden" name="equipment_id" value="{{ item.id }}">
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Equipment</label>
-                                        <input type="text" class="form-control bg-light" value="{{ item.name }} ({{ item.category }})" readonly>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="booking_date{{ item.id }}" class="form-label fw-semibold">Booking Date</label>
-                                        <input type="date" class="form-control" id="booking_date{{ item.id }}" name="booking_date" min="{{ today }}" value="{{ today }}" required>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="quantity{{ item.id }}" class="form-label fw-semibold">Quantity</label>
-                                        <input type="number" class="form-control" id="quantity{{ item.id }}" name="quantity" min="1" max="{{ item.available_quantity }}" value="1" required>
-                                        <div class="form-text text-muted">Max available right now: {{ item.available_quantity }}</div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer bg-light rounded-bottom-4">
-                                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Submit Booking Request</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12 text-center py-5">
-                <p class="text-muted fs-5">No sports equipment currently registered in system.</p>
             </div>
-        {% endif %}
-    </div>
+        </div>
 
-    <!-- My Booking Details & Track Status -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
-                    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-primary me-2"></i> My Booking History & Status</h4>
-                </div>
-                <div class="card-body p-0">
-                    {% if bookings %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-4">Booking ID</th>
-                                        <th>Equipment Name</th>
-                                        <th>Booking Date</th>
-                                        <th>Quantity</th>
-                                        <th>Requested On</th>
-                                        <th class="pe-4 text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for b in bookings %}
-                                        <tr>
-                                            <td class="ps-4 fw-bold">#{{ b.id }}</td>
-                                            <td class="fw-semibold text-primary">{{ b.equipment.name }}</td>
-                                            <td><i class="bi bi-calendar3 me-1 text-muted"></i> {{ b.booking_date.strftime('%Y-%m-%d') }}</td>
-                                            <td><span class="badge bg-secondary bg-opacity-10 text-dark border px-3 py-1">{{ b.quantity }}</span></td>
-                                            <td class="small text-muted">{{ b.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                            <td class="pe-4 text-center">
-                                                {% if b.status == 'Pending' %}
-                                                    <span class="badge badge-pending px-3 py-2 rounded-pill"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
-                                                {% elif b.status == 'Approved' %}
-                                                    <span class="badge badge-approved px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> Approved</span>
-                                                {% elif b.status == 'Rejected' %}
-                                                    <span class="badge badge-rejected px-3 py-2 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
-                                                {% elif b.status == 'Returned' %}
-                                                    <span class="badge badge-returned px-3 py-2 rounded-pill"><i class="bi bi-arrow-return-left me-1"></i> Returned</span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">{{ b.status }}</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+        <!-- Next Exam Highlight -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm h-100 p-3 card-hover border-start border-4 border-success">
+                <div class="card-body p-2">
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1 fs-7">Next Upcoming Exam</h6>
+                    {% if next_exam %}
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">{{ next_exam.subject_name }}</h6>
+                                <p class="small text-muted mb-1">
+                                    <span class="badge bg-mint text-dark me-1">{{ next_exam.subject_code }}</span>
+                                    <i class="bi bi-calendar-check text-success ms-1 me-1"></i> {{ next_exam.exam_date.strftime('%b %d, %Y') }}
+                                </p>
+                                <p class="fs-8 text-secondary mb-0">
+                                    <i class="bi bi-clock me-1"></i> {{ next_exam.exam_time }} &bull;
+                                    <i class="bi bi-geo-alt me-1"></i> {{ next_exam.exam_venue }}
+                                </p>
+                            </div>
                         </div>
                     {% else %}
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <p class="mb-0">You haven't submitted any booking requests yet.</p>
-                        </div>
+                        <p class="text-muted small mb-0 mt-2">
+                            <i class="bi bi-check-circle-fill text-success me-1"></i> No upcoming exams scheduled right now.
+                        </p>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Filter & Search Section -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-funnel-fill me-2 text-primary"></i> Filter & Search Exam Timetable
+                </h5>
+                <span class="text-muted small">Viewing filtered timetable schedule</span>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <form action="{{ url_for('student_dashboard') }}" method="GET" class="row g-3 align-items-end">
+
+                <!-- Department Filter -->
+                <div class="col-md-4">
+                    <label for="department" class="form-label fw-semibold text-secondary fs-7">Department</label>
+                    <select class="form-select rounded-3" id="department" name="department">
+                        <option value="">-- All Departments --</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept }}" {% if selected_dept == dept %}selected{% endif %}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Semester Filter -->
+                <div class="col-md-3">
+                    <label for="semester" class="form-label fw-semibold text-secondary fs-7">Semester</label>
+                    <select class="form-select rounded-3" id="semester" name="semester">
+                        <option value="">-- All Semesters --</option>
+                        {% for sem in semesters %}
+                            <option value="{{ sem }}" {% if selected_sem == sem %}selected{% endif %}>{{ sem }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Exam Filter -->
+                <div class="col-md-3">
+                    <label for="exam" class="form-label fw-semibold text-secondary fs-7">Exam Name</label>
+                    <select class="form-select rounded-3" id="exam" name="exam">
+                        <option value="">-- All Exams --</option>
+                        {% for ex in exams %}
+                            <option value="{{ ex }}" {% if selected_exam == ex %}selected{% endif %}>{{ ex }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary fw-semibold rounded-3 flex-grow-1">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                    <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary rounded-3" title="Reset Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Exam Timetable Table Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="bi bi-table me-2 text-purple"></i> Exam Timetable Schedule
+            </h5>
+            <span class="badge bg-purple-subtle text-purple px-3 py-2 rounded-pill fw-medium">
+                Total Records: {{ timetable|length }}
+            </span>
+        </div>
+        <div class="card-body p-0">
+            {% if timetable %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Exam Name</th>
+                                <th>Subject Code</th>
+                                <th>Subject Name</th>
+                                <th>Semester</th>
+                                <th>Exam Date</th>
+                                <th>Exam Time</th>
+                                <th class="pe-4">Exam Venue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam in timetable %}
+                                <tr class="{% if exam.exam_date == today %}table-warning-subtle{% endif %}">
+                                    <td class="ps-4 fw-medium text-dark">
+                                        {{ exam.exam_name }}
+                                        <div class="fs-8 text-muted">{{ exam.department }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded">
+                                            {{ exam.subject_code }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-semibold text-dark">{{ exam.subject_name }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">
+                                            {{ exam.semester }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold {% if exam.exam_date < today %}text-muted{% else %}text-dark{% endif %}">
+                                            <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                            {{ exam.exam_date.strftime('%Y-%m-%d (%a)') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary small">
+                                            <i class="bi bi-clock me-1 text-purple"></i> {{ exam.exam_time }}
+                                        </span>
+                                    </td>
+                                    <td class="pe-4">
+                                        <span class="badge bg-mint-subtle text-success border border-success-subtle px-2 py-1 rounded">
+                                            <i class="bi bi-geo-alt-fill me-1"></i> {{ exam.exam_venue }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-x fs-1 text-muted opacity-50 mb-3 d-block"></i>
+                    <h5 class="text-muted fw-semibold">No exam schedules found.</h5>
+                    <p class="text-muted small">Try adjusting your department or semester search filters above.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}

@@ -1,30 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Student Exam Timetable Management System{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<!-- Hero Banner -->
+<div class="hero-banner text-center text-white py-5 mb-4 position-relative overflow-hidden">
+    <div class="container position-relative z-1 py-4">
+        <span class="badge bg-mint text-dark fw-bold px-3 py-2 rounded-pill mb-3 text-uppercase tracking-wider">
+            <i class="bi bi-mortarboard-fill me-1"></i> Academic Examination Portal
+        </span>
+        <h1 class="display-4 fw-bold mb-3">Student Exam Timetable Management System</h1>
+        <p class="lead text-white-80 max-w-700 mx-auto mb-4">
+            A fast, structured, and easy-to-use digital platform for students and faculty to access upcoming exam schedules, subject codes, timings, and venues effortlessly.
         </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('timetable') }}" class="btn btn-mint btn-lg fw-semibold rounded-pill px-4 shadow">
+                <i class="bi bi-calendar3 me-2"></i> View Exam Timetable
+            </a>
+            {% if not session.get('user_type') %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg fw-semibold rounded-pill px-4">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-purple btn-lg fw-semibold rounded-pill px-4 text-white shadow">
+                    <i class="bi bi-person-plus-fill me-2"></i> Register Now
+                </a>
+            {% elif session.get('user_type') == 'student' %}
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-light btn-lg text-primary fw-semibold rounded-pill px-4 shadow">
+                    <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
                 </a>
             {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-light btn-lg text-primary fw-semibold rounded-pill px-4 shadow">
+                    <i class="bi bi-shield-check me-2"></i> Admin Dashboard
                 </a>
             {% endif %}
         </div>
@@ -32,42 +39,62 @@
 </div>
 
 <!-- Features Section -->
-<div class="container my-5">
+<div class="container py-4">
     <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+        <div class="col-lg-8 mx-auto">
+            <h2 class="fw-bold text-dark">System Key Features</h2>
+            <p class="text-muted">Designed specifically for quick schedule retrieval and effective examination management.</p>
         </div>
     </div>
 
     <div class="row g-4">
+        <!-- Feature 1 -->
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+            <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-4 card-hover">
+                <div class="feature-icon bg-blue-subtle text-primary mx-auto mb-3">
+                    <i class="bi bi-funnel-fill fs-3"></i>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+                <h5 class="fw-bold mb-2">Smart Filtering</h5>
+                <p class="text-muted fs-7 mb-0">Filter schedules instantly by Department, Semester, or Examination Name to find relevant dates.</p>
             </div>
         </div>
 
+        <!-- Feature 2 -->
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-4 card-hover">
+                <div class="feature-icon bg-purple-subtle text-purple mx-auto mb-3">
+                    <i class="bi bi-clock-history fs-3"></i>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+                <h5 class="fw-bold mb-2">Upcoming Exam Tracker</h5>
+                <p class="text-muted fs-7 mb-0">Students can track upcoming exam schedules with venue, timings, and next exam countdown highlights.</p>
             </div>
         </div>
 
+        <!-- Feature 3 -->
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-4 card-hover">
+                <div class="feature-icon bg-mint-subtle text-success mx-auto mb-3">
+                    <i class="bi bi-sliders fs-3"></i>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+                <h5 class="fw-bold mb-2">Admin Timetable CRUD</h5>
+                <p class="text-muted fs-7 mb-0">Administrators can add, edit, and delete exam timetable records in real-time with full data validation.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Quick Stats Banner -->
+    <div class="card border-0 rounded-4 bg-theme-gradient text-white my-5 p-4 shadow">
+        <div class="card-body">
+            <div class="row align-items-center text-center text-md-start">
+                <div class="col-md-8 mb-3 mb-md-0">
+                    <h3 class="fw-bold mb-1">Check Your Exam Timetable Online</h3>
+                    <p class="text-white-80 mb-0">Select your Department and Semester to view published exam dates, timing slots, and exam hall venues.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{{ url_for('timetable') }}" class="btn btn-mint fw-bold px-4 py-2 rounded-pill text-dark shadow-sm">
+                        <i class="bi bi-search me-1"></i> Search Timetable
+                    </a>
+                </div>
             </div>
         </div>
     </div>
