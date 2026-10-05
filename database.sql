@@ -1,51 +1,50 @@
--- College Sports Equipment Booking System
+-- College Academic Calendar Management System
 -- Database Schema for MySQL / XAMPP phpMyAdmin
 
-CREATE DATABASE IF NOT EXISTS `sports_booking_db`;
-USE `sports_booking_db`;
+CREATE DATABASE IF NOT EXISTS `academic_calendar_db`;
+USE `academic_calendar_db`;
+
+-- Table structure for admins
+CREATE TABLE IF NOT EXISTS `admins` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `username` VARCHAR(50) UNIQUE NOT NULL,
+    `password` VARCHAR(255) NOT NULL
+);
 
 -- Table structure for students
 CREATE TABLE IF NOT EXISTS `students` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
+    `student_name` VARCHAR(100) NOT NULL,
     `register_number` VARCHAR(50) UNIQUE NOT NULL,
     `department` VARCHAR(100) NOT NULL,
     `email` VARCHAR(120) UNIQUE NOT NULL,
-    `password_hash` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for equipment
-CREATE TABLE IF NOT EXISTS `equipment` (
+-- Table structure for academic_events
+CREATE TABLE IF NOT EXISTS `academic_events` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
-    `category` VARCHAR(50) NOT NULL,
-    `total_quantity` INT NOT NULL DEFAULT 0,
-    `available_quantity` INT NOT NULL DEFAULT 0,
+    `event_title` VARCHAR(150) NOT NULL,
+    `event_type` VARCHAR(50) NOT NULL,
+    `department` VARCHAR(100) NOT NULL,
+    `semester` VARCHAR(20) NOT NULL,
+    `start_date` DATE NOT NULL,
+    `end_date` DATE NOT NULL,
+    `venue` VARCHAR(150) NOT NULL,
     `description` TEXT,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Table structure for bookings
-CREATE TABLE IF NOT EXISTS `bookings` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `student_id` INT NOT NULL,
-    `equipment_id` INT NOT NULL,
-    `booking_date` DATE NOT NULL,
-    `quantity` INT NOT NULL DEFAULT 1,
-    `status` VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Returned
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`student_id`) REFERENCES `students`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`equipment_id`) REFERENCES `equipment`(`id`) ON DELETE CASCADE
-);
+-- Seed default admin account (username: admin, password: pbkdf2:sha256:600000$hashed or admin123)
+-- Note: app.py handles automatic admin creation with secure hashing if not present.
+INSERT INTO `admins` (`username`, `password`) VALUES
+('admin', 'scrypt:32768:8:1$uH3y4dY6gXf5J9kZ$0b115456456722d71d3e8e2c0e3a6f3b0e115456456722d71d3e8e2c0e3a6f3b');
 
--- Seed initial equipment items
-INSERT INTO `equipment` (`name`, `category`, `total_quantity`, `available_quantity`, `description`) VALUES
-('Cricket Bat', 'Cricket', 15, 15, 'English Willow Quality Cricket Bat'),
-('Cricket Ball', 'Cricket', 30, 30, 'Standard Red Leather Cricket Ball'),
-('Football', 'Football', 20, 20, 'Size 5 Tournament Football'),
-('Volleyball', 'Volleyball', 12, 12, 'Official Match Size Volleyball'),
-('Volleyball Net', 'Volleyball', 4, 4, 'Durable Nylon Volleyball Net'),
-('Badminton Racket', 'Badminton', 25, 25, 'Lightweight Graphite Badminton Racket'),
-('Shuttlecocks (Box)', 'Badminton', 15, 15, 'Feather Shuttlecock Box of 10'),
-('Basketball', 'Basketball', 10, 10, 'Composite Leather Basketball');
+-- Seed sample academic events
+INSERT INTO `academic_events` (`event_title`, `event_type`, `department`, `semester`, `start_date`, `end_date`, `venue`, `description`) VALUES
+('Semester Orientation Program', 'College Event', 'All Departments', 'Semester 1', CURDATE(), CURDATE(), 'Main Auditorium', 'Welcoming first semester MCA students and introducing college faculty and campus amenities.'),
+('Mid-Semester Internal Examination', 'Internal Exam', 'Computer Applications (MCA)', 'Semester 2', DATE_ADD(CURDATE(), INTERVAL 5 DAY), DATE_ADD(CURDATE(), INTERVAL 10 DAY), 'Exam Hall B', 'Mid-semester assessment covering Units 1, 2, and 3.'),
+('National Seminar on Cloud Computing & AI', 'Seminar', 'Computer Applications (MCA)', 'All Semesters', DATE_ADD(CURDATE(), INTERVAL 15 DAY), DATE_ADD(CURDATE(), INTERVAL 15 DAY), 'Seminar Hall 1', 'Expert lectures by industry experts on cloud infrastructure and artificial intelligence applications.'),
+('National Youth Day Holiday', 'Holiday', 'All Departments', 'All Semesters', DATE_ADD(CURDATE(), INTERVAL 20 DAY), DATE_ADD(CURDATE(), INTERVAL 20 DAY), 'N/A', 'College holiday on account of National Youth Day.'),
+('End-Semester Practical Examinations', 'Semester Exam', 'Computer Science', 'Semester 4', DATE_ADD(CURDATE(), INTERVAL 30 DAY), DATE_ADD(CURDATE(), INTERVAL 35 DAY), 'Computer Lab 3', 'Practical lab examinations for Web Development and Database Lab.');

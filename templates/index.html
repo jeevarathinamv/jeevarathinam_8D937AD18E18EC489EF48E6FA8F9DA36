@@ -1,73 +1,137 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - College Academic Calendar Management System{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
+<section class="hero-banner text-center shadow-sm">
     <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold mb-3 text-uppercase">
+            <i class="bi bi-mortarboard-fill me-1"></i> MCA Academic Portal
+        </span>
+        <h1 class="display-4 fw-bold text-white mb-3">College Academic Calendar Management System</h1>
+        <p class="lead text-white-50 mx-auto max-w-700 mb-4">
+            Stay informed with up-to-date schedule of college events, exams, holidays, workshops, seminars, and important deadlines.
         </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
+
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="{{ url_for('calendar') }}" class="btn btn-warning btn-lg rounded-pill px-4 shadow fw-bold text-dark">
+                <i class="bi bi-calendar-week me-2"></i> View Academic Calendar
+            </a>
+            {% if not session.get('user_type') %}
+            <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg rounded-pill px-4 fw-semibold">
+                <i class="bi bi-person-plus me-2"></i> Student Registration
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-light btn-lg rounded-pill px-4 fw-semibold text-primary">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
+            </a>
             {% endif %}
         </div>
     </div>
-</div>
+</section>
 
-<!-- Features Section -->
 <div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+    <div class="row g-4 mb-5">
+        <!-- Today's Highlight -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 card-hover">
+                <div class="card-header header-gradient-peach text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-calendar-day me-2"></i> Today's Events
+                    </h5>
+                    <span class="badge bg-white text-dark fw-bold">{{ today.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="card-body">
+                    {% if today_events %}
+                        <div class="list-group list-group-flush">
+                            {% for event in today_events %}
+                            <div class="list-group-item p-3 border-0 bg-light rounded mb-2">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0 text-primary">{{ event.event_title }}</h6>
+                                    <span class="badge badge-event-type badge-{{ event.event_type.lower().replace(' ', '-') }}">
+                                        {{ event.event_type }}
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1 text-danger"></i> {{ event.venue }} | <i class="bi bi-building me-1 text-info"></i> {{ event.department }}</p>
+                                <a href="{{ url_for('event_details', event_id=event.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">View Details</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
+                            <p class="mb-0">No academic events scheduled for today.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Highlights -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 card-hover">
+                <div class="card-header header-gradient-teal text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="bi bi-clock-history me-2"></i> Upcoming Events
+                    </h5>
+                    <a href="{{ url_for('calendar') }}" class="btn btn-sm btn-light rounded-pill fw-semibold">See All</a>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="list-group list-group-flush">
+                            {% for event in upcoming_events %}
+                            <div class="list-group-item p-3 border-0 bg-light rounded mb-2">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h6 class="fw-bold mb-0 text-dark">{{ event.event_title }}</h6>
+                                    <span class="badge badge-event-type badge-{{ event.event_type.lower().replace(' ', '-') }}">
+                                        {{ event.event_type }}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small text-muted">
+                                    <span><i class="bi bi-calendar-event me-1 text-primary"></i> {{ event.start_date.strftime('%b %d, %Y') }}</span>
+                                    <span><i class="bi bi-geo-alt me-1 text-danger"></i> {{ event.venue }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-check fs-1 d-block mb-2 text-secondary"></i>
+                            <p class="mb-0">No upcoming events found at the moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <!-- Features Section -->
+    <div class="row g-4 text-center mt-4">
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
+            <div class="card h-100 p-4 border-0 shadow-sm card-hover">
+                <div class="stat-icon bg-blue-subtle mx-auto mb-3">
+                    <i class="bi bi-calendar3 text-primary fs-3"></i>
                 </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+                <h5 class="fw-bold">Comprehensive Calendar</h5>
+                <p class="text-muted small">View all college events, exams, seminars, and holidays in one organized calendar format.</p>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+            <div class="card h-100 p-4 border-0 shadow-sm card-hover">
+                <div class="stat-icon bg-teal-subtle mx-auto mb-3">
+                    <i class="bi bi-funnel text-teal-main fs-3"></i>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
+                <h5 class="fw-bold">Smart Filtering</h5>
+                <p class="text-muted small">Filter events seamlessly by event type, department, semester, and month.</p>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
+            <div class="card h-100 p-4 border-0 shadow-sm card-hover">
+                <div class="stat-icon bg-peach-subtle mx-auto mb-3">
+                    <i class="bi bi-shield-check text-peach-accent fs-3"></i>
                 </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
+                <h5 class="fw-bold">Student & Admin Portals</h5>
+                <p class="text-muted small">Secure authentication for students to check schedules and admins to manage events.</p>
             </div>
         </div>
     </div>

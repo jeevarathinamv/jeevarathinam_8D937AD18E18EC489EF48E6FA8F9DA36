@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Academic Events - College Academic Calendar Management System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1"><i class="bi bi-calendar-plus text-teal-main me-2"></i>Calendar Event Management</h2>
+            <p class="text-muted mb-0">Create, edit, search, and manage all college academic events.</p>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <a href="{{ url_for('add_event') }}" class="btn btn-teal fw-bold rounded-pill shadow-sm px-4">
+                <i class="bi bi-plus-circle me-1"></i> Add New Event
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Bar Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('manage_events') }}" class="row g-2 align-items-center">
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" class="form-control" name="q" value="{{ search_query }}" placeholder="Search by Event Title, Department, or Type...">
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-royal fw-semibold w-100 rounded-pill">Search</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('manage_events') }}" class="btn btn-outline-secondary rounded-pill" title="Clear Search">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Events List Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header header-gradient-blue text-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-calendar3 me-2"></i>Academic Events List ({{ events|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if events %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 table-custom">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Event Title</th>
+                                <th>Type</th>
+                                <th>Department</th>
+                                <th>Semester</th>
+                                <th>Dates</th>
+                                <th>Venue</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            {% set is_today = (event.start_date <= today <= event.end_date) %}
+                            <tr class="{% if is_today %}table-warning{% endif %}">
+                                <td class="fw-bold">{{ loop.index }}</td>
+                                <td>
+                                    <strong class="text-dark">{{ event.event_title }}</strong>
+                                    {% if is_today %}
+                                        <span class="badge badge-today ms-1">TODAY</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-event-type badge-{{ event.event_type.lower().replace(' ', '-') }}">
+                                        {{ event.event_type }}
+                                    </span>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">{{ event.department }}</span></td>
+                                <td><span class="badge bg-secondary-subtle text-dark">{{ event.semester }}</span></td>
+                                <td>
+                                    <small class="fw-semibold text-primary">
+                                        {{ event.start_date.strftime('%d %b %Y') }}
+                                        {% if event.start_date != event.end_date %}
+                                            <br>to {{ event.end_date.strftime('%d %b %Y') }}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td><small class="text-danger"><i class="bi bi-geo-alt me-1"></i>{{ event.venue }}</small></td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('event_details', event_id=event.id) }}" class="btn btn-outline-secondary" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-outline-primary" title="Edit Event">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ event.id }}" title="Delete Event">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Delete Confirmation Modal -->
+                                    <div class="modal fade" id="deleteModal{{ event.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ event.id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title" id="deleteModalLabel{{ event.id }}"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body text-start">
+                                                    Are you sure you want to delete the academic event <strong>"{{ event.event_title }}"</strong>?
+                                                    <p class="text-danger small mt-2 mb-0"><i class="bi bi-info-circle me-1"></i> This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                    <form method="POST" action="{{ url_for('delete_event', event_id=event.id) }}" class="d-inline">
+                                                        <button type="submit" class="btn btn-danger btn-sm rounded-pill">Delete Event</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-calendar-x fs-1 d-block mb-2 text-secondary"></i>
+                    <h5>No events found.</h5>
+                    <p class="small mb-3">Click below to create your first academic calendar event.</p>
+                    <a href="{{ url_for('add_event') }}" class="btn btn-teal btn-sm rounded-pill px-4 fw-semibold">Add Academic Event</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

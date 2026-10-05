@@ -1,8 +1,8 @@
 import unittest
-from datetime import date
-from app import app, db, Student, Equipment, Booking
+from datetime import date, timedelta
+from app import app, db, Student, Admin, AcademicEvent, seed_default_data
 
-class SportsBookingTestCase(unittest.TestCase):
+class AcademicCalendarTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,11 +11,7 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
-            db.session.commit()
+            seed_default_data()
 
     def tearDown(self):
         with app.app_context():
@@ -23,94 +19,144 @@ class SportsBookingTestCase(unittest.TestCase):
             db.drop_all()
 
     def test_student_registration_and_login(self):
-        # Register student
+        # Student Registration
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
+            'student_name': 'Rahul Sharma',
+            'register_number': '21MCA001',
             'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'email': 'rahul@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
-        # Login student
-        response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+        # Duplicate Student Registration
+        response = self.client.post('/register', data={
+            'student_name': 'Rahul Duplicate',
+            'register_number': '21MCA001',
+            'department': 'Computer Applications (MCA)',
+            'email': 'rahul@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'already exists', response.data)
+
+        # Student Login with Register Number
+        response = self.client.post('/login', data={
+            'email_or_reg': '21MCA001',
+            'password': 'password123'
+        }, follow_redirects=True)
+        self.assertIn(b'Welcome back, Rahul Sharma!', response.data)
+
+        # Logout
+        response = self.client.get('/logout', follow_redirects=True)
+        self.assertIn(b'You have been logged out', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        # Admin Login
+        response = self.client.post('/admin_login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
-        self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
-        })
-        self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
-        })
+        # Verify Admin Dashboard Content
+        response = self.client.get('/admin/dashboard')
+        self.assertIn(b'Admin Dashboard', response.data)
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
-
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
-
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
-
-        # Admin login and approval
-        self.client.get('/logout')
-        self.client.post('/login', data={
-            'login_type': 'admin',
+    def test_event_crud_workflow(self):
+        # Log in as Admin
+        self.client.post('/admin_login', data={
             'username': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        today = date.today()
+        # Add New Academic Event
+        response = self.client.post('/admin/event/add', data={
+            'event_title': 'MCA Tech Fest 2025',
+            'event_type': 'College Event',
+            'department': 'Computer Applications (MCA)',
+            'semester': 'All Semesters',
+            'start_date': today.strftime('%Y-%m-%d'),
+            'end_date': (today + timedelta(days=2)).strftime('%Y-%m-%d'),
+            'venue': 'College Grounds',
+            'description': 'Annual technical festival for computer applications students.'
+        }, follow_redirects=True)
+        self.assertIn(b'created successfully', response.data)
+
+        # Verify Event in Event Management
+        response = self.client.get('/admin/events')
+        self.assertIn(b'MCA Tech Fest 2025', response.data)
+
+        # Edit Academic Event
+        with app.app_context():
+            event = db.session.query(AcademicEvent).filter_by(event_title='MCA Tech Fest 2025').first()
+            event_id = event.id
+
+        response = self.client.post(f'/admin/event/edit/{event_id}', data={
+            'event_title': 'Grand MCA Tech Fest 2025',
+            'event_type': 'College Event',
+            'department': 'Computer Applications (MCA)',
+            'semester': 'All Semesters',
+            'start_date': today.strftime('%Y-%m-%d'),
+            'end_date': (today + timedelta(days=2)).strftime('%Y-%m-%d'),
+            'venue': 'Main Auditorium',
+            'description': 'Updated technical festival venue and details.'
+        }, follow_redirects=True)
+        self.assertIn(b'updated successfully', response.data)
+
+        # Delete Academic Event
+        response = self.client.post(f'/admin/event/delete/{event_id}', follow_redirects=True)
+        self.assertIn(b'deleted successfully', response.data)
+
+    def test_calendar_filtering(self):
+        # Register and login student
+        self.client.post('/register', data={
+            'student_name': 'Anita Roy',
+            'register_number': '21MCA002',
+            'department': 'Computer Applications (MCA)',
+            'email': 'anita@college.edu',
+            'password': 'pass'
+        })
+        self.client.post('/login', data={
+            'email_or_reg': 'anita@college.edu',
+            'password': 'pass'
+        })
+
+        # View Calendar
+        response = self.client.get('/calendar')
+        self.assertEqual(response.status_code, 200)
+
+        # Filter by Event Type
+        response = self.client.get('/calendar?event_type=Holiday')
+        self.assertIn(b'National Youth Day Holiday', response.data)
+
+    def test_student_management(self):
+        # Register student
+        self.client.post('/register', data={
+            'student_name': 'Priya Singh',
+            'register_number': '21MCA003',
+            'department': 'Computer Applications (MCA)',
+            'email': 'priya@college.edu',
+            'password': 'pass'
+        })
+
+        # Admin login
+        self.client.post('/admin_login', data={
+            'username': 'admin',
+            'password': 'admin123'
+        })
+
+        # View students list
+        response = self.client.get('/admin/students')
+        self.assertIn(b'Priya Singh', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            student = db.session.query(Student).filter_by(email='priya@college.edu').first()
+            student_id = student.id
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
-
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+        # Delete student
+        response = self.client.post(f'/admin/student/delete/{student_id}', follow_redirects=True)
+        self.assertIn(b'deleted successfully', response.data)
 
 if __name__ == '__main__':
     unittest.main()
