@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Book - Library System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="navbar-custom text-white p-4">
+                    <h3 class="fw-bold mb-0"><i class="bi bi-pencil-square text-warning me-2"></i> Edit Book #{{ book.id }}</h3>
+                    <p class="small text-white-50 mb-0">Update book details and manage available inventory</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form action="{{ url_for('edit_book', book_id=book.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label for="book_name" class="form-label fw-semibold">Book Name</label>
+                            <input type="text" class="form-control" id="book_name" name="book_name" value="{{ book.book_name }}" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="author_name" class="form-label fw-semibold">Author Name</label>
+                                <input type="text" class="form-control" id="author_name" name="author_name" value="{{ book.author_name }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="isbn" class="form-label fw-semibold">ISBN</label>
+                                <input type="text" class="form-control" id="isbn" name="isbn" value="{{ book.isbn }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="category" class="form-label fw-semibold">Category</label>
+                                <input type="text" class="form-control" id="category" name="category" value="{{ book.category }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="total_copies" class="form-label fw-semibold">Total Copies</label>
+                                <input type="number" class="form-control" id="total_copies" name="total_copies" min="0" value="{{ book.total_copies }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="available_copies" class="form-label fw-semibold">Available Copies</label>
+                                <input type="number" class="form-control" id="available_copies" name="available_copies" min="0" value="{{ book.available_copies }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ book.description or '' }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('manage_books') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-aqua rounded-pill px-4 fw-bold shadow-sm">
+                                <i class="bi bi-save me-1"></i> Update Book
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

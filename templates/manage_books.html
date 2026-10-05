@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Books - Library System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold text-dark mb-1"><i class="bi bi-journal-plus text-primary me-2"></i> Book Management</h2>
+                <p class="text-muted mb-0">Add, edit, or delete books and control copy counts.</p>
+            </div>
+            <a href="{{ url_for('add_book') }}" class="btn btn-orange rounded-pill px-4 fw-bold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Add New Book
+            </a>
+        </div>
+    </div>
+
+    <!-- Books Table -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            {% if books %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>Book Name</th>
+                                <th>Author Name</th>
+                                <th>ISBN</th>
+                                <th>Category</th>
+                                <th>Available / Total</th>
+                                <th>Status</th>
+                                <th class="pe-4 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in books %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">#{{ b.id }}</td>
+                                    <td class="fw-semibold text-dark">{{ b.book_name }}</td>
+                                    <td class="text-muted">{{ b.author_name }}</td>
+                                    <td class="small text-secondary">{{ b.isbn }}</td>
+                                    <td><span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1">{{ b.category }}</span></td>
+                                    <td>
+                                        <span class="fw-bold {% if b.available_copies > 0 %}text-success{% else %}text-danger{% endif %}">
+                                            {{ b.available_copies }}
+                                        </span>
+                                        / {{ b.total_copies }}
+                                    </td>
+                                    <td>
+                                        {% if b.availability_status == 'Available' %}
+                                            <span class="badge badge-available rounded-pill px-2 py-1">Available</span>
+                                        {% elif b.availability_status == 'Limited' %}
+                                            <span class="badge badge-limited rounded-pill px-2 py-1">Limited</span>
+                                        {% else %}
+                                            <span class="badge badge-not-available rounded-pill px-2 py-1">Not Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <a href="{{ url_for('edit_book', book_id=b.id) }}" class="btn btn-outline-primary btn-sm rounded-pill me-1">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <form action="{{ url_for('delete_book', book_id=b.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <p class="mb-0">No books present in database.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

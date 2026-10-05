@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Library System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-dark text-white text-center py-4 px-3 border-bottom border-secondary">
+                    <i class="bi bi-shield-lock-fill fs-1 text-warning mb-2 d-block"></i>
+                    <h3 class="fw-bold mb-0">Admin Portal Login</h3>
+                    <p class="small text-white-50 mb-0">Administrator Access Only</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form action="{{ url_for('admin_login') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold">Admin Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-shield-person text-muted"></i></span>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="admin" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-key text-muted"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-aqua w-100 py-2 rounded-pill fw-bold shadow-sm">
+                            <i class="bi bi-shield-check me-2"></i> Admin Login
+                        </button>
+                    </form>
+                    <div class="text-center mt-4">
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal p-2">
+                            Default Admin Credentials: <strong>admin</strong> / <strong>admin123</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
