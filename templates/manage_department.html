@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Department - Department Information System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+            <div class="card card-custom shadow border-0">
+                <div class="card-header card-header-navy py-3 d-flex align-items-center justify-content-between">
+                    <h4 class="mb-0 text-white"><i class="bi bi-building-gear me-2"></i>Manage Department Information</h4>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to Dashboard</a>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('manage_department') }}" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="name" class="form-label font-weight-bold">Department Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ department.name if department else '' }}" required>
+                                <div class="invalid-feedback">Please enter department name.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="code" class="form-label font-weight-bold">Department Code</label>
+                                <input type="text" class="form-control" id="code" name="code" value="{{ department.code if department else '' }}" required>
+                                <div class="invalid-feedback">Please enter department code.</div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="head" class="form-label font-weight-bold">Head of Department (HOD)</label>
+                                <input type="text" class="form-control" id="head" name="head" value="{{ department.head if department else '' }}" required>
+                                <div class="invalid-feedback">Please enter HOD name.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="email" class="form-label font-weight-bold">Department Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ department.email if department else '' }}" required>
+                                <div class="invalid-feedback">Please enter a valid email.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label font-weight-bold">Department Phone</label>
+                                <input type="text" class="form-control" id="phone" name="phone" value="{{ department.phone if department else '' }}" required>
+                                <div class="invalid-feedback">Please enter contact phone number.</div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="description" class="form-label font-weight-bold">Department Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="5" required>{{ department.description if department else '' }}</textarea>
+                                <div class="invalid-feedback">Please enter department description.</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" class="btn btn-orange px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-save me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

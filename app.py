@@ -6,15 +6,11 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_dept_secret_key_98765')
 
-# Admin Hardcoded Credentials
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
-
-# Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+# Database configuration: Default to MySQL URI (department_db), fallback/option for SQLite
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/department_db')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'department.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,17 +18,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-class Student(db.Model):
-    __tablename__ = 'students'
+# Database Models
+
+class Admin(db.Model):
+    __tablename__ = 'admins'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    register_number = db.Column(db.String(50), unique=True, nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='student', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,44 +33,87 @@ class Student(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+class Student(db.Model):
+    __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
+    register_number = db.Column(db.String(50), unique=True, nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    year = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-class Booking(db.Model):
-    __tablename__ = 'bookings'
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Department(db.Model):
+    __tablename__ = 'department'
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(20), nullable=False)
+    head = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+
+class Faculty(db.Model):
+    __tablename__ = 'faculty'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    faculty_id = db.Column(db.String(50), unique=True, nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    designation = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
-        db.session.commit()
+class Notice(db.Model):
+    __tablename__ = 'notices'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    notice_date = db.Column(db.Date, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Auth Decorators
+# Seed default database values if empty
+def seed_default_data():
+    if Admin.query.count() == 0:
+        admin = Admin(username='admin')
+        admin.set_password('admin123')
+        db.session.add(admin)
+
+    if Department.query.count() == 0:
+        dept = Department(
+            id=1,
+            name='Department of Computer Applications',
+            code='MCA-DEPT',
+            head='Dr. S. Ramanathan',
+            email='mca.dept@college.edu',
+            phone='+91 98765 43210',
+            description='The Department of Computer Applications is committed to excellence in computer science education, practical software development skills, and modern technology research.'
+        )
+        db.session.add(dept)
+
+    if Faculty.query.count() == 0:
+        fac1 = Faculty(name='Dr. S. Ramanathan', faculty_id='FAC101', department='Computer Applications', designation='Head of Department & Professor', email='ramanathan@college.edu', phone='+91 98765 43210')
+        fac2 = Faculty(name='Prof. Anita Sharma', faculty_id='FAC102', department='Computer Applications', designation='Associate Professor', email='anita.sharma@college.edu', phone='+91 98765 43211')
+        fac3 = Faculty(name='Prof. Rajesh Kumar', faculty_id='FAC103', department='Computer Applications', designation='Assistant Professor', email='rajesh.kumar@college.edu', phone='+91 98765 43212')
+        db.session.add_all([fac1, fac2, fac3])
+
+    if Notice.query.count() == 0:
+        n1 = Notice(title='Welcome to the New Academic Session', description='Classes for the upcoming semester will commence on Monday. All students are requested to review their updated timetable on the department notice board.', notice_date=date(2025, 2, 1))
+        n2 = Notice(title='Technical Seminar on Web Technologies', description='A special guest lecture on Modern Web Development Frameworks will be conducted in the Main Auditorium at 10:00 AM this Friday.', notice_date=date(2025, 2, 10))
+        n3 = Notice(title='Submission of Project Phase 1 Documentation', description='Final year MCA students are required to submit their Project Phase 1 synopsis and documentation to their respective faculty guides by the end of this week.', notice_date=date(2025, 2, 15))
+        db.session.add_all([n1, n2, n3])
+
+    db.session.commit()
+
+# Authentication Decorators
+
 def student_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -92,25 +128,29 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_type' not in session or session['user_type'] != 'admin':
             flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
+# General / Student Routes
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    dept = Department.query.first()
+    recent_notices = Notice.query.order_by(Notice.notice_date.desc()).limit(3).all()
+    return render_template('index.html', department=dept, recent_notices=recent_notices)
 
-# Student Registration
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         register_number = request.form.get('register_number', '').strip()
         department = request.form.get('department', '').strip()
+        year = request.form.get('year', '').strip()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
 
-        if not name or not register_number or not department or not email or not password:
+        if not name or not register_number or not department or not year or not email or not password:
             flash('All fields are required.', 'danger')
             return redirect(url_for('register'))
 
@@ -119,13 +159,14 @@ def register():
         ).first()
 
         if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
+            flash('A student with this Register Number or Email already exists.', 'danger')
             return redirect(url_for('register'))
 
         student = Student(
             name=name,
             register_number=register_number,
             department=department,
+            year=year,
             email=email
         )
         student.set_password(password)
@@ -137,250 +178,296 @@ def register():
 
     return render_template('register.html')
 
-# Student & Admin Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        email_or_reg = request.form.get('email_or_reg', '').strip()
+        password = request.form.get('password', '')
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
-        else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
+        if not email_or_reg or not password:
+            flash('Please provide email/register number and password.', 'danger')
+            return redirect(url_for('login'))
 
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
+        student = Student.query.filter(
+            (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
+        ).first()
 
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
+        if student and student.check_password(password):
+            session['user_type'] = 'student'
+            session['user_id'] = student.id
+            session['user_name'] = student.name
+            flash(f'Welcome back, {student.name}!', 'success')
+            return redirect(url_for('student_dashboard'))
+
+        flash('Invalid register number/email or password.', 'danger')
+        return redirect(url_for('login'))
 
     return render_template('login.html')
 
-# Logout
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('You have been logged out.', 'info')
+    flash('You have been logged out successfully.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
     student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student = Student.query.get_or_404(student_id)
+    dept = Department.query.first()
+    return render_template('student_dashboard.html', student=student, department=dept)
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+@app.route('/department')
+def view_department():
+    dept = Department.query.first()
+    return render_template('department.html', department=dept)
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
+@app.route('/faculty')
+def view_faculty():
+    faculties = Faculty.query.all()
+    return render_template('faculty.html', faculties=faculties)
 
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
+@app.route('/notices')
+def view_notices():
+    notices_list = Notice.query.order_by(Notice.notice_date.desc()).all()
+    return render_template('notices.html', notices=notices_list)
 
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
+# Admin Routes
 
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
 
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
+        admin = Admin.query.filter_by(username=username).first()
+        if admin and admin.check_password(password):
+            session['user_type'] = 'admin'
+            session['admin_id'] = admin.id
+            session['user_name'] = admin.username
+            flash('Logged in successfully as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
 
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
+        flash('Invalid admin credentials.', 'danger')
+        return redirect(url_for('admin_login'))
 
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
-    )
-    db.session.add(booking)
-    db.session.commit()
+    return render_template('admin_login.html')
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
-
-# Admin Dashboard & Equipment Management
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
-
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    students = Student.query.order_by(Student.created_at.desc()).all()
+    faculty_count = Faculty.query.count()
+    notice_count = Notice.query.count()
+    student_count = len(students)
+    dept = Department.query.first()
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        students=students,
+        total_students=student_count,
+        total_faculty=faculty_count,
+        total_notices=notice_count,
+        department=dept
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+@app.route('/admin/department', methods=['GET', 'POST'])
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+def manage_department():
+    dept = Department.query.first()
+    if not dept:
+        dept = Department(
+            name='Department of Computer Applications',
+            code='MCA-DEPT',
+            head='Dr. S. Ramanathan',
+            email='mca.dept@college.edu',
+            phone='+91 98765 43210',
+            description='Department overview and details.'
+        )
+        db.session.add(dept)
+        db.session.commit()
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
+    if request.method == 'POST':
+        dept.name = request.form.get('name', '').strip()
+        dept.code = request.form.get('code', '').strip()
+        dept.head = request.form.get('head', '').strip()
+        dept.email = request.form.get('email', '').strip()
+        dept.phone = request.form.get('phone', '').strip()
+        dept.description = request.form.get('description', '').strip()
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
-    )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+        if not dept.name or not dept.code or not dept.head or not dept.email or not dept.phone or not dept.description:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('manage_department'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+        db.session.commit()
+        flash('Department information updated successfully.', 'success')
+        return redirect(url_for('manage_department'))
+
+    return render_template('manage_department.html', department=dept)
+
+@app.route('/admin/faculty')
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
+def manage_faculty():
+    faculties = Faculty.query.all()
+    return render_template('manage_faculty.html', faculties=faculties)
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
-
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
+@app.route('/admin/faculty/add', methods=['GET', 'POST'])
 @admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
+def add_faculty():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        faculty_id = request.form.get('faculty_id', '').strip()
+        department = request.form.get('department', '').strip()
+        designation = request.form.get('designation', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
 
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
+        if not name or not faculty_id or not department or not designation or not email or not phone:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('add_faculty'))
+
+        existing_fac = Faculty.query.filter_by(faculty_id=faculty_id).first()
+        if existing_fac:
+            flash('Faculty with this ID already exists.', 'danger')
+            return redirect(url_for('add_faculty'))
+
+        fac = Faculty(
+            name=name,
+            faculty_id=faculty_id,
+            department=department,
+            designation=designation,
+            email=email,
+            phone=phone
+        )
+        db.session.add(fac)
+        db.session.commit()
+
+        flash(f'Faculty "{name}" added successfully.', 'success')
+        return redirect(url_for('manage_faculty'))
+
+    return render_template('add_faculty.html')
+
+@app.route('/admin/faculty/edit/<int:faculty_id>', methods=['GET', 'POST'])
 @admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def edit_faculty(faculty_id):
+    fac = Faculty.query.get_or_404(faculty_id)
 
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        fac_id = request.form.get('faculty_id', '').strip()
+        department = request.form.get('department', '').strip()
+        designation = request.form.get('designation', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
 
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
+        if not name or not fac_id or not department or not designation or not email or not phone:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('edit_faculty', faculty_id=faculty_id))
 
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+        existing_fac = Faculty.query.filter(Faculty.faculty_id == fac_id, Faculty.id != faculty_id).first()
+        if existing_fac:
+            flash('Another faculty member with this ID already exists.', 'danger')
+            return redirect(url_for('edit_faculty', faculty_id=faculty_id))
 
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
+        fac.name = name
+        fac.faculty_id = fac_id
+        fac.department = department
+        fac.designation = designation
+        fac.email = email
+        fac.phone = phone
+
+        db.session.commit()
+        flash('Faculty details updated successfully.', 'success')
+        return redirect(url_for('manage_faculty'))
+
+    return render_template('edit_faculty.html', faculty=fac)
+
+@app.route('/admin/faculty/delete/<int:faculty_id>', methods=['POST'])
 @admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
+def delete_faculty(faculty_id):
+    fac = Faculty.query.get_or_404(faculty_id)
+    db.session.delete(fac)
     db.session.commit()
+    flash('Faculty deleted successfully.', 'info')
+    return redirect(url_for('manage_faculty'))
 
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
+@app.route('/admin/notices')
 @admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
+def manage_notices():
+    notices_list = Notice.query.order_by(Notice.notice_date.desc()).all()
+    return render_template('manage_notices.html', notices=notices_list)
 
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
+@app.route('/admin/notices/add', methods=['GET', 'POST'])
+@admin_required
+def add_notice():
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        description = request.form.get('description', '').strip()
+        notice_date_str = request.form.get('notice_date', '').strip()
 
-    booking.status = 'Returned'
+        if not title or not description or not notice_date_str:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('add_notice'))
+
+        try:
+            notice_date = datetime.strptime(notice_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format.', 'danger')
+            return redirect(url_for('add_notice'))
+
+        notice = Notice(
+            title=title,
+            description=description,
+            notice_date=notice_date
+        )
+        db.session.add(notice)
+        db.session.commit()
+
+        flash('Notice published successfully.', 'success')
+        return redirect(url_for('manage_notices'))
+
+    today_str = date.today().isoformat()
+    return render_template('add_notice.html', today=today_str)
+
+@app.route('/admin/notices/edit/<int:notice_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_notice(notice_id):
+    notice = Notice.query.get_or_404(notice_id)
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        description = request.form.get('description', '').strip()
+        notice_date_str = request.form.get('notice_date', '').strip()
+
+        if not title or not description or not notice_date_str:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('edit_notice', notice_id=notice_id))
+
+        try:
+            notice_date = datetime.strptime(notice_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format.', 'danger')
+            return redirect(url_for('edit_notice', notice_id=notice_id))
+
+        notice.title = title
+        notice.description = description
+        notice.notice_date = notice_date
+
+        db.session.commit()
+        flash('Notice updated successfully.', 'success')
+        return redirect(url_for('manage_notices'))
+
+    return render_template('edit_notice.html', notice=notice)
+
+@app.route('/admin/notices/delete/<int:notice_id>', methods=['POST'])
+@admin_required
+def delete_notice(notice_id):
+    notice = Notice.query.get_or_404(notice_id)
+    db.session.delete(notice)
     db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+    flash('Notice deleted successfully.', 'info')
+    return redirect(url_for('manage_notices'))
 
 if __name__ == '__main__':
     with app.app_context():

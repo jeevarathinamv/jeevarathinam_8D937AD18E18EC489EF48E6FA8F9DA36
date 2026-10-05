@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Faculty - Department Information System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card card-custom shadow border-0">
+                <div class="card-header card-header-navy py-3 d-flex align-items-center justify-content-between">
+                    <h4 class="mb-0 text-white"><i class="bi bi-pencil-square me-2"></i>Edit Faculty Member</h4>
+                    <a href="{{ url_for('manage_faculty') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to List</a>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('edit_faculty', faculty_id=faculty.id) }}" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label font-weight-bold">Faculty Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ faculty.name }}" required>
+                                <div class="invalid-feedback">Please enter faculty name.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="faculty_id" class="form-label font-weight-bold">Faculty ID</label>
+                                <input type="text" class="form-control" id="faculty_id" name="faculty_id" value="{{ faculty.faculty_id }}" required>
+                                <div class="invalid-feedback">Please enter a unique faculty ID.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="department" class="form-label font-weight-bold">Department</label>
+                                <input type="text" class="form-control" id="department" name="department" value="{{ faculty.department }}" required>
+                                <div class="invalid-feedback">Please enter department name.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="designation" class="form-label font-weight-bold">Designation</label>
+                                <select class="form-select" id="designation" name="designation" required>
+                                    <option value="Professor & HOD" {% if faculty.designation == 'Professor & HOD' %}selected{% endif %}>Professor & HOD</option>
+                                    <option value="Professor" {% if faculty.designation == 'Professor' %}selected{% endif %}>Professor</option>
+                                    <option value="Associate Professor" {% if faculty.designation == 'Associate Professor' %}selected{% endif %}>Associate Professor</option>
+                                    <option value="Assistant Professor" {% if faculty.designation == 'Assistant Professor' %}selected{% endif %}>Assistant Professor</option>
+                                    <option value="Lecturer" {% if faculty.designation == 'Lecturer' %}selected{% endif %}>Lecturer</option>
+                                </select>
+                                <div class="invalid-feedback">Please select designation.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="email" class="form-label font-weight-bold">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ faculty.email }}" required>
+                                <div class="invalid-feedback">Please enter valid email.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label font-weight-bold">Phone Number</label>
+                                <input type="text" class="form-control" id="phone" name="phone" value="{{ faculty.phone }}" required>
+                                <div class="invalid-feedback">Please enter phone number.</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" class="btn btn-navy px-4 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-save me-1"></i>Update Faculty Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

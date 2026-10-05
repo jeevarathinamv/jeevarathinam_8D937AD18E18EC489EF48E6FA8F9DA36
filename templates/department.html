@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Department Information - Department Information System{% endblock %}
+
+{% block content %}
+<div class="page-header text-center">
+    <div class="container">
+        <h1 class="display-6 fw-bold mb-2"><i class="bi bi-building me-2 text-cyan"></i>Department Information</h1>
+        <p class="lead mb-0">Overview, Academic Details & Key Department Contact Information</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if department %}
+    <div class="card card-custom shadow-lg border-0 mb-5">
+        <div class="card-header card-header-navy py-3 d-flex align-items-center justify-content-between">
+            <h4 class="mb-0 text-white"><i class="bi bi-mortarboard-fill me-2"></i>{{ department.name }}</h4>
+            <span class="badge badge-orange fs-6 px-3 py-2">{{ department.code }}</span>
+        </div>
+        <div class="card-body p-4 p-md-5">
+            <h5 class="fw-bold text-navy mb-3"><i class="bi bi-info-circle me-2 text-cyan"></i>About the Department</h5>
+            <p class="fs-5 text-secondary leading-relaxed mb-4">
+                {{ department.description }}
+            </p>
+
+            <hr class="my-4">
+
+            <div class="row g-4 mt-2">
+                <div class="col-md-6">
+                    <div class="p-4 bg-light rounded-3 border h-100">
+                        <h5 class="fw-bold text-navy mb-3"><i class="bi bi-person-badge-fill text-cyan me-2"></i>Department Head</h5>
+                        <p class="fs-4 fw-semibold mb-1 text-dark">{{ department.head }}</p>
+                        <p class="text-muted small">Professor & Head of Department</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-4 bg-light rounded-3 border h-100">
+                        <h5 class="fw-bold text-navy mb-3"><i class="bi bi-envelope-at-fill text-orange me-2"></i>Contact Details</h5>
+                        <ul class="list-unstyled mb-0 fs-6">
+                            <li class="mb-2"><strong><i class="bi bi-envelope me-2 text-primary"></i>Email:</strong> <a href="mailto:{{ department.email }}" class="text-decoration-none">{{ department.email }}</a></li>
+                            <li class="mb-0"><strong><i class="bi bi-telephone me-2 text-primary"></i>Phone:</strong> {{ department.phone }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center py-4">
+        <i class="bi bi-exclamation-triangle fs-2 d-block mb-2"></i>
+        Department details have not been configured yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
