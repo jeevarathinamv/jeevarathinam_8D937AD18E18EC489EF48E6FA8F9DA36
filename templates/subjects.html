@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Available Subjects - SubjectReg{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col-md-7">
+        <h2 class="fw-bold text-indigo"><i class="bi bi-journal-album me-2"></i>Available Subjects</h2>
+        <p class="text-muted">Showing relevant subjects for <strong>{{ student.department }}</strong> (Semester {{ student.semester }})</p>
+    </div>
+    <div class="col-md-5 text-md-end">
+        <a href="{{ url_for('my_subjects') }}" class="btn btn-outline-indigo"><i class="bi bi-bookmark-check me-1"></i>View My Registered Subjects</a>
+    </div>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{{ url_for('subjects') }}" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Search by name or code..." value="{{ search_query }}">
+        </div>
+        <div class="col-md-3">
+            <select name="type" class="form-select">
+                <option value="">All Subject Types</option>
+                <option value="Core" {% if type_filter == 'Core' %}selected{% endif %}>Core</option>
+                <option value="Elective" {% if type_filter == 'Elective' %}selected{% endif %}>Elective</option>
+                <option value="Practical" {% if type_filter == 'Practical' %}selected{% endif %}>Practical</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="semester" class="form-select">
+                <option value="">Semester {{ student.semester }} (Default)</option>
+                <option value="1" {% if sem_filter == 1 %}selected{% endif %}>Semester 1</option>
+                <option value="2" {% if sem_filter == 2 %}selected{% endif %}>Semester 2</option>
+                <option value="3" {% if sem_filter == 3 %}selected{% endif %}>Semester 3</option>
+                <option value="4" {% if sem_filter == 4 %}selected{% endif %}>Semester 4</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-1">
+            <button type="submit" class="btn btn-indigo flex-grow-1"><i class="bi bi-filter me-1"></i>Filter</button>
+            <a href="{{ url_for('subjects') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Subjects Table -->
+{% if subjects %}
+<div class="table-responsive table-custom">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Subject Name</th>
+                <th>Subject Code</th>
+                <th>Department</th>
+                <th>Semester</th>
+                <th>Subject Type</th>
+                <th>Credits</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subjects %}
+            <tr>
+                <td class="fw-bold">{{ subject.subject_name }}</td>
+                <td><span class="badge bg-light text-dark border">{{ subject.subject_code }}</span></td>
+                <td>{{ subject.department }}</td>
+                <td>Sem {{ subject.semester }}</td>
+                <td>
+                    {% if subject.subject_type == 'Core' %}
+                        <span class="badge badge-core">Core</span>
+                    {% elif subject.subject_type == 'Elective' %}
+                        <span class="badge badge-elective">Elective</span>
+                    {% else %}
+                        <span class="badge badge-practical">Practical</span>
+                    {% endif %}
+                </td>
+                <td><span class="fw-bold text-indigo">{{ subject.credits }}</span> Credits</td>
+                <td class="text-center">
+                    {% if subject.id in registered_subject_ids %}
+                        <button class="btn btn-sm btn-success disabled"><i class="bi bi-check-circle-fill me-1"></i>Registered</button>
+                    {% else %}
+                        <form action="{{ url_for('register_subject', subject_id=subject.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-peach"><i class="bi bi-plus-circle me-1"></i>Register</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info text-center shadow-sm p-4">
+    <i class="bi bi-exclamation-circle display-6 d-block mb-2 text-info"></i>
+    <h5>No subjects found</h5>
+    <p class="mb-0 text-muted">No subjects match your criteria or are currently available for this semester.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - SubjectReg{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom p-4 shadow-sm border-top border-5 border-info">
+            <div class="card-body">
+                <h3 class="card-title text-center text-cyan fw-bold mb-4">
+                    <i class="bi bi-shield-lock-fill me-2"></i>Admin Login
+                </h3>
+                <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Admin Username</label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter admin username" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter admin password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-cyan text-white w-100 py-2 shadow-sm"><i class="bi bi-shield-check me-1"></i>Admin Login</button>
+                </form>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">Default Demo Credentials: Username: <code>admin</code> | Password: <code>admin123</code></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

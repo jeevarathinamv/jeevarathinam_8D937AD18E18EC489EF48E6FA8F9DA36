@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Registrations - SubjectReg Admin{% endblock %}
+
+{% block content %}
+<div class="row mb-3 align-items-center">
+    <div class="col">
+        <h2 class="fw-bold text-cyan"><i class="bi bi-list-check me-2"></i>Registration Management</h2>
+        <p class="text-muted">View all student subject registrations across departments and manage active status.</p>
+    </div>
+</div>
+
+{% if registrations %}
+<div class="table-responsive table-custom">
+    <table class="table table-hover align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Register Number</th>
+                <th>Subject Name</th>
+                <th>Subject Code</th>
+                <th>Registration Date</th>
+                <th>Status</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td class="fw-bold">{{ reg.student.student_name }}</td>
+                <td><span class="badge bg-light text-dark border">{{ reg.student.register_number }}</span></td>
+                <td>{{ reg.subject.subject_name }}</td>
+                <td><span class="badge bg-light text-dark border">{{ reg.subject.subject_code }}</span></td>
+                <td class="small text-muted">{{ reg.registration_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if reg.status == 'Registered' %}
+                        <span class="badge badge-registered">Registered</span>
+                    {% else %}
+                        <span class="badge badge-cancelled">Cancelled</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if reg.status == 'Registered' %}
+                        <form action="{{ url_for('admin_cancel_registration', registration_id=reg.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel registration for this student?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle me-1"></i>Cancel Registration</button>
+                        </form>
+                    {% else %}
+                        <span class="text-muted small">Cancelled</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info text-center shadow-sm p-4">
+    <i class="bi bi-clipboard-x display-6 d-block mb-2 text-info"></i>
+    <h5>No registrations found</h5>
+    <p class="text-muted mb-0">No students have registered for subjects yet.</p>
+</div>
+{% endif %}
+{% endblock %}

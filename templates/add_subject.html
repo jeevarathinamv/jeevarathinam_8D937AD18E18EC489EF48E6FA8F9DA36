@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Add Subject - SubjectReg Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card card-custom p-4 shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title text-center text-indigo fw-bold mb-4">
+                    <i class="bi bi-journal-plus me-2"></i>Add New Subject
+                </h3>
+                <form action="{{ url_for('add_subject') }}" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="subject_name" class="form-label fw-semibold">Subject Name</label>
+                        <input type="text" class="form-control" id="subject_name" name="subject_name" placeholder="e.g. Cloud Computing" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="subject_code" class="form-label fw-semibold">Subject Code</label>
+                            <input type="text" class="form-control" id="subject_code" name="subject_code" placeholder="e.g. MCA104" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="department" class="form-label fw-semibold">Department</label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="" selected disabled>Select Department</option>
+                                <option value="Computer Applications">Computer Applications</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Computer Science">Computer Science</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="semester" class="form-label fw-semibold">Semester</label>
+                            <select class="form-select" id="semester" name="semester" required>
+                                <option value="" selected disabled>Select</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="subject_type" class="form-label fw-semibold">Subject Type</label>
+                            <select class="form-select" id="subject_type" name="subject_type" required>
+                                <option value="" selected disabled>Select Type</option>
+                                <option value="Core">Core</option>
+                                <option value="Elective">Elective</option>
+                                <option value="Practical">Practical</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <label for="credits" class="form-label fw-semibold">Credits</label>
+                            <input type="number" class="form-control" id="credits" name="credits" min="1" max="10" placeholder="e.g. 4" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <a href="{{ url_for('manage_subjects') }}" class="btn btn-outline-secondary px-4"><i class="bi bi-arrow-left me-1"></i>Cancel</a>
+                        <button type="submit" class="btn btn-indigo px-4 shadow-sm"><i class="bi bi-check-circle me-1"></i>Save Subject</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
