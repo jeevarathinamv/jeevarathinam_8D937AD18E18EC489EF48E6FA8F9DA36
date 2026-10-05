@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Exam Timetable - Admin Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Top Action Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-journal-plus text-purple me-2"></i> Manage Exam Timetable
+            </h2>
+            <p class="text-muted mb-0">Add, edit, or delete exam schedule records across all departments.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('add_exam') }}" class="btn btn-mint fw-bold rounded-pill px-4 text-dark shadow-sm">
+                <i class="bi bi-plus-circle-fill me-1"></i> Add New Exam
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="bi bi-funnel-fill text-primary me-2"></i> Search Timetables
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <form action="{{ url_for('manage_timetable') }}" method="GET" class="row g-3 align-items-end">
+
+                <!-- Department Filter -->
+                <div class="col-md-4">
+                    <label for="department" class="form-label fw-semibold text-secondary fs-7">Department</label>
+                    <select class="form-select rounded-3" id="department" name="department">
+                        <option value="">-- All Departments --</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept }}" {% if selected_dept == dept %}selected{% endif %}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Semester Filter -->
+                <div class="col-md-3">
+                    <label for="semester" class="form-label fw-semibold text-secondary fs-7">Semester</label>
+                    <select class="form-select rounded-3" id="semester" name="semester">
+                        <option value="">-- All Semesters --</option>
+                        {% for sem in semesters %}
+                            <option value="{{ sem }}" {% if selected_sem == sem %}selected{% endif %}>{{ sem }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Exam Filter -->
+                <div class="col-md-3">
+                    <label for="exam" class="form-label fw-semibold text-secondary fs-7">Exam Name</label>
+                    <select class="form-select rounded-3" id="exam" name="exam">
+                        <option value="">-- All Exams --</option>
+                        {% for ex in exams %}
+                            <option value="{{ ex }}" {% if selected_exam == ex %}selected{% endif %}>{{ ex }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary fw-semibold rounded-3 flex-grow-1">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                    <a href="{{ url_for('manage_timetable') }}" class="btn btn-outline-secondary rounded-3" title="Reset Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Timetable List Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="bi bi-table me-2 text-purple"></i> All Exam Records
+            </h5>
+            <span class="badge bg-purple-subtle text-purple px-3 py-2 rounded-pill fw-medium">
+                Total Records: {{ timetable|length }}
+            </span>
+        </div>
+        <div class="card-body p-0">
+            {% if timetable %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Exam Name</th>
+                                <th>Department</th>
+                                <th>Semester</th>
+                                <th>Subject Code</th>
+                                <th>Subject Name</th>
+                                <th>Date & Time</th>
+                                <th>Venue</th>
+                                <th class="pe-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam in timetable %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-dark">{{ exam.exam_name }}</td>
+                                    <td class="text-secondary small">{{ exam.department }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-dark px-2 py-1 rounded">
+                                            {{ exam.semester }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded">
+                                            {{ exam.subject_code }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-semibold text-dark">{{ exam.subject_name }}</td>
+                                    <td>
+                                        <div class="fw-medium text-dark">{{ exam.exam_date.strftime('%Y-%m-%d (%a)') }}</div>
+                                        <div class="text-muted small"><i class="bi bi-clock me-1"></i> {{ exam.exam_time }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-mint-subtle text-success border border-success-subtle px-2 py-1 rounded">
+                                            <i class="bi bi-geo-alt-fill me-1"></i> {{ exam.exam_venue }}
+                                        </span>
+                                    </td>
+                                    <td class="pe-4 text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <!-- Edit Button -->
+                                            <a href="{{ url_for('edit_exam', exam_id=exam.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                <i class="bi bi-pencil-square me-1"></i> Edit
+                                            </a>
+                                            <!-- Delete Button -->
+                                            <form action="{{ url_for('delete_exam', exam_id=exam.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this exam entry?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                    <i class="bi bi-trash-fill me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-folder-x fs-1 text-muted opacity-50 mb-3 d-block"></i>
+                    <h5 class="text-muted fw-semibold">No exam schedules found.</h5>
+                    <p class="text-muted small mb-3">Click the button below to add your first exam timetable record.</p>
+                    <a href="{{ url_for('add_exam') }}" class="btn btn-primary fw-bold rounded-pill px-4">
+                        <i class="bi bi-plus-circle me-1"></i> Add New Exam
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

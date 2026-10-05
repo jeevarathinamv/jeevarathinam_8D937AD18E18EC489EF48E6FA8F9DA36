@@ -6,15 +6,15 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'mca_student_exam_timetable_secret_key_2025')
 
-# Admin Hardcoded Credentials
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+# Admin Hardcoded Fallback Credentials
+DEFAULT_ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+DEFAULT_ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
-# Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
+# Database configuration: Default to MySQL URI, fallback to SQLite when USE_SQLITE=1
+MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/exam_timetable_db')
+SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'exam_timetable.db')
 
 use_sqlite = os.environ.get('USE_SQLITE') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
@@ -22,66 +22,131 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# Database Models
+class Admin(db.Model):
+    __tablename__ = 'admins'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    student_name = db.Column(db.String(100), nullable=False)
     register_number = db.Column(db.String(50), unique=True, nullable=False)
     department = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='student', lazy=True)
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password, password)
 
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
+class ExamTimetable(db.Model):
+    __tablename__ = 'exam_timetable'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
-
-class Booking(db.Model):
-    __tablename__ = 'bookings'
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
+    exam_name = db.Column(db.String(100), nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    semester = db.Column(db.String(20), nullable=False)
+    subject_name = db.Column(db.String(100), nullable=False)
+    subject_code = db.Column(db.String(50), nullable=False)
+    exam_date = db.Column(db.Date, nullable=False)
+    exam_time = db.Column(db.String(50), nullable=False)
+    exam_venue = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
+    """Seed initial admin and sample exam timetable for demonstration."""
+    # Seed default Admin
+    if db.session.query(Admin).count() == 0:
+        admin = Admin(username=DEFAULT_ADMIN_USERNAME)
+        admin.set_password(DEFAULT_ADMIN_PASSWORD)
+        db.session.add(admin)
         db.session.commit()
 
-# Auth Decorators
+    # Seed sample exam timetable records if empty
+    if db.session.query(ExamTimetable).count() == 0:
+        from datetime import timedelta
+        base_date = date.today()
+        sample_exams = [
+            ExamTimetable(
+                exam_name='End Semester Examinations 2025-26',
+                department='Master of Computer Applications (MCA)',
+                semester='Semester 1',
+                subject_name='Data Structures and Algorithms',
+                subject_code='MCA101',
+                exam_date=base_date + timedelta(days=5),
+                exam_time='10:00 AM - 01:00 PM',
+                exam_venue='Lab Hall A (Ground Floor)'
+            ),
+            ExamTimetable(
+                exam_name='End Semester Examinations 2025-26',
+                department='Master of Computer Applications (MCA)',
+                semester='Semester 1',
+                subject_name='Database Management Systems',
+                subject_code='MCA102',
+                exam_date=base_date + timedelta(days=7),
+                exam_time='10:00 AM - 01:00 PM',
+                exam_venue='Main Exam Hall 2'
+            ),
+            ExamTimetable(
+                exam_name='End Semester Examinations 2025-26',
+                department='Master of Computer Applications (MCA)',
+                semester='Semester 1',
+                subject_name='Python Web Development with Flask',
+                subject_code='MCA103',
+                exam_date=base_date + timedelta(days=10),
+                exam_time='10:00 AM - 01:00 PM',
+                exam_venue='Computer Lab 3'
+            ),
+            ExamTimetable(
+                exam_name='End Semester Examinations 2025-26',
+                department='Master of Computer Applications (MCA)',
+                semester='Semester 2',
+                subject_name='Advanced Java & Enterprise Applications',
+                subject_code='MCA201',
+                exam_date=base_date + timedelta(days=6),
+                exam_time='02:00 PM - 05:00 PM',
+                exam_venue='Main Exam Hall 1'
+            ),
+            ExamTimetable(
+                exam_name='End Semester Examinations 2025-26',
+                department='Master of Computer Applications (MCA)',
+                semester='Semester 2',
+                subject_name='Cloud Computing & DevOps',
+                subject_code='MCA202',
+                exam_date=base_date + timedelta(days=9),
+                exam_time='02:00 PM - 05:00 PM',
+                exam_venue='Seminar Hall B'
+            ),
+            ExamTimetable(
+                exam_name='Mid Term Examinations 2025-26',
+                department='Department of Information Technology',
+                semester='Semester 1',
+                subject_name='Software Engineering & Agile Methodologies',
+                subject_code='IT101',
+                exam_date=base_date + timedelta(days=3),
+                exam_time='10:00 AM - 12:00 PM',
+                exam_venue='IT Block Hall 101'
+            )
+        ]
+        db.session.add_all(sample_exams)
+        db.session.commit()
+
+# Helper Functions & Decorators
 def student_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'student':
+        if session.get('user_type') != 'student':
             flash('Please log in as a student to access this page.', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
@@ -90,297 +155,380 @@ def student_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'admin':
+        if session.get('user_type') != 'admin':
             flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
+@app.context_processor
+def inject_now():
+    return {'today': date.today()}
+
+# Routes
 @app.route('/')
 def index():
-    return render_template('index.html')
+    departments = db.session.query(ExamTimetable.department).distinct().all()
+    departments = [d[0] for d in departments if d[0]]
+    exams = db.session.query(ExamTimetable.exam_name).distinct().all()
+    exams = [e[0] for e in exams if e[0]]
+    total_exams_count = db.session.query(ExamTimetable).count()
+    return render_template('index.html', departments=departments, exams=exams, total_exams_count=total_exams_count)
 
 # Student Registration
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        register_number = request.form.get('register_number', '').strip()
+        student_name = request.form.get('student_name', '').strip()
+        register_number = request.form.get('register_number', '').strip().upper()
         department = request.form.get('department', '').strip()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
 
-        if not name or not register_number or not department or not email or not password:
-            flash('All fields are required.', 'danger')
+        if not student_name or not register_number or not department or not email or not password:
+            flash('All registration fields are required.', 'danger')
             return redirect(url_for('register'))
 
-        existing_student = Student.query.filter(
+        if len(password) < 6:
+            flash('Password must be at least 6 characters long.', 'danger')
+            return redirect(url_for('register'))
+
+        existing_student = db.session.query(Student).filter(
             (Student.email == email) | (Student.register_number == register_number)
         ).first()
 
         if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
+            flash('A student with this Email or Register Number is already registered.', 'danger')
             return redirect(url_for('register'))
 
-        student = Student(
-            name=name,
+        new_student = Student(
+            student_name=student_name,
             register_number=register_number,
             department=department,
             email=email
         )
-        student.set_password(password)
-        db.session.add(student)
+        new_student.set_password(password)
+        db.session.add(new_student)
         db.session.commit()
 
-        flash('Registration successful! Please log in.', 'success')
+        flash('Registration successful! Please log in to view your exam timetable.', 'success')
         return redirect(url_for('login'))
 
     return render_template('register.html')
 
-# Student & Admin Login
+# Student Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
+        email_or_reg = request.form.get('email_or_reg', '').strip()
+        password = request.form.get('password', '')
 
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
+        if not email_or_reg or not password:
+            flash('Please fill in both fields.', 'danger')
+            return redirect(url_for('login'))
+
+        student = db.session.query(Student).filter(
+            (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg.upper())
+        ).first()
+
+        if student and student.check_password(password):
+            session.clear()
+            session['user_type'] = 'student'
+            session['student_id'] = student.id
+            session['student_name'] = student.student_name
+            session['register_number'] = student.register_number
+            session['department'] = student.department
+            flash(f'Welcome back, {student.student_name}!', 'success')
+            return redirect(url_for('student_dashboard'))
         else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
-
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
-
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
+            flash('Invalid email/register number or password.', 'danger')
+            return redirect(url_for('login'))
 
     return render_template('login.html')
+
+# Admin Login
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        if not username or not password:
+            flash('Username and password are required.', 'danger')
+            return redirect(url_for('admin_login'))
+
+        admin = db.session.query(Admin).filter_by(username=username).first()
+
+        if admin and admin.check_password(password):
+            session.clear()
+            session['user_type'] = 'admin'
+            session['admin_username'] = admin.username
+            flash('Successfully logged in as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        elif username == DEFAULT_ADMIN_USERNAME and password == DEFAULT_ADMIN_PASSWORD:
+            session.clear()
+            session['user_type'] = 'admin'
+            session['admin_username'] = DEFAULT_ADMIN_USERNAME
+            flash('Successfully logged in as Administrator.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid admin credentials.', 'danger')
+            return redirect(url_for('admin_login'))
+
+    return render_template('admin_login.html')
 
 # Logout
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('You have been logged out.', 'info')
+    flash('You have been logged out successfully.', 'info')
     return redirect(url_for('index'))
 
-# Student Dashboard & Equipment Booking
+# Student Dashboard
 @app.route('/student/dashboard')
 @student_required
 def student_dashboard():
-    student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
+    student_id = session.get('student_id')
+    student = db.session.get(Student, student_id) if hasattr(db.session, 'get') else Student.query.get(student_id)
 
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
+    # Get filter query parameters
+    selected_dept = request.args.get('department', student.department if student else '').strip()
+    selected_sem = request.args.get('semester', '').strip()
+    selected_exam = request.args.get('exam', '').strip()
 
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    query = db.session.query(ExamTimetable)
 
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    if selected_dept:
+        query = query.filter(ExamTimetable.department.ilike(f"%{selected_dept}%"))
+    if selected_sem:
+        query = query.filter(ExamTimetable.semester == selected_sem)
+    if selected_exam:
+        query = query.filter(ExamTimetable.exam_name.ilike(f"%{selected_exam}%"))
 
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    timetable = query.order_by(ExamTimetable.exam_date.asc(), ExamTimetable.exam_time.asc()).all()
 
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    today_date = date.today()
 
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
+    # Calculate Student Metrics
+    all_student_exams = db.session.query(ExamTimetable).filter(
+        ExamTimetable.department.ilike(f"%{student.department}%")
+    ).all() if student else []
 
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
+    upcoming_exams = [e for e in all_student_exams if e.exam_date >= today_date]
 
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
+    # Unique subjects count
+    unique_subjects = set(e.subject_code for e in all_student_exams)
+
+    # Next Exam (closest upcoming exam)
+    upcoming_sorted = sorted(upcoming_exams, key=lambda x: x.exam_date)
+    next_exam = upcoming_sorted[0] if upcoming_sorted else None
+
+    # Distinct options for dropdown filters
+    departments = [d[0] for d in db.session.query(ExamTimetable.department).distinct().all() if d[0]]
+    semesters = [s[0] for s in db.session.query(ExamTimetable.semester).distinct().all() if s[0]]
+    exams = [e[0] for e in db.session.query(ExamTimetable.exam_name).distinct().all() if e[0]]
+
+    return render_template(
+        'student_dashboard.html',
+        student=student,
+        timetable=timetable,
+        upcoming_count=len(upcoming_exams),
+        total_subjects_count=len(unique_subjects),
+        next_exam=next_exam,
+        departments=departments,
+        semesters=semesters,
+        exams=exams,
+        selected_dept=selected_dept,
+        selected_sem=selected_sem,
+        selected_exam=selected_exam
     )
-    db.session.add(booking)
-    db.session.commit()
 
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
+# Dedicated Timetable View Page (Accessible to Students & Public)
+@app.route('/timetable')
+def timetable():
+    selected_dept = request.args.get('department', '').strip()
+    selected_sem = request.args.get('semester', '').strip()
+    selected_exam = request.args.get('exam', '').strip()
 
-# Admin Dashboard & Equipment Management
+    query = db.session.query(ExamTimetable)
+
+    if selected_dept:
+        query = query.filter(ExamTimetable.department.ilike(f"%{selected_dept}%"))
+    if selected_sem:
+        query = query.filter(ExamTimetable.semester == selected_sem)
+    if selected_exam:
+        query = query.filter(ExamTimetable.exam_name.ilike(f"%{selected_exam}%"))
+
+    timetable_records = query.order_by(ExamTimetable.exam_date.asc(), ExamTimetable.exam_time.asc()).all()
+
+    departments = [d[0] for d in db.session.query(ExamTimetable.department).distinct().all() if d[0]]
+    semesters = [s[0] for s in db.session.query(ExamTimetable.semester).distinct().all() if s[0]]
+    exams = [e[0] for e in db.session.query(ExamTimetable.exam_name).distinct().all() if e[0]]
+
+    return render_template(
+        'timetable.html',
+        timetable=timetable_records,
+        departments=departments,
+        semesters=semesters,
+        exams=exams,
+        selected_dept=selected_dept,
+        selected_sem=selected_sem,
+        selected_exam=selected_exam
+    )
+
+# Admin Dashboard
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    total_students = db.session.query(Student).count()
+    total_exams = len(set(e.exam_name for e in db.session.query(ExamTimetable).all()))
+    total_subjects = len(set(e.subject_code for e in db.session.query(ExamTimetable).all()))
+    upcoming_exams = db.session.query(ExamTimetable).filter(ExamTimetable.exam_date >= date.today()).count()
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    students = db.session.query(Student).order_by(Student.created_at.desc()).all()
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        total_students=total_students,
+        total_exams=total_exams,
+        total_subjects=total_subjects,
+        upcoming_exams=upcoming_exams,
+        students=students
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
+# Admin Manage Timetable List
+@app.route('/admin/timetable')
 @admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+def manage_timetable():
+    selected_dept = request.args.get('department', '').strip()
+    selected_sem = request.args.get('semester', '').strip()
+    selected_exam = request.args.get('exam', '').strip()
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
-        return redirect(url_for('admin_dashboard'))
+    query = db.session.query(ExamTimetable)
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
+    if selected_dept:
+        query = query.filter(ExamTimetable.department.ilike(f"%{selected_dept}%"))
+    if selected_sem:
+        query = query.filter(ExamTimetable.semester == selected_sem)
+    if selected_exam:
+        query = query.filter(ExamTimetable.exam_name.ilike(f"%{selected_exam}%"))
+
+    timetable_records = query.order_by(ExamTimetable.exam_date.asc(), ExamTimetable.exam_time.asc()).all()
+
+    departments = [d[0] for d in db.session.query(ExamTimetable.department).distinct().all() if d[0]]
+    semesters = [s[0] for s in db.session.query(ExamTimetable.semester).distinct().all() if s[0]]
+    exams = [e[0] for e in db.session.query(ExamTimetable.exam_name).distinct().all() if e[0]]
+
+    return render_template(
+        'manage_timetable.html',
+        timetable=timetable_records,
+        departments=departments,
+        semesters=semesters,
+        exams=exams,
+        selected_dept=selected_dept,
+        selected_sem=selected_sem,
+        selected_exam=selected_exam
     )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+# Admin Add Exam Timetable
+@app.route('/admin/timetable/add', methods=['GET', 'POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
-    description = request.form.get('description', '').strip()
+def add_exam():
+    if request.method == 'POST':
+        exam_name = request.form.get('exam_name', '').strip()
+        department = request.form.get('department', '').strip()
+        semester = request.form.get('semester', '').strip()
+        subject_name = request.form.get('subject_name', '').strip()
+        subject_code = request.form.get('subject_code', '').strip().upper()
+        exam_date_str = request.form.get('exam_date', '').strip()
+        exam_time = request.form.get('exam_time', '').strip()
+        exam_venue = request.form.get('exam_venue', '').strip()
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
+        if not all([exam_name, department, semester, subject_name, subject_code, exam_date_str, exam_time, exam_venue]):
+            flash('All exam fields are required.', 'danger')
+            return redirect(url_for('add_exam'))
 
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
+        try:
+            exam_date_val = datetime.strptime(exam_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('add_exam'))
 
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
+        new_exam = ExamTimetable(
+            exam_name=exam_name,
+            department=department,
+            semester=semester,
+            subject_name=subject_name,
+            subject_code=subject_code,
+            exam_date=exam_date_val,
+            exam_time=exam_time,
+            exam_venue=exam_venue
+        )
+        db.session.add(new_exam)
+        db.session.commit()
+
+        flash('Exam timetable entry added successfully!', 'success')
+        return redirect(url_for('manage_timetable'))
+
+    return render_template('add_exam.html')
+
+# Admin Edit Exam Timetable
+@app.route('/admin/timetable/edit/<int:exam_id>', methods=['GET', 'POST'])
 @admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
+def edit_exam(exam_id):
+    exam = db.session.get(ExamTimetable, exam_id) if hasattr(db.session, 'get') else ExamTimetable.query.get_or_404(exam_id)
+    if not exam:
+        flash('Exam record not found.', 'danger')
+        return redirect(url_for('manage_timetable'))
 
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
+    if request.method == 'POST':
+        exam_name = request.form.get('exam_name', '').strip()
+        department = request.form.get('department', '').strip()
+        semester = request.form.get('semester', '').strip()
+        subject_name = request.form.get('subject_name', '').strip()
+        subject_code = request.form.get('subject_code', '').strip().upper()
+        exam_date_str = request.form.get('exam_date', '').strip()
+        exam_time = request.form.get('exam_time', '').strip()
+        exam_venue = request.form.get('exam_venue', '').strip()
+
+        if not all([exam_name, department, semester, subject_name, subject_code, exam_date_str, exam_time, exam_venue]):
+            flash('All exam fields are required.', 'danger')
+            return redirect(url_for('edit_exam', exam_id=exam_id))
+
+        try:
+            exam_date_val = datetime.strptime(exam_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid date format.', 'danger')
+            return redirect(url_for('edit_exam', exam_id=exam_id))
+
+        exam.exam_name = exam_name
+        exam.department = department
+        exam.semester = semester
+        exam.subject_name = subject_name
+        exam.subject_code = subject_code
+        exam.exam_date = exam_date_val
+        exam.exam_time = exam_time
+        exam.exam_venue = exam_venue
+
+        db.session.commit()
+
+        flash('Exam timetable entry updated successfully!', 'success')
+        return redirect(url_for('manage_timetable'))
+
+    return render_template('edit_exam.html', exam=exam)
+
+# Admin Delete Exam Timetable
+@app.route('/admin/timetable/delete/<int:exam_id>', methods=['POST'])
 @admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
-@admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
-@admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
-
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
-    return redirect(url_for('admin_dashboard'))
+def delete_exam(exam_id):
+    exam = db.session.get(ExamTimetable, exam_id) if hasattr(db.session, 'get') else ExamTimetable.query.get_or_404(exam_id)
+    if exam:
+        db.session.delete(exam)
+        db.session.commit()
+        flash('Exam timetable entry deleted successfully.', 'success')
+    else:
+        flash('Exam record not found.', 'danger')
+    return redirect(url_for('manage_timetable'))
 
 if __name__ == '__main__':
     with app.app_context():
