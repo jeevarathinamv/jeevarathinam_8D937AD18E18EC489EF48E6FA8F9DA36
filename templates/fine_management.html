@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Fine Management - Admin Library System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-maroon mb-1"><i class="bi bi-currency-rupee text-gold me-2"></i>Library Fine Management</h3>
+            <p class="text-muted small mb-0">Track overdue fines across all students and update payment statuses.</p>
+        </div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-maroon rounded-pill px-3"><i class="bi bi-arrow-left me-1"></i> Dashboard</a>
+    </div>
+
+    <!-- Fine Summary Banner -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-maroon">
+                <span class="text-muted small fw-medium">Total Fine Calculated</span>
+                <h3 class="fw-bold text-maroon mb-0">₹{{ "%.2f"|format(total_fine) }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-danger">
+                <span class="text-muted small fw-medium">Total Pending Fines</span>
+                <h3 class="fw-bold text-danger mb-0">₹{{ "%.2f"|format(pending_fine) }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-4 border-success">
+                <span class="text-muted small fw-medium">Total Paid Fines</span>
+                <h3 class="fw-bold text-success mb-0">₹{{ "%.2f"|format(paid_fine) }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fine Management Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header card-header-maroon py-3">
+            <h5 class="fw-bold mb-0"><i class="bi bi-receipt-cutoff text-gold me-2"></i>Student Fine Records</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if fine_issues %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-maroon">
+                            <tr>
+                                <th>#</th>
+                                <th>Student Name</th>
+                                <th>Register No</th>
+                                <th>Book Name</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Late Days</th>
+                                <th>Fine Amount</th>
+                                <th>Current Status</th>
+                                <th>Update Fine Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for issue in fine_issues %}
+                                <tr>
+                                    <td class="fw-bold text-muted">{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ issue.student.name }}</td>
+                                    <td><code>{{ issue.student.register_number }}</code></td>
+                                    <td>{{ issue.book.book_name }}</td>
+                                    <td>{{ issue.due_date.strftime('%d-%b-%Y') }}</td>
+                                    <td>
+                                        {% if issue.return_date %}
+                                            {{ issue.return_date.strftime('%d-%b-%Y') }}
+                                        {% else %}
+                                            <span class="text-muted small">&mdash; (Unreturned)</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold text-danger">{{ issue.late_days }} Days</td>
+                                    <td class="fw-bold text-danger fs-6">₹{{ "%.2f"|format(issue.fine_amount) }}</td>
+                                    <td>
+                                        {% if issue.fine_status == 'No Fine' %}
+                                            <span class="badge badge-no-fine rounded-pill px-3 py-1">No Fine</span>
+                                        {% elif issue.fine_status == 'Pending' %}
+                                            <span class="badge badge-pending rounded-pill px-3 py-1">Pending</span>
+                                        {% elif issue.fine_status == 'Paid' %}
+                                            <span class="badge badge-paid rounded-pill px-3 py-1">Paid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form action="{{ url_for('update_fine_status', issue_id=issue.id) }}" method="POST" class="d-flex align-items-center gap-2">
+                                            <select name="fine_status" class="form-select form-select-sm rounded-pill" style="width: 110px;">
+                                                <option value="Pending" {% if issue.fine_status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                <option value="Paid" {% if issue.fine_status == 'Paid' %}selected{% endif %}>Paid</option>
+                                                <option value="No Fine" {% if issue.fine_status == 'No Fine' %}selected{% endif %}>No Fine</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-maroon rounded-pill px-3">Update</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle-fill display-4 text-success mb-2"></i>
+                    <h5 class="text-muted">No student fine records at this time.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

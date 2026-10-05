@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}My Issued Books - Library Fine System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-maroon mb-1"><i class="bi bi-journal-bookmark-fill text-gold me-2"></i>My Book Issue Details</h3>
+            <p class="text-muted small mb-0">View all books issued to your account along with due dates and calculated fine amounts.</p>
+        </div>
+        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-maroon rounded-pill"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            {% if my_issues %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-maroon">
+                            <tr>
+                                <th>#</th>
+                                <th>Book Name</th>
+                                <th>Author Name</th>
+                                <th>Category</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th>Fine Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for issue in my_issues %}
+                                <tr>
+                                    <td class="fw-bold text-muted">{{ loop.index }}</td>
+                                    <td class="fw-bold text-dark">{{ issue.book.book_name }}</td>
+                                    <td class="text-muted small">{{ issue.book.author_name }}</td>
+                                    <td><span class="badge bg-cream text-maroon border border-warning">{{ issue.book.category }}</span></td>
+                                    <td>{{ issue.issue_date.strftime('%d-%b-%Y') }}</td>
+                                    <td>
+                                        <span class="{% if issue.status == 'Overdue' %}text-danger fw-bold{% endif %}">
+                                            {{ issue.due_date.strftime('%d-%b-%Y') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if issue.return_date %}
+                                            {{ issue.return_date.strftime('%d-%b-%Y') }}
+                                        {% else %}
+                                            <span class="text-muted">&mdash;</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if issue.status == 'Issued' %}
+                                            <span class="badge badge-issued rounded-pill px-3 py-2"><i class="bi bi-bookmark-check me-1"></i> Issued</span>
+                                        {% elif issue.status == 'Returned' %}
+                                            <span class="badge badge-returned rounded-pill px-3 py-2"><i class="bi bi-check-all me-1"></i> Returned</span>
+                                        {% elif issue.status == 'Overdue' %}
+                                            <span class="badge badge-overdue rounded-pill px-3 py-2"><i class="bi bi-clock-history me-1"></i> Overdue</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold {% if issue.fine_amount > 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        ₹{{ "%.2f"|format(issue.fine_amount) }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-book display-4 text-muted mb-2"></i>
+                    <h5 class="text-muted">No books currently issued.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

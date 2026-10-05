@@ -1,73 +1,110 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home - Library Book Fine Management System{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<div class="hero-section text-center mb-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-book-half text-gold me-2"></i>Library Book Fine Management</h1>
+        <p class="lead text-light max-w-700 mx-auto mb-4">
+            A simple, automated, and modern library management system for tracking book issues, return due dates, and fine calculations.
         </p>
-        <div class="d-flex justify-content-center gap-3">
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
             {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-gold btn-lg px-4 rounded-pill"><i class="bi bi-speedometer2 me-2"></i>Go to Student Dashboard</a>
             {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-gold btn-lg px-4 rounded-pill"><i class="bi bi-speedometer2 me-2"></i>Go to Admin Dashboard</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-gold btn-lg px-4 rounded-pill"><i class="bi bi-person-plus-fill me-2"></i>Student Registration</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4 rounded-pill"><i class="bi bi-box-arrow-in-right me-2"></i>Student Login</a>
             {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<div class="container mb-5">
+    <!-- Key Statistics -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card card-hover h-100 p-4 border-0 shadow-sm text-center">
+                <div class="stat-card-icon stat-primary mx-auto mb-3">
+                    <i class="bi bi-journals fs-2"></i>
+                </div>
+                <h3 class="fw-bold text-dark">{{ total_books }}</h3>
+                <p class="text-muted mb-0 fw-medium">Books Available in Library</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card card-hover h-100 p-4 border-0 shadow-sm text-center">
+                <div class="stat-card-icon stat-warning mx-auto mb-3">
+                    <i class="bi bi-people-fill fs-2"></i>
+                </div>
+                <h3 class="fw-bold text-dark">{{ total_students }}</h3>
+                <p class="text-muted mb-0 fw-medium">Registered Students</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card card-hover h-100 p-4 border-0 shadow-sm text-center">
+                <div class="stat-card-icon stat-success mx-auto mb-3">
+                    <i class="bi bi-currency-rupee fs-2"></i>
+                </div>
+                <h3 class="fw-bold text-dark">₹5 / Day</h3>
+                <p class="text-muted mb-0 fw-medium">Standard Overdue Fine Rate</p>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
+    <!-- Feature Highlights -->
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-6">
+            <div class="p-4 bg-white rounded-4 shadow-sm border border-light">
+                <h3 class="fw-bold text-maroon mb-4"><i class="bi bi-star-fill text-gold me-2"></i>System Features</h3>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Student Account Portal</h6>
+                            <p class="text-muted small mb-0">Register, login, view issued books, check due dates, and track fines.</p>
+                        </div>
+                    </li>
+                    <li class="d-flex mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Automated Fine Calculation</h6>
+                            <p class="text-muted small mb-0">Calculates late days and applies ₹5/day fine automatically based on due date.</p>
+                        </div>
+                    </li>
+                    <li class="d-flex mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Admin Management Dashboard</h6>
+                            <p class="text-muted small mb-0">Manage library books, issue/return books, and update student fine statuses.</p>
+                        </div>
+                    </li>
+                    <li class="d-flex">
+                        <i class="bi bi-check-circle-fill text-success fs-5 me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Secure Password Hashing</h6>
+                            <p class="text-muted small mb-0">All student and admin passwords are securely hashed using Werkzeug security.</p>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 bg-cream">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-lock-fill text-maroon display-3 mb-3"></i>
+                    <h4 class="fw-bold text-maroon">Administrator Access</h4>
+                    <p class="text-muted">Librarians and system administrators can log in to issue books, record returns, and manage fines.</p>
+                    <a href="{{ url_for('admin_login') }}" class="btn btn-maroon px-4 rounded-pill mt-2">
+                        <i class="bi bi-shield-lock me-1"></i> Admin Login Portal
+                    </a>
                 </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
             </div>
         </div>
     </div>
