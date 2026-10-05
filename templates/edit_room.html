@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Room - Hostel System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card card-custom shadow">
+                <div class="card-header card-header-blue text-center py-3">
+                    <h4 class="mb-0"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Hostel Room</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('edit_room', room_id=room.id) }}" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="hostel_name" class="form-label fw-medium">Hostel Name</label>
+                            <input type="text" class="form-control" id="hostel_name" name="hostel_name" value="{{ room.hostel_name }}" required>
+                            <div class="invalid-feedback">Please enter hostel name.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="room_number" class="form-label fw-medium">Room Number</label>
+                            <input type="text" class="form-control" id="room_number" name="room_number" value="{{ room.room_number }}" required>
+                            <div class="invalid-feedback">Please enter room number.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="room_type" class="form-label fw-medium">Room Type</label>
+                            <select class="form-select" id="room_type" name="room_type" required>
+                                <option value="Single" {% if room.room_type == 'Single' %}selected{% endif %}>Single</option>
+                                <option value="Double" {% if room.room_type == 'Double' %}selected{% endif %}>Double</option>
+                                <option value="Triple" {% if room.room_type == 'Triple' %}selected{% endif %}>Triple</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a room type.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="capacity" class="form-label fw-medium">Total Capacity</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" min="1" max="10" value="{{ room.capacity }}" required>
+                            <div class="invalid-feedback">Please enter valid total capacity.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="available_beds" class="form-label fw-medium">Available Beds</label>
+                            <input type="number" class="form-control" id="available_beds" name="available_beds" min="0" max="{{ room.capacity }}" value="{{ room.available_beds }}" required>
+                            <div class="invalid-feedback">Please enter available beds (0 to capacity).</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="{{ url_for('manage_rooms') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fa-solid fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill fw-bold px-4">
+                                <i class="fa-solid fa-arrows-rotate me-1"></i> Update Room
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Room - Hostel System{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card card-custom shadow">
+                <div class="card-header card-header-blue text-center py-3">
+                    <h4 class="mb-0"><i class="fa-solid fa-plus-circle me-2"></i>Add Hostel Room</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('add_room') }}" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="hostel_name" class="form-label fw-medium">Hostel Name</label>
+                            <input type="text" class="form-control" id="hostel_name" name="hostel_name" placeholder="e.g., Boys Hostel Block A" required>
+                            <div class="invalid-feedback">Please enter hostel name.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="room_number" class="form-label fw-medium">Room Number</label>
+                            <input type="text" class="form-control" id="room_number" name="room_number" placeholder="e.g., A-101" required>
+                            <div class="invalid-feedback">Please enter room number.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="room_type" class="form-label fw-medium">Room Type</label>
+                            <select class="form-select" id="room_type" name="room_type" required>
+                                <option value="" selected disabled>Select Room Type</option>
+                                <option value="Single">Single</option>
+                                <option value="Double">Double</option>
+                                <option value="Triple">Triple</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a room type.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="capacity" class="form-label fw-medium">Bed Capacity</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" min="1" max="10" placeholder="e.g., 2" required>
+                            <div class="invalid-feedback">Please enter valid capacity (at least 1).</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="{{ url_for('manage_rooms') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fa-solid fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success rounded-pill fw-bold px-4">
+                                <i class="fa-solid fa-check me-1"></i> Save Room
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
