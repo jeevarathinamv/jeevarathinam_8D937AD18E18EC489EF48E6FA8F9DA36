@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Classroom Maintenance Complaint Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card card-custom p-4 my-4">
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-user-shield fa-3x text-warning mb-2"></i>
+                <h3 class="fw-bold">Administrator Login</h3>
+                <p class="text-muted">Portal for Maintenance Admin Management</p>
+            </div>
+
+            <form action="{{ url_for('admin_login') }}" method="POST" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="username" class="form-label font-weight-bold">Admin Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-user-gear"></i></span>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter admin username" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label font-weight-bold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-solid fa-key"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter admin password" required>
+                    </div>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-warning py-2 fw-bold text-dark">
+                        <i class="fa-solid fa-lock-open me-2"></i>Admin Login
+                    </button>
+                </div>
+
+                <div class="alert alert-light border text-center text-muted py-2 mb-0">
+                    <small><i class="fa-solid fa-info-circle me-1"></i> Default Admin Credentials: <strong>admin</strong> / <strong>admin123</strong></small>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
