@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, Student, Admin, Complaint
 
-class SportsBookingTestCase(unittest.TestCase):
+class WaterComplaintTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,10 +11,10 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
+            # Seed default admin
+            admin = Admin(username='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
             db.session.commit()
 
     def tearDown(self):
@@ -25,92 +25,147 @@ class SportsBookingTestCase(unittest.TestCase):
     def test_student_registration_and_login(self):
         # Register student
         response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
+            'name': 'Alice Smith',
+            'register_number': 'MCA202501',
             'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
+            'email': 'alice@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
         self.assertIn(b'Registration successful', response.data)
 
-        # Login student
-        response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
+        # Try duplicate registration
+        response = self.client.post('/register', data={
+            'name': 'Alice Smith',
+            'register_number': 'MCA202501',
+            'department': 'Computer Applications (MCA)',
+            'email': 'alice@college.edu',
             'password': 'password123'
         }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
+        self.assertIn(b'already exists', response.data)
+
+        # Login student
+        response = self.client.post('/login', data={
+            'email_or_reg': 'alice@college.edu',
+            'password': 'password123'
+        }, follow_redirects=True)
+        self.assertIn(b'Welcome back, Alice Smith!', response.data)
 
     def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
+        response = self.client.post('/admin/login', data={
             'username': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
         self.assertIn(b'Logged in successfully as Administrator', response.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
+    def test_complaint_submission_and_student_isolation(self):
+        # Register and login Student 1 (Alice)
         self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
+            'name': 'Alice',
+            'register_number': 'REG101',
             'department': 'MCA',
-            'email': 'sam@college.edu',
+            'email': 'alice1@college.edu',
             'password': 'pass'
         })
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
+            'email_or_reg': 'alice1@college.edu',
             'password': 'pass'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
+        # Submit Complaint
+        response = self.client.post('/student/report-complaint', data={
+            'complaint_type': 'No Water',
+            'location': '3rd Floor MCA Block',
+            'description': 'No water coming from tap since morning.',
+            'complaint_date': date.today().isoformat()
         }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        self.assertIn(b'Complaint submitted successfully', response.data)
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        with app.app_context():
+            complaint = Complaint.query.first()
+            self.assertIsNotNone(complaint)
+            self.assertEqual(complaint.complaint_type, 'No Water')
+            self.assertTrue(complaint.complaint_id.startswith('CWP-'))
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # Check My Complaints
+        response = self.client.get('/student/my-complaints')
+        self.assertIn(b'No Water', response.data)
+        self.assertIn(b'3rd Floor MCA Block', response.data)
 
-        # Admin login and approval
+        # Register and login Student 2 (Bob)
         self.client.get('/logout')
+        self.client.post('/register', data={
+            'name': 'Bob',
+            'register_number': 'REG102',
+            'department': 'MCA',
+            'email': 'bob@college.edu',
+            'password': 'pass'
+        })
         self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
-            'password': 'admin123'
+            'email_or_reg': 'bob@college.edu',
+            'password': 'pass'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
+        # Bob views My Complaints (should NOT see Alice's complaint)
+        response = self.client.get('/student/my-complaints')
+        self.assertNotIn(b'3rd Floor MCA Block', response.data)
+
+    def test_admin_complaint_management_and_resolved_date(self):
+        # Create student and complaint
+        with app.app_context():
+            student = Student(name='Charlie', register_number='REG103', department='MCA', email='charlie@college.edu')
+            student.set_password('pass')
+            db.session.add(student)
+            db.session.commit()
+
+            c = Complaint(
+                complaint_id='CWP-999001',
+                student_id=student.id,
+                complaint_type='RO Problem',
+                location='Hostel B Mess',
+                description='RO filter light blinking red.',
+                complaint_date=date.today(),
+                status='Pending'
+            )
+            db.session.add(c)
+            db.session.commit()
+            complaint_id_db = c.id
+
+        # Admin Login
+        self.client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+
+        # Update status to In Progress
+        response = self.client.post(f'/admin/update-complaint/{complaint_id_db}', data={
+            'status': 'In Progress',
+            'admin_remarks': 'Technician assigned.'
+        }, follow_redirects=True)
+        self.assertIn(b'In Progress', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            comp = db.session.get(Complaint, complaint_id_db)
+            self.assertEqual(comp.status, 'In Progress')
+            self.assertIsNone(comp.resolved_date)
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+        # Update status to Resolved (automatically sets resolved_date)
+        response = self.client.post(f'/admin/update-complaint/{complaint_id_db}', data={
+            'status': 'Resolved',
+            'admin_remarks': 'RO Filter replaced.'
+        }, follow_redirects=True)
+        self.assertIn(b'Resolved', response.data)
 
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+            comp = db.session.get(Complaint, complaint_id_db)
+            self.assertEqual(comp.status, 'Resolved')
+            self.assertEqual(comp.resolved_date, date.today())
+            self.assertEqual(comp.admin_remarks, 'RO Filter replaced.')
+
+        # Delete complaint
+        response = self.client.post(f'/admin/delete-complaint/{complaint_id_db}', follow_redirects=True)
+        self.assertIn(b'has been deleted successfully', response.data)
+
+        with app.app_context():
+            comp = db.session.get(Complaint, complaint_id_db)
+            self.assertIsNone(comp)
+
 
 if __name__ == '__main__':
     unittest.main()
