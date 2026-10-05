@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}My Complaints - College Canteen Feedback & Complaint System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-shield-exclamation text-canteen-green me-2"></i> My Complaints & Grievances</h3>
+            <p class="text-muted small mb-0">Track live resolution status and admin remarks for your complaints</p>
+        </div>
+        <a href="{{ url_for('submit_complaint') }}" class="btn btn-canteen-green text-white rounded-pill px-3 py-2 btn-sm fw-semibold shadow-sm">
+            <i class="bi bi-plus-circle-fill me-1"></i> Lodge New Complaint
+        </a>
+    </div>
+
+    {% if complaints %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-canteen-dark text-white">
+                        <tr>
+                            <th class="py-3 px-3">Complaint ID</th>
+                            <th class="py-3">Type</th>
+                            <th class="py-3" style="min-width: 250px;">Description</th>
+                            <th class="py-3">Date</th>
+                            <th class="py-3 text-center">Status</th>
+                            <th class="py-3" style="min-width: 200px;">Admin Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in complaints %}
+                            <tr>
+                                <td class="px-3">
+                                    <span class="badge bg-cream text-canteen-orange border border-warning border-opacity-50 fw-bold fs-6">
+                                        {{ c.complaint_id }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-dark">{{ c.complaint_type }}</span>
+                                </td>
+                                <td>
+                                    <p class="small text-muted mb-0">{{ c.description }}</p>
+                                </td>
+                                <td>
+                                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ c.complaint_date.strftime('%d %b %Y') }}</small>
+                                </td>
+                                <td class="text-center">
+                                    {% if c.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold"><i class="bi bi-clock-history me-1"></i> Pending</span>
+                                    {% elif c.status == 'In Progress' %}
+                                        <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold"><i class="bi bi-gear-wide-connected me-1"></i> In Progress</span>
+                                    {% elif c.status == 'Resolved' %}
+                                        <span class="badge bg-success text-white rounded-pill px-3 py-1 fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Resolved</span>
+                                    {% elif c.status == 'Rejected' %}
+                                        <span class="badge bg-danger text-white rounded-pill px-3 py-1 fw-bold"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white rounded-pill px-3 py-1 fw-bold">{{ c.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if c.admin_remarks %}
+                                        <div class="bg-cream p-2 rounded-3 border-start border-3 border-canteen-green small">
+                                            <i class="bi bi-chat-left-dots-fill text-canteen-green me-1"></i> <strong>Admin:</strong> {{ c.admin_remarks }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small italic">Awaiting admin review...</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <div class="text-muted fs-1 mb-2"><i class="bi bi-shield-check"></i></div>
+            <h5 class="fw-bold text-dark">No Complaints Lodged</h5>
+            <p class="text-muted small">You haven't submitted any complaints or grievances.</p>
+            <div>
+                <a href="{{ url_for('submit_complaint') }}" class="btn btn-canteen-green text-white rounded-pill px-4 py-2 fw-semibold">
+                    <i class="bi bi-exclamation-octagon-fill me-1"></i> Lodge Complaint
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

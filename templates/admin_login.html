@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - College Canteen Feedback & Complaint System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-canteen-dark text-white py-3 text-center border-bottom border-warning border-2">
+                    <h4 class="fw-bold mb-0 text-canteen-orange"><i class="bi bi-shield-lock-fill me-2"></i> Admin Control Login</h4>
+                    <p class="small text-cream mb-0">Canteen Administration Access Only</p>
+                </div>
+                <div class="card-body p-4 bg-white">
+                    <div class="alert alert-info py-2 rounded-3 border-0 small mb-3">
+                        <i class="bi bi-info-circle-fill me-1"></i> Demo Credentials: Username <strong>admin</strong> | Password <strong>admin123</strong>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('admin_login') }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-person-fill me-1 text-canteen-orange"></i> Admin Username</label>
+                            <input type="text" name="username" class="form-control rounded-3" placeholder="Enter admin username" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold"><i class="bi bi-key-fill me-1 text-canteen-orange"></i> Password</label>
+                            <input type="password" name="password" class="form-control rounded-3" placeholder="Enter admin password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-canteen-green text-white w-100 py-2 rounded-3 fw-bold fs-6 shadow-sm">
+                            <i class="bi bi-shield-check me-1"></i> Admin Login
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('login') }}" class="text-muted small text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i> Return to Student Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

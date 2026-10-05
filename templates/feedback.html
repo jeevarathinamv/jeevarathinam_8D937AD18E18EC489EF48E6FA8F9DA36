@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Feedback - College Canteen Feedback & Complaint System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-canteen-orange text-white py-3 text-center">
+                    <h4 class="fw-bold mb-0"><i class="bi bi-star-fill me-2 text-warning"></i> Submit Canteen Feedback</h4>
+                    <p class="small text-cream mb-0">Rate your recent dining experience at the college canteen</p>
+                </div>
+                <div class="card-body p-4 bg-white">
+                    <form method="POST" action="{{ url_for('submit_feedback') }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-calendar3 me-1 text-canteen-orange"></i> Feedback Date</label>
+                            <input type="date" name="feedback_date" class="form-control rounded-3" value="{{ today }}" required>
+                        </div>
+
+                        <!-- Ratings Grid -->
+                        <div class="bg-cream p-3 rounded-4 mb-4 border border-warning border-opacity-50">
+                            <h6 class="fw-bold text-canteen-orange mb-3 border-bottom pb-2">
+                                <i class="bi bi-sliders me-1"></i> Performance Rating (1 = Poor, 5 = Excellent)
+                            </h6>
+
+                            <!-- Food Quality Rating -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-medium mb-0"><i class="bi bi-egg-fried me-1 text-canteen-orange"></i> Food Quality</label>
+                                    <span class="badge bg-canteen-orange text-white rating-val" id="val_food_quality">5 Stars</span>
+                                </div>
+                                <select name="food_quality_rating" class="form-select rounded-3 rating-select" data-target="val_food_quality" required>
+                                    <option value="5" selected>5 - Excellent</option>
+                                    <option value="4">4 - Very Good</option>
+                                    <option value="3">3 - Good / Average</option>
+                                    <option value="2">2 - Needs Improvement</option>
+                                    <option value="1">1 - Poor</option>
+                                </select>
+                            </div>
+
+                            <!-- Taste Rating -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-medium mb-0"><i class="bi bi-heart-pulse me-1 text-canteen-orange"></i> Taste & Flavor</label>
+                                    <span class="badge bg-canteen-orange text-white rating-val" id="val_taste">5 Stars</span>
+                                </div>
+                                <select name="taste_rating" class="form-select rounded-3 rating-select" data-target="val_taste" required>
+                                    <option value="5" selected>5 - Excellent</option>
+                                    <option value="4">4 - Very Good</option>
+                                    <option value="3">3 - Good / Average</option>
+                                    <option value="2">2 - Needs Improvement</option>
+                                    <option value="1">1 - Poor</option>
+                                </select>
+                            </div>
+
+                            <!-- Cleanliness Rating -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-medium mb-0"><i class="bi bi-sparkles me-1 text-canteen-orange"></i> Cleanliness & Hygiene</label>
+                                    <span class="badge bg-canteen-orange text-white rating-val" id="val_cleanliness">5 Stars</span>
+                                </div>
+                                <select name="cleanliness_rating" class="form-select rounded-3 rating-select" data-target="val_cleanliness" required>
+                                    <option value="5" selected>5 - Excellent</option>
+                                    <option value="4">4 - Very Good</option>
+                                    <option value="3">3 - Good / Average</option>
+                                    <option value="2">2 - Needs Improvement</option>
+                                    <option value="1">1 - Poor</option>
+                                </select>
+                            </div>
+
+                            <!-- Service Rating -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-medium mb-0"><i class="bi bi-clock me-1 text-canteen-orange"></i> Service Speed</label>
+                                    <span class="badge bg-canteen-orange text-white rating-val" id="val_service">5 Stars</span>
+                                </div>
+                                <select name="service_rating" class="form-select rounded-3 rating-select" data-target="val_service" required>
+                                    <option value="5" selected>5 - Fast & Courteous</option>
+                                    <option value="4">4 - Good Speed</option>
+                                    <option value="3">3 - Acceptable Delay</option>
+                                    <option value="2">2 - Slow Service</option>
+                                    <option value="1">1 - Very Slow</option>
+                                </select>
+                            </div>
+
+                            <!-- Overall Rating -->
+                            <div class="mb-0">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-bold mb-0 text-canteen-orange"><i class="bi bi-trophy me-1"></i> Overall Rating</label>
+                                    <span class="badge bg-canteen-green text-white rating-val fw-bold" id="val_overall">5 Stars</span>
+                                </div>
+                                <select name="overall_rating" class="form-select rounded-3 rating-select" data-target="val_overall" required>
+                                    <option value="5" selected>5 - Outstanding</option>
+                                    <option value="4">4 - Satisfactory</option>
+                                    <option value="3">3 - Average</option>
+                                    <option value="2">2 - Below Expectations</option>
+                                    <option value="1">1 - Unacceptable</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Message -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold"><i class="bi bi-chat-left-text me-1 text-canteen-orange"></i> Feedback Message / Detailed Comments</label>
+                            <textarea name="message" class="form-control rounded-3" rows="4" placeholder="Write your feedback details, suggestions, or food recommendations here..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-canteen-green text-white w-100 py-2 rounded-3 fw-bold fs-6 shadow-sm">
+                            <i class="bi bi-send-fill me-1"></i> Submit Feedback
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

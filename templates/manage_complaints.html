@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Complaints - Admin Control Panel{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-card-checklist text-canteen-green me-2"></i> Complaint Management System</h3>
+            <p class="text-muted small mb-0">Search, filter, update complaint status and add admin remarks</p>
+        </div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary rounded-pill px-3 py-2 btn-sm fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Filter and Search Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
+        <form method="GET" action="{{ url_for('manage_complaints') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-cream border-end-0 text-canteen-orange"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Search by Complaint ID, Type, Description, Student Name or Reg No..." value="{{ search_query }}">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="input-group">
+                    <label class="input-group-text bg-cream text-canteen-orange fw-medium"><i class="bi bi-funnel-fill me-1"></i> Status</label>
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Resolved" {% if status_filter == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-canteen-orange text-white w-100 rounded-3 fw-bold btn-sm">
+                    <i class="bi bi-filter"></i> Apply Filter
+                </button>
+                {% if search_query or status_filter %}
+                    <a href="{{ url_for('manage_complaints') }}" class="btn btn-outline-danger rounded-3 btn-sm" title="Reset Search">
+                        <i class="bi bi-x-circle-fill"></i> Reset
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Complaints Table -->
+    {% if complaints %}
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-canteen-dark text-white">
+                        <tr>
+                            <th class="py-3 px-3">Complaint ID</th>
+                            <th class="py-3">Student Details</th>
+                            <th class="py-3">Type</th>
+                            <th class="py-3" style="min-width: 200px;">Description</th>
+                            <th class="py-3">Date</th>
+                            <th class="py-3 text-center">Status</th>
+                            <th class="py-3" style="min-width: 220px;">Admin Remarks & Status Update</th>
+                            <th class="py-3 text-end px-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in complaints %}
+                            <tr>
+                                <td class="px-3">
+                                    <span class="badge bg-cream text-canteen-orange border border-warning border-opacity-50 fw-bold fs-6">
+                                        {{ c.complaint_id }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-dark">{{ c.student.name }}</span><br>
+                                    <small class="text-muted">{{ c.student.register_number }} &bull; {{ c.student.department }}</small><br>
+                                    <small class="text-canteen-green">{{ c.student.email }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border fw-semibold">{{ c.complaint_type }}</span>
+                                </td>
+                                <td>
+                                    <p class="small text-muted mb-0">{{ c.description }}</p>
+                                </td>
+                                <td>
+                                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ c.complaint_date.strftime('%d %b %Y') }}</small>
+                                </td>
+                                <td class="text-center">
+                                    {% if c.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold"><i class="bi bi-clock-history me-1"></i> Pending</span>
+                                    {% elif c.status == 'In Progress' %}
+                                        <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold"><i class="bi bi-gear-wide-connected me-1"></i> In Progress</span>
+                                    {% elif c.status == 'Resolved' %}
+                                        <span class="badge bg-success text-white rounded-pill px-3 py-1 fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Resolved</span>
+                                    {% elif c.status == 'Rejected' %}
+                                        <span class="badge bg-danger text-white rounded-pill px-3 py-1 fw-bold"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_complaint_status', complaint_id=c.id) }}" class="bg-cream p-2 rounded-3 border border-warning border-opacity-50">
+                                        <div class="mb-2">
+                                            <select name="status" class="form-select form-select-sm rounded-2 fw-semibold">
+                                                <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %}>Status: Pending</option>
+                                                <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %}>Status: In Progress</option>
+                                                <option value="Resolved" {% if c.status == 'Resolved' %}selected{% endif %}>Status: Resolved</option>
+                                                <option value="Rejected" {% if c.status == 'Rejected' %}selected{% endif %}>Status: Rejected</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <input type="text" name="admin_remarks" class="form-control form-control-sm rounded-2" placeholder="Enter admin remarks..." value="{{ c.admin_remarks or '' }}">
+                                        </div>
+                                        <button type="submit" class="btn btn-canteen-green text-white btn-sm w-100 rounded-2 fw-bold py-1">
+                                            <i class="bi bi-save me-1"></i> Save Update
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="text-end px-3">
+                                    <form method="POST" action="{{ url_for('delete_complaint', complaint_id=c.id) }}" onsubmit="return confirm('Are you sure you want to delete Complaint {{ c.complaint_id }}?');" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle p-2" title="Delete Complaint">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+            <div class="text-muted fs-1 mb-2"><i class="bi bi-search"></i></div>
+            <h5 class="fw-bold text-dark">No Complaints Found</h5>
+            <p class="text-muted small">No complaints matched your current search query or status filter.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
