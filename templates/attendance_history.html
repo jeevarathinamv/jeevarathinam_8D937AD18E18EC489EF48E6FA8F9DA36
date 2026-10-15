@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance History - Teacher{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-clock-history text-purple me-2" style="color: var(--purple);"></i> Attendance History</h2>
+        <p class="text-muted mb-0">Review all previously submitted attendance sessions</p>
+    </div>
+</div>
+
+<div class="card card-custom p-3 shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Hour</th>
+                        <th>Class</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Total Students Marked</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sess in sessions %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ sess.session_date }}</td>
+                        <td><span class="badge bg-info text-dark rounded-circle p-2">H{{ sess.hour_number }}</span></td>
+                        <td class="fw-bold">{{ sess.session_class.name }}</td>
+                        <td>{{ sess.subject.code }} - {{ sess.subject.name }}</td>
+                        <td><span class="badge bg-success rounded-pill px-3 py-1">{{ sess.status }}</span></td>
+                        <td><span class="badge bg-secondary rounded-pill px-3 py-1">{{ sess.records|length }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

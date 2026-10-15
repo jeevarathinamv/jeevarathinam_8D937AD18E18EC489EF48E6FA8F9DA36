@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Class Tutor Dashboard - {{ tutored_class.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-person-badge-fill text-purple me-2" style="color: var(--purple);"></i> Class Tutor Dashboard</h2>
+        <p class="text-muted mb-0">Assigned Class: <strong class="text-primary fs-5">{{ tutored_class.name }}</strong> | Tutor: <strong>{{ teacher.name }}</strong></p>
+    </div>
+    <div>
+        <a href="{{ url_for('export_csv', type='student_wise', class_id=tutored_class.id) }}" class="btn btn-mint shadow-sm px-4">
+            <i class="bi bi-file-earmark-spreadsheet-fill me-2"></i> Export Class CSV
+        </a>
+    </div>
+</div>
+
+<!-- Class Summary Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card stat-card-blue">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase mb-1 opacity-75">Total Students</h6>
+                    <h2 class="fw-bold mb-0">{{ total_students }}</h2>
+                </div>
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-card-green">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase mb-1 opacity-75">Present Hours Count</h6>
+                    <h2 class="fw-bold mb-0">{{ present_count }}</h2>
+                </div>
+                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-card-purple" style="background: linear-gradient(135deg, #e11d48, #be123c);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase mb-1 opacity-75">Absent Hours Count</h6>
+                    <h2 class="fw-bold mb-0">{{ absent_count }}</h2>
+                </div>
+                <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card stat-card-cyan">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-uppercase mb-1 opacity-75">Class Attendance %</h6>
+                    <h2 class="fw-bold mb-0">{{ class_pct }}%</h2>
+                </div>
+                <div class="stat-icon"><i class="bi bi-percent"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date & Subject Filter Card -->
+<div class="card card-custom p-3 shadow-sm mb-4">
+    <div class="card-body">
+        <form action="{{ url_for('tutor_dashboard') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Filter by Date</label>
+                <input type="date" name="date" class="form-control" value="{{ filter_date }}">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-bold">Filter by Subject</label>
+                <select name="subject_id" class="form-select">
+                    <option value="">-- All Subjects --</option>
+                    {% for sub in subjects %}
+                        <option value="{{ sub.id }}" {% if filter_subject_id == sub.id %}selected{% endif %}>{{ sub.name }} ({{ sub.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-royal w-100 py-2"><i class="bi bi-funnel-fill me-1"></i> Apply Filters</button>
+                <a href="{{ url_for('tutor_dashboard') }}" class="btn btn-outline-secondary py-2"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- RA Students Alert Table -->
+{% if ra_students %}
+<div class="card card-custom p-3 shadow-sm border-start border-danger border-4 mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i> RA Students (Attendance Below 50%)</h5>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th>Reg No</th>
+                        <th>Student Name</th>
+                        <th>Total Hours</th>
+                        <th>Present Hours</th>
+                        <th>Absent Hours</th>
+                        <th>Attendance %</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ra in ra_students %}
+                    <tr>
+                        <td class="fw-bold text-danger">{{ ra.student.register_number }}</td>
+                        <td>{{ ra.student.name }}</td>
+                        <td>{{ ra.total_hours }}</td>
+                        <td class="text-success fw-bold">{{ ra.present_hours }}</td>
+                        <td class="text-danger fw-bold">{{ ra.absent_hours }}</td>
+                        <td class="fw-bold text-danger">{{ ra.percentage }}%</td>
+                        <td><span class="badge-ra">{{ ra.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Full Class Attendance & Internal Marks Summary Table -->
+<div class="card card-custom p-3 shadow-sm">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="bi bi-card-checklist me-2 text-primary"></i> Student Attendance & Internal Mark Records</h5>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th>Reg No</th>
+                        <th>Student Name</th>
+                        <th>Total Hours</th>
+                        <th>Present Hours</th>
+                        <th>Absent Hours</th>
+                        <th>Overall Attendance %</th>
+                        <th>Internal Mark (out of 5)</th>
+                        <th>Eligibility Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sum in student_summaries %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ sum.student.register_number }}</td>
+                        <td>{{ sum.student.name }}</td>
+                        <td>{{ sum.total_hours }}</td>
+                        <td class="text-success fw-bold">{{ sum.present_hours }}</td>
+                        <td class="text-danger fw-bold">{{ sum.absent_hours }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold">{{ sum.percentage }}%</span>
+                                <div class="progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress-bar {% if sum.percentage < 50 and sum.total_hours > 0 %}bg-danger{% elif sum.percentage < 75 and sum.total_hours > 0 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ sum.percentage }}%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="fw-bold text-center fs-6"><span class="badge bg-purple text-white px-3 py-1 rounded-pill" style="background-color: var(--purple);">{{ sum.mark }} / 5</span></td>
+                        <td>
+                            {% if sum.percentage >= 50 or sum.total_hours == 0 %}
+                                <span class="badge-eligible"><i class="bi bi-check-circle-fill me-1"></i> Eligible</span>
+                            {% else %}
+                                <span class="badge-ra"><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ sum.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
