@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Class Tutor Dashboard - {{ tutored_class.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-banner d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-award me-2"></i> Class Tutor Dashboard</h2>
+        <p class="mb-0 text-light opacity-75">Assigned Class: <strong>{{ tutored_class.name }}</strong> (Code: {{ tutored_class.code }})</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ url_for('export_csv', type='class_tutor', class_id=tutored_class.id) }}" class="btn btn-light text-primary fw-bold shadow-sm rounded-3">
+            <i class="fa-solid fa-file-csv me-1 text-success"></i> Export Class CSV
+        </a>
+    </div>
+</div>
+
+<!-- Tutor Class Overview Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card stat-card h-100 p-3">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon-wrapper bg-light-blue me-3">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ total_students }}</h3>
+                    <small class="text-muted fw-semibold">Class Students</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card stat-card h-100 p-3">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon-wrapper bg-light-purple me-3">
+                    <i class="fa-solid fa-percent"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ class_avg_percentage }}%</h3>
+                    <small class="text-muted fw-semibold">Class Avg Attendance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card stat-card h-100 p-3">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon-wrapper bg-light-cyan me-3">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ subjects|length }}</h3>
+                    <small class="text-muted fw-semibold">Class Subjects</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="card stat-card h-100 p-3">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon-wrapper bg-light-danger me-3">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0 text-danger">{{ ra_count }}</h3>
+                    <small class="text-muted fw-semibold">RA Students (&lt;50%)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter and Reports Table -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h5 class="fw-bold m-0 text-primary"><i class="fa-solid fa-table me-2"></i> Student-wise Attendance & Internal Marks</h5>
+
+        <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+            <select name="subject_id" class="form-select form-select-sm" style="max-width: 220px;" onchange="this.form.submit()">
+                <option value="">All Subjects (Overall Summary)</option>
+                {% for sub in subjects %}
+                <option value="{{ sub.id }}" {% if selected_subject_id == sub.id %}selected{% endif %}>{{ sub.name }} ({{ sub.code }})</option>
+                {% endfor %}
+            </select>
+            {% if selected_subject_id %}
+            <a href="{{ url_for('tutor_dashboard') }}" class="btn btn-sm btn-outline-secondary rounded-2">Reset Filter</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive custom-table">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Reg Number</th>
+                        <th>Student Name</th>
+                        <th>Subject</th>
+                        <th>Total Hours</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Attendance %</th>
+                        <th>Internal Mark</th>
+                        <th>Eligibility Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in reports %}
+                    {% set student = item.student %}
+                    {% set total_h = item.total_hours if selected_subject_id else item.overall_total_hours %}
+                    {% set present_h = item.present_hours if selected_subject_id else item.overall_present_hours %}
+                    {% set absent_h = item.absent_hours if selected_subject_id else item.overall_absent_hours %}
+                    {% set pct = item.percentage if selected_subject_id else item.overall_percentage %}
+                    {% set mark = item.internal_mark if selected_subject_id else item.overall_internal_mark %}
+
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ student.register_number }}</span></td>
+                        <td class="fw-semibold">{{ student.name }}</td>
+                        <td>
+                            {% if selected_subject_id %}
+                                <span class="badge bg-light-purple text-purple">{{ item.subject.name }}</span>
+                            {% else %}
+                                <span class="badge bg-light-cyan text-dark">Overall All Subjects</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ total_h }}</td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ present_h }}</span></td>
+                        <td><span class="badge bg-danger bg-opacity-10 text-danger fw-bold">{{ absent_h }}</span></td>
+                        <td style="min-width: 140px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold">{{ pct }}%</span>
+                                <div class="progress progress-thin flex-grow-1">
+                                    <div class="progress-bar {% if pct >= 80 %}progress-bar-gradient-green{% elif pct >= 50 %}progress-bar-gradient-blue{% else %}progress-bar-gradient-red{% endif %}" role="progressbar" style="width: {{ pct }}%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if mark == 'RA' %}
+                                <span class="badge badge-ra">0 / 5 (RA)</span>
+                            {% else %}
+                                <span class="badge bg-gradient-primary">{{ mark }} / 5</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.is_ra %}
+                                <span class="badge badge-ra"><i class="fa-solid fa-triangle-exclamation me-1"></i> RA - Below 50%</span>
+                            {% else %}
+                                <span class="badge badge-eligible"><i class="fa-solid fa-circle-check me-1"></i> Eligible</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Visual Attendance Distribution Chart -->
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+    <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-chart-column me-2"></i> Attendance Visual Statistics</h5>
+    <canvas id="tutorAttendanceChart" height="100"></canvas>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('tutorAttendanceChart').getContext('2d');
+        const labels = [{% for item in reports %}"{{ item.student.name }}",{% endfor %}];
+        const dataValues = [{% for item in reports %}{{ item.percentage if selected_subject_id else item.overall_percentage }},{% endfor %}];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Attendance Percentage (%)',
+                    data: dataValues,
+                    backgroundColor: dataValues.map(v => v >= 80 ? '#10b981' : (v >= 50 ? '#2563eb' : '#e11d48')),
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: { display: true, text: 'Percentage (%)' }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
