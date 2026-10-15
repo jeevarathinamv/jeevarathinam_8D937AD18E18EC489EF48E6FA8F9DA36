@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Reports - College AMS{% endblock %}
+
+{% block content %}
+<div class="dashboard-banner d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-file-invoice me-2"></i> Attendance Reports & Analytics</h2>
+        <p class="mb-0 text-light opacity-75">View, filter, and export comprehensive daily, class-wise, internal mark, and RA student reports</p>
+    </div>
+    <div>
+        <a href="{{ url_for('export_csv', type=report_type, class_id=selected_class_id) }}" class="btn btn-light text-primary fw-bold shadow-sm rounded-3">
+            <i class="fa-solid fa-file-csv me-1 text-success"></i> Export Report to CSV
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white p-3 border-bottom">
+        <!-- Navigation Tabs for Report Types -->
+        <ul class="nav nav-pills gap-2">
+            <li class="nav-item">
+                <a href="{{ url_for('reports_view', type='daily', class_id=selected_class_id, date=selected_date) }}" class="nav-link {% if report_type == 'daily' %}active btn-gradient-primary{% endif %} fw-semibold">
+                    <i class="fa-solid fa-calendar-day me-1"></i> Daily Attendance Report
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('reports_view', type='ra_students', class_id=selected_class_id) }}" class="nav-link {% if report_type == 'ra_students' %}active btn-gradient-primary{% endif %} fw-semibold">
+                    <i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i> RA Student Report (&lt;50%)
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('reports_view', type='internal_marks', class_id=selected_class_id) }}" class="nav-link {% if report_type == 'internal_marks' %}active btn-gradient-primary{% endif %} fw-semibold">
+                    <i class="fa-solid fa-award me-1"></i> Internal Attendance Mark Report
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body p-4">
+        <!-- Filters Form -->
+        <form method="GET" action="{{ url_for('reports_view') }}" class="row g-3 align-items-center mb-4 bg-light p-3 rounded-3 border">
+            <input type="hidden" name="type" value="{{ report_type }}">
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">Filter Class:</label>
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if report_type == 'daily' %}
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">Select Date:</label>
+                <input type="date" name="date" class="form-control" value="{{ selected_date }}" onchange="this.form.submit()">
+            </div>
+            {% endif %}
+
+            <div class="col-md-4 d-flex align-items-end">
+                <a href="{{ url_for('reports_view', type=report_type) }}" class="btn btn-outline-secondary rounded-3 w-100">Reset Filters</a>
+            </div>
+        </form>
+
+        <!-- Report Table View -->
+        <div class="table-responsive custom-table">
+            {% if report_type == 'daily' %}
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Class</th>
+                        <th>Subject</th>
+                        <th>Hour</th>
+                        <th>Faculty Teacher</th>
+                        <th>Total Students</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Attendance %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in report_data %}
+                    <tr>
+                        <td class="fw-semibold">{{ row.date }}</td>
+                        <td><span class="badge bg-light-purple text-purple">{{ row.class }}</span></td>
+                        <td class="fw-semibold">{{ row.subject }}</td>
+                        <td><span class="badge bg-info text-white">Hour {{ row.hour }}</span></td>
+                        <td>{{ row.teacher }}</td>
+                        <td>{{ row.total_students }}</td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ row.present_count }}</span></td>
+                        <td><span class="badge bg-danger bg-opacity-10 text-danger fw-bold">{{ row.absent_count }}</span></td>
+                        <td>
+                            <span class="fw-bold {% if row.percentage >= 75 %}text-success{% elif row.percentage >= 50 %}text-primary{% else %}text-danger{% endif %}">
+                                {{ row.percentage }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="9" class="text-center text-muted py-4">No daily attendance records found for selected criteria.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% elif report_type == 'ra_students' %}
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Register Number</th>
+                        <th>Student Name</th>
+                        <th>Class</th>
+                        <th>Total Hours</th>
+                        <th>Present Hours</th>
+                        <th>Absent Hours</th>
+                        <th>Percentage</th>
+                        <th>Internal Mark</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for st in report_data %}
+                    <tr>
+                        <td><span class="badge bg-light text-dark border">{{ st.student.register_number }}</span></td>
+                        <td class="fw-semibold">{{ st.student.name }}</td>
+                        <td><span class="badge bg-light-purple text-purple">{{ st.student.student_class.name }}</span></td>
+                        <td>{{ st.overall_total_hours }}</td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ st.overall_present_hours }}</span></td>
+                        <td><span class="badge bg-danger bg-opacity-10 text-danger fw-bold">{{ st.overall_absent_hours }}</span></td>
+                        <td class="text-danger fw-bold">{{ st.overall_percentage }}%</td>
+                        <td><span class="badge badge-ra">0 / 5 (RA)</span></td>
+                        <td><span class="badge badge-ra"><i class="fa-solid fa-triangle-exclamation me-1"></i> RA - Attendance Below 50%</span></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="9" class="text-center text-muted py-4"><i class="fa-solid fa-circle-check text-success me-2"></i> Excellent! No students currently have RA status (&lt;50%).</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% elif report_type == 'internal_marks' %}
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Register Number</th>
+                        <th>Student Name</th>
+                        <th>Class</th>
+                        <th>Total Hours</th>
+                        <th>Present Hours</th>
+                        <th>Attendance %</th>
+                        <th>Internal Attendance Mark</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for st in report_data %}
+                    <tr>
+                        <td><span class="badge bg-light text-dark border">{{ st.student.register_number }}</span></td>
+                        <td class="fw-semibold">{{ st.student.name }}</td>
+                        <td><span class="badge bg-light-purple text-purple">{{ st.student.student_class.name }}</span></td>
+                        <td>{{ st.overall_total_hours }}</td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ st.overall_present_hours }}</span></td>
+                        <td class="fw-bold">{{ st.overall_percentage }}%</td>
+                        <td>
+                            {% if st.overall_internal_mark == 'RA' %}
+                                <span class="badge badge-ra">0 / 5 (RA)</span>
+                            {% else %}
+                                <span class="badge bg-gradient-primary fs-6">{{ st.overall_internal_mark }} / 5</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if st.is_ra %}
+                                <span class="badge badge-ra"><i class="fa-solid fa-triangle-exclamation me-1"></i> RA Status</span>
+                            {% else %}
+                                <span class="badge badge-eligible"><i class="fa-solid fa-circle-check me-1"></i> Eligible</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">Please select a class to view internal attendance marks.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

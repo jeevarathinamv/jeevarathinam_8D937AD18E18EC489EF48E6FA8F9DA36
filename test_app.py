@@ -1,8 +1,8 @@
 import unittest
 from datetime import date
-from app import app, db, Student, Equipment, Booking
+from app import app, db, seed_default_data, Admin, Teacher, ClassModel, Student, Subject, Timetable, AttendanceSession, AttendanceRecord
 
-class SportsBookingTestCase(unittest.TestCase):
+class CollegeAttendanceTestCase(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -11,106 +11,137 @@ class SportsBookingTestCase(unittest.TestCase):
 
         with app.app_context():
             db.create_all()
-            # Seed equipment
-            self.eq1 = Equipment(name='Cricket Bat', category='Cricket', total_quantity=5, available_quantity=5, description='Test Bat')
-            self.eq2 = Equipment(name='Football', category='Football', total_quantity=2, available_quantity=0, description='Out of stock football')
-            db.session.add_all([self.eq1, self.eq2])
-            db.session.commit()
+            seed_default_data()
 
     def tearDown(self):
         with app.app_context():
             db.session.remove()
             db.drop_all()
 
-    def test_student_registration_and_login(self):
-        # Register student
-        response = self.client.post('/register', data={
-            'name': 'Alex Johnson',
-            'register_number': 'REG123',
-            'department': 'Computer Applications (MCA)',
-            'email': 'alex@college.edu',
-            'password': 'password123'
-        }, follow_redirects=True)
-        self.assertIn(b'Registration successful', response.data)
-
-        # Login student
-        response = self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'alex@college.edu',
-            'password': 'password123'
-        }, follow_redirects=True)
-        self.assertIn(b'Welcome back, Alex Johnson!', response.data)
-
-    def test_admin_login(self):
-        response = self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
+    def test_logins(self):
+        # Admin Login
+        res_admin = self.client.post('/login', data={
+            'role': 'admin',
+            'identifier': 'admin',
             'password': 'admin123'
         }, follow_redirects=True)
-        self.assertIn(b'Logged in successfully as Administrator', response.data)
+        self.assertIn(b'Welcome to Admin Portal', res_admin.data)
 
-    def test_booking_workflow_and_stock_validation(self):
-        # Register and login student
-        self.client.post('/register', data={
-            'name': 'Sam',
-            'register_number': 'REG456',
-            'department': 'MCA',
-            'email': 'sam@college.edu',
-            'password': 'pass'
-        })
+        # Teacher Login
+        res_teacher = self.client.post('/login', data={
+            'role': 'teacher',
+            'identifier': 'TCH101',
+            'password': 'teacher123'
+        }, follow_redirects=True)
+        self.assertIn(b'Teacher Portal', res_teacher.data)
+
+        # Class Tutor Login
+        res_tutor = self.client.post('/login', data={
+            'role': 'tutor',
+            'identifier': 'TCH104', # Tutor for MCA I
+            'password': 'teacher123'
+        }, follow_redirects=True)
+        self.assertIn(b'Class Tutor Dashboard', res_tutor.data)
+
+        # Student Login
+        res_student = self.client.post('/login', data={
+            'role': 'student',
+            'identifier': '2024MCA001',
+            'password': 'student123'
+        }, follow_redirects=True)
+        self.assertIn(b'Student Portal', res_student.data)
+
+    def test_attendance_marking_and_marks_calculation(self):
+        # Login as Teacher TCH104 (Prof. Elena Rostova)
         self.client.post('/login', data={
-            'login_type': 'student',
-            'email_or_reg': 'sam@college.edu',
-            'password': 'pass'
+            'role': 'teacher',
+            'identifier': 'TCH104',
+            'password': 'teacher123'
         })
 
-        # Try booking out of stock equipment
-        response = self.client.post('/student/book', data={
-            'equipment_id': 2,
-            'booking_date': date.today().isoformat(),
-            'quantity': 1
-        }, follow_redirects=True)
-        self.assertIn(b'out of stock', response.data)
+        # Get timetable slot ID for Monday Hour 1 (MCA I, Python Web Dev)
+        with app.app_context():
+            slot = Timetable.query.filter_by(day='Monday', hour_number=1).first()
+            slot_id = slot.id
+            mca_students = Student.query.filter_by(class_id=slot.class_id).all()
+            student1_id = mca_students[0].id
+            student2_id = mca_students[1].id
 
-        # Try booking excess quantity
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 10
-        }, follow_redirects=True)
-        self.assertIn(b'exceeds available stock', response.data)
+        today_str = date.today().strftime('%Y-%m-%d')
 
-        # Successful booking request
-        response = self.client.post('/student/book', data={
-            'equipment_id': 1,
-            'booking_date': date.today().isoformat(),
-            'quantity': 2
-        }, follow_redirects=True)
-        self.assertIn(b'Booking request submitted', response.data)
+        # Submit attendance: Student 1 Present, Student 2 Absent
+        post_data = {
+            f'status_{student1_id}': 'Present',
+            f'status_{student2_id}': 'Absent'
+        }
+        res = self.client.post(f'/teacher/mark_attendance/{slot_id}?date={today_str}', data=post_data, follow_redirects=True)
+        self.assertIn(b'submitted successfully', res.data)
 
-        # Admin login and approval
+        # Verify Student 1 dashboard (100% attendance -> 5 Marks)
         self.client.get('/logout')
+        with app.app_context():
+            s1 = Student.query.get(student1_id)
+            reg1 = s1.register_number
+
         self.client.post('/login', data={
-            'login_type': 'admin',
-            'username': 'admin',
+            'role': 'student',
+            'identifier': reg1,
+            'password': 'student123'
+        })
+        res_s1 = self.client.get('/student/dashboard')
+        self.assertIn(b'100', res_s1.data)
+        self.assertIn(b'5 / 5', res_s1.data)
+
+        # Verify Student 2 dashboard (0% attendance -> RA)
+        self.client.get('/logout')
+        with app.app_context():
+            s2 = Student.query.get(student2_id)
+            reg2 = s2.register_number
+
+        self.client.post('/login', data={
+            'role': 'student',
+            'identifier': reg2,
+            'password': 'student123'
+        })
+        res_s2 = self.client.get('/student/dashboard')
+        self.assertIn(b'RA - Attendance Below 50%', res_s2.data)
+
+    def test_timetable_conflict_validation(self):
+        # Admin Login
+        self.client.post('/login', data={
+            'role': 'admin',
+            'identifier': 'admin',
             'password': 'admin123'
         })
 
-        # Approve booking #1
-        response = self.client.post('/admin/booking/approve/1', follow_redirects=True)
-        self.assertIn(b'approved successfully', response.data)
-
         with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 3) # 5 - 2
+            mca1 = ClassModel.query.filter_by(name='MCA I').first()
+            teacher = Teacher.query.filter_by(teacher_id_code='TCH104').first()
+            subject = Subject.query.filter_by(class_id=mca1.id).first()
 
-        # Return booking #1
-        response = self.client.post('/admin/booking/return/1', follow_redirects=True)
-        self.assertIn(b'marked as Returned', response.data)
+        # Try adding duplicate timetable slot for MCA I on Monday Hour 1
+        res = self.client.post('/admin/timetable/add', data={
+            'class_id': mca1.id,
+            'day': 'Monday',
+            'hour_number': 1,
+            'subject_id': subject.id,
+            'teacher_id': teacher.id,
+            'start_time': '09:00 AM',
+            'end_time': '10:00 AM'
+        }, follow_redirects=True)
 
-        with app.app_context():
-            eq = Equipment.query.get(1)
-            self.assertEqual(eq.available_quantity, 5) # Stock returned
+        self.assertIn(b'Timetable conflict', res.data)
+
+    def test_csv_exports(self):
+        self.client.post('/login', data={
+            'role': 'admin',
+            'identifier': 'admin',
+            'password': 'admin123'
+        })
+
+        res_ra_csv = self.client.get('/export/csv?type=ra_students')
+        self.assertEqual(res_ra_csv.status_code, 200)
+        self.assertIn(b'Register Number', res_ra_csv.data)
 
 if __name__ == '__main__':
     unittest.main()

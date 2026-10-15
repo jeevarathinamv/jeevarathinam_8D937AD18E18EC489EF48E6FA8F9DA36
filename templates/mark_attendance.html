@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - {{ slot.subject.name }}{% endblock %}
+
+{% block content %}
+<div class="dashboard-banner d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="fa-solid fa-clipboard-user me-2"></i> Mark Attendance</h2>
+        <p class="mb-0 text-light opacity-75">
+            <strong>Class:</strong> {{ slot.timetable_class.name }} |
+            <strong>Subject:</strong> {{ slot.subject.name }} ({{ slot.subject.code }}) |
+            <strong>Hour:</strong> {{ slot.hour_number }}
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-light text-primary fw-bold shadow-sm rounded-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <form method="GET" class="d-flex align-items-center gap-2">
+            <label class="fw-semibold text-muted mb-0">Attendance Date:</label>
+            <input type="date" name="date" class="form-control form-control-sm" value="{{ session_date }}" onchange="this.form.submit()">
+        </form>
+
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-gradient-success rounded-3" id="markAllPresentBtn">
+                <i class="fa-solid fa-check-double me-1"></i> Mark All Present
+            </button>
+            <button type="button" class="btn btn-sm btn-gradient-info rounded-3" id="markAllAbsentBtn">
+                <i class="fa-solid fa-xmark me-1"></i> Mark All Absent
+            </button>
+        </div>
+    </div>
+
+    <form action="{{ url_for('mark_attendance', timetable_id=slot.id, date=session_date) }}" method="POST">
+        <div class="card-body p-0">
+            <div class="table-responsive custom-table">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Register Number</th>
+                            <th>Student Name</th>
+                            <th class="text-center">Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        {% set current_status = status_map.get(student.id, 'Present') %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ student.register_number }}</span></td>
+                            <td class="fw-semibold">{{ student.name }}</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="status_{{ student.id }}" id="present_{{ student.id }}" value="Present" {% if current_status == 'Present' %}checked{% endif %}>
+                                    <label class="btn btn-outline-success btn-sm px-3" for="present_{{ student.id }}">
+                                        <i class="fa-solid fa-circle-check me-1"></i> Present
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="Absent" {% if current_status == 'Absent' %}checked{% endif %}>
+                                    <label class="btn btn-outline-danger btn-sm px-3" for="absent_{{ student.id }}">
+                                        <i class="fa-solid fa-circle-xmark me-1"></i> Absent
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white p-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted small"><i class="fa-solid fa-sync me-1 text-info"></i> Updates automatically sync with Class Tutor reports once submitted.</span>
+            <button type="submit" class="btn btn-gradient-primary px-4 rounded-3 shadow">
+                <i class="fa-solid fa-paper-plane me-2"></i> Submit Attendance
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
