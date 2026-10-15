@@ -155,6 +155,7 @@ Designed with a modern, colorful layout:
 ├── requirements.txt           # Python package dependencies
 ├── test_app.py                # Automated unit tests suite
 ├── README.md                  # Project documentation & setup guide
+├── PROJECT_OVERVIEW.md        # Comprehensive project overview & video demonstration script
 ├── static/
 │   ├── css/
 │   │   └── style.css          # Custom styling (Royal Blue, Purple, Cyan, Mint, Lavender)
