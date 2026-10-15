@@ -1,90 +1,91 @@
 {% extends "base.html" %}
 
-{% block title %}Login - College Sports Hub{% endblock %}
+{% block title %}Login - College Attendance & Internal Mark Management System{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="bg-gradient-primary text-white text-center py-4 px-3">
-                    <i class="bi bi-box-arrow-in-right fs-1 text-warning mb-2 d-block"></i>
-                    <h3 class="fw-bold mb-0">Portal Login</h3>
-                    <p class="small text-white-50 mb-0">Select role and enter your credentials</p>
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom p-4 shadow-lg border-0">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="fs-1 text-primary mb-2"><i class="bi bi-person-lock"></i></div>
+                    <h3 class="fw-bold">Account Login</h3>
+                    <p class="text-muted small">Select your role to login to the portal</p>
                 </div>
-                <div class="card-body p-4 p-md-5">
-                    <!-- Nav tabs for role selection -->
-                    <ul class="nav nav-pills nav-justified mb-4 bg-light p-1 rounded-pill" id="loginTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active rounded-pill fw-semibold py-2" id="student-tab" data-bs-toggle="pill" data-bs-target="#student-login" type="button" role="tab">
-                                <i class="bi bi-person-fill me-1"></i> Student
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link rounded-pill fw-semibold py-2" id="admin-tab" data-bs-toggle="pill" data-bs-target="#admin-login" type="button" role="tab">
-                                <i class="bi bi-shield-lock-fill me-1"></i> Admin
-                            </button>
-                        </li>
-                    </ul>
 
-                    <div class="tab-content" id="loginTabsContent">
-                        <!-- Student Login Form -->
-                        <div class="tab-pane fade show active" id="student-login" role="tabpanel">
-                            <form action="{{ url_for('login') }}" method="POST">
-                                <input type="hidden" name="login_type" value="student">
-                                <div class="mb-3">
-                                    <label for="email_or_reg" class="form-label fw-semibold">Email or Register No.</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
-                                        <input type="text" class="form-control border-start-0 ps-0" id="email_or_reg" name="email_or_reg" placeholder="student@college.edu or Reg No" required>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="student_password" class="form-label fw-semibold">Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
-                                        <input type="password" class="form-control border-start-0 ps-0" id="student_password" name="password" placeholder="••••••••" required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold shadow-sm">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
-                                </button>
-                            </form>
-                            <div class="text-center mt-4">
-                                <p class="small text-muted mb-0">Don't have an account? <a href="{{ url_for('register') }}" class="text-primary fw-bold text-decoration-none">Register here</a></p>
-                            </div>
-                        </div>
+                <form action="{{ url_for('login') }}" method="POST">
+                    <!-- Login Role Selector -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Role</label>
+                        <select name="login_type" id="loginTypeSelect" class="form-select form-select-lg" onchange="updateLoginLabels()">
+                            <option value="student" selected>Student Login</option>
+                            <option value="teacher">Teacher / Class Tutor Login</option>
+                            <option value="admin">Administrator Login</option>
+                        </select>
+                    </div>
 
-                        <!-- Admin Login Form -->
-                        <div class="tab-pane fade" id="admin-login" role="tabpanel">
-                            <form action="{{ url_for('login') }}" method="POST">
-                                <input type="hidden" name="login_type" value="admin">
-                                <div class="mb-3">
-                                    <label for="username" class="form-label fw-semibold">Admin Username</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-person text-muted"></i></span>
-                                        <input type="text" class="form-control border-start-0 ps-0" id="username" name="username" placeholder="admin" required>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="admin_password" class="form-label fw-semibold">Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
-                                        <input type="password" class="form-control border-start-0 ps-0" id="admin_password" name="password" placeholder="••••••••" required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-dark w-100 py-2 rounded-pill fw-bold shadow-sm">
-                                    <i class="bi bi-shield-check me-2"></i> Admin Login
-                                </button>
-                            </form>
-                            <div class="text-center mt-3">
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal">Default Admin: admin / admin123</span>
-                            </div>
+                    <!-- Identifier Input (Reg No / Email / Teacher ID / Username) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" id="identifierLabel">Register Number or Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person-fill text-muted"></i></span>
+                            <input type="text" name="identifier" id="identifierInput" class="form-control form-control-lg" placeholder="Enter Register No or Email" required>
                         </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-key-fill text-muted"></i></span>
+                            <input type="password" name="password" class="form-control form-control-lg" placeholder="Enter Password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-royal btn-lg w-100 py-2 shadow-sm mb-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Log In
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sample Credentials Box -->
+        <div class="card card-custom mt-4 p-3 border-start border-info border-4">
+            <div class="card-body p-2 small">
+                <h6 class="fw-bold text-info mb-2"><i class="bi bi-info-circle-fill me-1"></i> Demo Login Credentials</h6>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-1"><strong>Admin:</strong> admin / admin123</p>
+                        <p class="mb-1"><strong>MCA I Tutor:</strong> rajesh@college.edu / teacher123</p>
+                        <p class="mb-1"><strong>BCA I Tutor:</strong> anish@college.edu / teacher123</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-1"><strong>Student (MCA I):</strong> 23MCA01 / student123</p>
+                        <p class="mb-1"><strong>Student (RA):</strong> 23MCA04 / student123</p>
+                        <p class="mb-1"><strong>Student (BCA I):</strong> 23BCA01 / student123</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function updateLoginLabels() {
+    const role = document.getElementById('loginTypeSelect').value;
+    const label = document.getElementById('identifierLabel');
+    const input = document.getElementById('identifierInput');
+
+    if (role === 'admin') {
+        label.textContent = 'Username or Email';
+        input.placeholder = 'e.g. admin or admin@college.edu';
+    } else if (role === 'teacher') {
+        label.textContent = 'Teacher ID or Email';
+        input.placeholder = 'e.g. TCH101 or rajesh@college.edu';
+    } else {
+        label.textContent = 'Register Number or Email';
+        input.placeholder = 'e.g. 23MCA01 or kavitha@college.edu';
+    }
+}
+</script>
 {% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - Teacher{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-check2-square text-success me-2"></i> Mark Student Attendance</h2>
+        <p class="text-muted mb-0">Select timetable session and mark students Present or Absent</p>
+    </div>
+</div>
+
+<!-- Session Selection Form -->
+<div class="card card-custom p-3 shadow-sm mb-4">
+    <div class="card-body">
+        <form action="{{ url_for('mark_attendance') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Select Class</label>
+                <select name="class_id" class="form-select" required>
+                    <option value="">-- Choose Class --</option>
+                    {% for c in my_classes %}
+                        <option value="{{ c.id }}" {% if selected_class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Select Subject</label>
+                <select name="subject_id" class="form-select" required>
+                    <option value="">-- Choose Subject --</option>
+                    {% for sub in subjects %}
+                        <option value="{{ sub.id }}" {% if selected_subject_id == sub.id %}selected{% endif %}>{{ sub.subject_class.name }} - {{ sub.name }} ({{ sub.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-bold">Hour Number</label>
+                <select name="hour_number" class="form-select" required>
+                    {% for h in range(1, 6) %}
+                        <option value="{{ h }}" {% if selected_hour == h %}selected{% endif %}>Hour {{ h }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-bold">Date</label>
+                <input type="date" name="session_date" class="form-control" value="{{ selected_date_str }}" required>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-royal w-100 py-2"><i class="bi bi-person-lines-fill me-1"></i> Load Students</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if students %}
+<!-- Student Attendance Sheet Form -->
+<div class="card card-custom p-4 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold text-primary mb-1">{{ selected_class.name }} - {{ selected_subject.name }}</h4>
+                <p class="text-muted mb-0"><i class="bi bi-calendar3 me-1"></i> {{ selected_date_str }} | <i class="bi bi-clock me-1"></i> Hour {{ selected_hour }}</p>
+            </div>
+            <div class="btn-group">
+                <button type="button" id="btnMarkAllPresent" class="btn btn-outline-success"><i class="bi bi-check-all me-1"></i> Mark All Present</button>
+                <button type="button" id="btnMarkAllAbsent" class="btn btn-outline-danger"><i class="bi bi-x-circle me-1"></i> Mark All Absent</button>
+            </div>
+        </div>
+
+        <form action="{{ url_for('save_attendance') }}" method="POST">
+            <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+            <input type="hidden" name="subject_id" value="{{ selected_subject.id }}">
+            <input type="hidden" name="hour_number" value="{{ selected_hour }}">
+            <input type="hidden" name="session_date" value="{{ selected_date_str }}">
+
+            <div class="table-responsive mb-4">
+                <table class="table table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Reg Number</th>
+                            <th>Student Name</th>
+                            <th>Status Marking</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in students %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ s.register_number }}</td>
+                            <td class="fw-semibold">{{ s.name }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="attendance_{{ s.id }}" id="present_{{ s.id }}" value="Present" checked>
+                                    <label class="btn btn-outline-success px-4 fw-semibold" for="present_{{ s.id }}"><i class="bi bi-check-circle-fill me-1"></i> Present</label>
+
+                                    <input type="radio" class="btn-check" name="attendance_{{ s.id }}" id="absent_{{ s.id }}" value="Absent">
+                                    <label class="btn btn-outline-danger px-4 fw-semibold" for="absent_{{ s.id }}"><i class="bi bi-x-circle-fill me-1"></i> Absent</label>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-mint btn-lg fw-bold px-5 shadow"><i class="bi bi-cloud-upload-fill me-2"></i> Submit & Save Attendance</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% elif selected_class_id %}
+    <div class="alert alert-warning text-center py-4">
+        <i class="bi bi-exclamation-circle-fill fs-3 d-block mb-2"></i>
+        No students found enrolled in this class. Please select a valid class and subject.
+    </div>
+{% endif %}
+{% endblock %}

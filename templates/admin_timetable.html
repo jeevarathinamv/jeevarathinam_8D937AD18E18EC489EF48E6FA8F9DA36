@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Timetable Management - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-calendar3 text-cyan me-2" style="color: var(--cyan-dark);"></i> Timetable Management</h2>
+        <p class="text-muted mb-0">Create and manage class schedules (5 hours per working day)</p>
+    </div>
+    <button class="btn btn-cyan shadow-sm text-white" data-bs-toggle="modal" data-bs-target="#addTimetableModal">
+        <i class="bi bi-calendar-plus me-1"></i> Add Timetable Slot
+    </button>
+</div>
+
+<!-- Timetable Table Card -->
+<div class="card card-custom p-3 shadow-sm">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control table-search" data-table="timetableTable" placeholder="Search class, day, subject, teacher...">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom align-middle" id="timetableTable">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Day</th>
+                        <th>Hour (1–5)</th>
+                        <th>Subject</th>
+                        <th>Assigned Teacher</th>
+                        <th>Time Range</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tt in timetables %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ tt.timetable_class.name }}</td>
+                        <td><span class="badge bg-secondary px-3 py-1">{{ tt.day }}</span></td>
+                        <td><span class="badge bg-info text-dark rounded-circle fs-6 p-2">H{{ tt.hour_number }}</span></td>
+                        <td><strong>{{ tt.subject.code }}</strong> - {{ tt.subject.name }}</td>
+                        <td><i class="bi bi-person-badge-fill text-muted me-1"></i> {{ tt.teacher.name }}</td>
+                        <td><span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-clock me-1"></i> {{ tt.start_time }} - {{ tt.end_time }}</span></td>
+                        <td>
+                            <form action="{{ url_for('delete_timetable', tt_id=tt.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this timetable slot?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Timetable Modal -->
+<div class="modal fade" id="addTimetableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-cyan text-white" style="background-color: var(--cyan-dark);">
+                <h5 class="modal-title fw-bold"><i class="bi bi-calendar-plus me-2"></i> Add Timetable Slot</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin_timetable') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Class</label>
+                        <select name="class_id" class="form-select" required>
+                            <option value="">-- Select Class --</option>
+                            {% for c in classes %}
+                                <option value="{{ c.id }}">{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Day</label>
+                        <select name="day" class="form-select" required>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Hour Number (1 to 5)</label>
+                        <select name="hour_number" class="form-select" required>
+                            <option value="1">Hour 1 (09:30 AM - 10:30 AM)</option>
+                            <option value="2">Hour 2 (10:30 AM - 11:30 AM)</option>
+                            <option value="3">Hour 3 (11:30 AM - 12:30 PM)</option>
+                            <option value="4">Hour 4 (01:30 PM - 02:30 PM)</option>
+                            <option value="5">Hour 5 (02:30 PM - 03:30 PM)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Subject</label>
+                        <select name="subject_id" class="form-select" required>
+                            <option value="">-- Select Subject --</option>
+                            {% for sub in subjects %}
+                                <option value="{{ sub.id }}">{{ sub.subject_class.name }} - {{ sub.name }} ({{ sub.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Assigned Teacher</label>
+                        <select name="teacher_id" class="form-select" required>
+                            <option value="">-- Select Teacher --</option>
+                            {% for tch in teachers %}
+                                <option value="{{ tch.id }}">{{ tch.name }} ({{ tch.teacher_id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold">Start Time</label>
+                            <input type="text" name="start_time" class="form-control" value="09:30 AM" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold">End Time</label>
+                            <input type="text" name="end_time" class="form-control" value="10:30 AM" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-cyan text-white">Save Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
