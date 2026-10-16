@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Marking Sheet - Smart Classroom System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-royal mb-1">
+            <i class="fa-solid fa-clipboard-user text-purple me-2"></i> Attendance Marking Sheet
+        </h3>
+        <p class="text-muted mb-0">Mark daily attendance for assigned class and subject periods</p>
+    </div>
+</div>
+
+<!-- Class & Subject Selection Header Form -->
+<div class="card shadow-sm border-0 rounded-4 mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('attendance_marking') }}" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">Class</label>
+                <select name="class_id" class="form-select rounded-3" onchange="this.form.submit()" required>
+                    <option value="">-- Select Class --</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">Subject</label>
+                <select name="subject_id" class="form-select rounded-3" onchange="this.form.submit()" required>
+                    <option value="">-- Select Assigned Subject --</option>
+                    {% for s in available_subjects %}
+                    <option value="{{ s.id }}" {% if selected_subject_id == s.id %}selected{% endif %}>
+                        {{ s.name }} ({{ s.code }}) - [{{ s.type }}]
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">Date</label>
+                <input type="date" name="date" class="form-control rounded-3" value="{{ att_date }}" onchange="this.form.submit()">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold small text-muted">Period</label>
+                <select name="period" class="form-select rounded-3" onchange="this.form.submit()">
+                    {% for p in [1, 2, 3, 4, 5] %}
+                    <option value="{{ p }}" {% if period == p %}selected{% endif %}>Period {{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if selected_class and selected_subject %}
+<!-- Live Attendance Statistics Banner -->
+<div class="card shadow-sm border-0 rounded-4 mb-4 bg-white">
+    <div class="card-body p-4">
+        <div class="row align-items-center text-center">
+            <div class="col-md-3 border-end">
+                <h6 class="text-muted text-uppercase small fw-semibold mb-1">Total Students</h6>
+                <h3 class="fw-bold text-royal mb-0" id="stat-total">{{ students|length }}</h3>
+            </div>
+            <div class="col-md-3 border-end">
+                <h6 class="text-muted text-uppercase small fw-semibold mb-1">Present Count</h6>
+                <h3 class="fw-bold text-mint mb-0" id="stat-present">0</h3>
+            </div>
+            <div class="col-md-3 border-end">
+                <h6 class="text-muted text-uppercase small fw-semibold mb-1">Absent Count</h6>
+                <h3 class="fw-bold text-danger mb-0" id="stat-absent">0</h3>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-muted text-uppercase small fw-semibold mb-1">Attendance %</h6>
+                <h3 class="fw-bold text-purple mb-0" id="stat-percentage">0.0%</h3>
+            </div>
+        </div>
+        <div class="progress mt-3" style="height: 10px;">
+            <div class="progress-bar bg-mint" id="stat-progress" style="width: 0%;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Marking Form -->
+<form method="POST" action="{{ url_for('attendance_marking') }}" id="attendance-form">
+    <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+    <input type="hidden" name="subject_id" value="{{ selected_subject.id }}">
+    <input type="hidden" name="date" value="{{ att_date }}">
+    <input type="hidden" name="period" value="{{ period }}">
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-royal m-0">
+                    <i class="fa-solid fa-list-check text-purple me-2"></i> Student Roster for {{ selected_class.name }} - {{ selected_subject.name }}
+                </h5>
+                <small class="text-muted">Type: <strong>{{ selected_subject.type }}</strong> | Date: {{ att_date }} | Period {{ period }}</small>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" id="btn-mark-all-present">
+                    <i class="fa-solid fa-check-double me-1"></i> Mark All Present
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" id="btn-mark-all-absent">
+                    <i class="fa-solid fa-xmark me-1"></i> Mark All Absent
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-3">
+            {% if students %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 25%;">Register Number</th>
+                            <th style="width: 35%;">Student Name</th>
+                            <th style="width: 35%; text-align: center;">Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for st in students %}
+                        {% set saved_status = saved_status_map.get(st.id, 'Present') %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><code class="fw-bold text-purple">{{ st.register_number }}</code></td>
+                            <td class="fw-bold text-dark">{{ st.name }}</td>
+                            <td text-align="center">
+                                <div class="btn-group w-100" role="group" aria-label="Attendance choices">
+                                    <input type="radio" class="btn-check att-radioChoice" name="status_{{ st.id }}" id="present_{{ st.id }}" value="Present" {% if saved_status == 'Present' %}checked{% endif %} autocomplete="off">
+                                    <label class="btn btn-outline-success font-semibold px-4 py-2" for="present_{{ st.id }}">
+                                        <i class="fa-solid fa-user-check me-1"></i> Present
+                                    </label>
+
+                                    <input type="radio" class="btn-check att-radioChoice" name="status_{{ st.id }}" id="absent_{{ st.id }}" value="Absent" {% if saved_status == 'Absent' %}checked{% endif %} autocomplete="off">
+                                    <label class="btn btn-outline-danger font-semibold px-4 py-2" for="absent_{{ st.id }}">
+                                        <i class="fa-solid fa-user-xmark me-1"></i> Absent
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-gradient-royal text-white btn-lg rounded-pill px-5 fw-bold shadow-sm">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Save & Submit Attendance
+                </button>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">No active students enrolled in this class.</div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% else %}
+<div class="card shadow-sm border-0 rounded-4 text-center py-5">
+    <div class="card-body">
+        <i class="fa-solid fa-hand-pointer fa-3x text-purple mb-3"></i>
+        <h5 class="fw-bold text-royal">Please Select a Class and Subject</h5>
+        <p class="text-muted">Choose your assigned class, subject, date and period above to display the attendance sheet.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

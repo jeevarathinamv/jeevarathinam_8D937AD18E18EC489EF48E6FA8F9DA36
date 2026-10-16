@@ -1,87 +1,78 @@
 {% extends "base.html" %}
 
-{% block title %}Login - College Sports Hub{% endblock %}
+{% block title %}Login - Smart Classroom System{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="bg-gradient-primary text-white text-center py-4 px-3">
-                    <i class="bi bi-box-arrow-in-right fs-1 text-warning mb-2 d-block"></i>
-                    <h3 class="fw-bold mb-0">Portal Login</h3>
-                    <p class="small text-white-50 mb-0">Select role and enter your credentials</p>
-                </div>
-                <div class="card-body p-4 p-md-5">
-                    <!-- Nav tabs for role selection -->
-                    <ul class="nav nav-pills nav-justified mb-4 bg-light p-1 rounded-pill" id="loginTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active rounded-pill fw-semibold py-2" id="student-tab" data-bs-toggle="pill" data-bs-target="#student-login" type="button" role="tab">
-                                <i class="bi bi-person-fill me-1"></i> Student
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link rounded-pill fw-semibold py-2" id="admin-tab" data-bs-toggle="pill" data-bs-target="#admin-login" type="button" role="tab">
-                                <i class="bi bi-shield-lock-fill me-1"></i> Admin
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="loginTabsContent">
-                        <!-- Student Login Form -->
-                        <div class="tab-pane fade show active" id="student-login" role="tabpanel">
-                            <form action="{{ url_for('login') }}" method="POST">
-                                <input type="hidden" name="login_type" value="student">
-                                <div class="mb-3">
-                                    <label for="email_or_reg" class="form-label fw-semibold">Email or Register No.</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
-                                        <input type="text" class="form-control border-start-0 ps-0" id="email_or_reg" name="email_or_reg" placeholder="student@college.edu or Reg No" required>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="student_password" class="form-label fw-semibold">Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
-                                        <input type="password" class="form-control border-start-0 ps-0" id="student_password" name="password" placeholder="••••••••" required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold shadow-sm">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i> Student Login
-                                </button>
-                            </form>
-                            <div class="text-center mt-4">
-                                <p class="small text-muted mb-0">Don't have an account? <a href="{{ url_for('register') }}" class="text-primary fw-bold text-decoration-none">Register here</a></p>
-                            </div>
-                        </div>
-
-                        <!-- Admin Login Form -->
-                        <div class="tab-pane fade" id="admin-login" role="tabpanel">
-                            <form action="{{ url_for('login') }}" method="POST">
-                                <input type="hidden" name="login_type" value="admin">
-                                <div class="mb-3">
-                                    <label for="username" class="form-label fw-semibold">Admin Username</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-person text-muted"></i></span>
-                                        <input type="text" class="form-control border-start-0 ps-0" id="username" name="username" placeholder="admin" required>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label for="admin_password" class="form-label fw-semibold">Password</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
-                                        <input type="password" class="form-control border-start-0 ps-0" id="admin_password" name="password" placeholder="••••••••" required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-dark w-100 py-2 rounded-pill fw-bold shadow-sm">
-                                    <i class="bi bi-shield-check me-2"></i> Admin Login
-                                </button>
-                            </form>
-                            <div class="text-center mt-3">
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary fw-normal">Default Admin: admin / admin123</span>
-                            </div>
-                        </div>
+<div class="row justify-content-center align-items-center min-vh-80 my-4">
+    <div class="col-md-5 col-lg-4">
+        <div class="card card-login shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header text-white text-center py-4 bg-gradient-royal">
+                <i class="fa-solid fa-graduation-cap fa-3x mb-2 text-cyan"></i>
+                <h4 class="fw-bold mb-1">Smart Classroom System</h4>
+                <p class="small text-light mb-0">College Attendance & Internal Mark Management</p>
+            </div>
+            <div class="card-body p-4 bg-white">
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold text-secondary">
+                            <i class="fa-solid fa-user me-1 text-royal"></i> Username
+                        </label>
+                        <input type="text" class="form-control form-control-lg rounded-3" id="username" name="username" placeholder="Enter username" required autofocus>
                     </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold text-secondary">
+                            <i class="fa-solid fa-lock me-1 text-royal"></i> Password
+                        </label>
+                        <input type="password" class="form-control form-control-lg rounded-3" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient-royal btn-lg w-100 rounded-3 text-white fw-semibold shadow-sm">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i> Log In
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Demonstration Accounts Info Card -->
+        <div class="card shadow-sm border-0 rounded-4 mt-4 bg-white">
+            <div class="card-body p-3">
+                <h6 class="fw-bold text-royal mb-2 border-bottom pb-2">
+                    <i class="fa-solid fa-key text-mint me-2"></i> Demonstration Accounts
+                </h6>
+                <p class="small text-muted mb-2">Use any of the sample accounts below (Password: <code>password123</code>):</p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Role</th>
+                                <th>Username</th>
+                                <th>Class / Designation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge bg-purple">Tutor / Teacher</span></td>
+                                <td><code>teacher_vg</code></td>
+                                <td>Mr. VG (MCA 2 Tutor)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-purple">Tutor / Teacher</span></td>
+                                <td><code>teacher_ak</code></td>
+                                <td>Dr. AK (MCA 1 Tutor)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-purple">Tutor / Teacher</span></td>
+                                <td><code>teacher_dd</code></td>
+                                <td>Mrs. DD (BCA 1 Tutor)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-royal">Teacher</span></td>
+                                <td><code>teacher_cs</code></td>
+                                <td>Dr. CS (Subject Teacher)</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

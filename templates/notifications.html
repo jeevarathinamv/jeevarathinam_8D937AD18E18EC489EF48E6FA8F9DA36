@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Class Tutor Notifications - Smart Classroom System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-royal mb-1">
+            <i class="fa-solid fa-bell text-purple me-2"></i> Tutor Attendance Notifications
+        </h3>
+        <p class="text-muted mb-0">Automated submission reports for <strong>{{ tutor_class.name }}</strong></p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="fw-bold text-royal m-0"><i class="fa-solid fa-inbox me-2"></i> Notification Log</h5>
+    </div>
+    <div class="card-body p-3">
+        {% if notifications %}
+        <div class="list-group list-group-flush gap-2" id="full-notifications-list">
+            {% for n in notifications %}
+            <div class="list-group-item p-3 rounded-3 border {% if not n.is_read %}bg-light border-primary{% endif %}" id="notif-item-{{ n.id }}">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div>
+                        <span class="badge {% if not n.is_read %}bg-danger{% else %}bg-secondary{% endif %} me-2">
+                            {% if not n.is_read %}New Submission{% else %}Read{% endif %}
+                        </span>
+                        <h6 class="fw-bold text-dark d-inline m-0">{{ n.title }}</h6>
+                    </div>
+                    <small class="text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                </div>
+                <p class="text-secondary my-2">{{ n.message }}</p>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('view_attendance_report', session_id=n.session_id) }}" class="btn btn-sm btn-gradient-royal text-white rounded-pill px-3">
+                        <i class="fa-solid fa-file-lines me-1"></i> Open Session Report
+                    </a>
+                    {% if not n.is_read %}
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 btn-mark-read" data-id="{{ n.id }}">
+                        <i class="fa-solid fa-check me-1"></i> Mark as Read
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fa-solid fa-bell-slash fa-3x mb-3 text-secondary"></i>
+            <p class="m-0 fw-semibold">No notifications received yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
