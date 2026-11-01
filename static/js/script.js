@@ -243,6 +243,26 @@ function initGalleryFilter() {
   });
 }
 
+// Global helper for opening photo preview modal from anywhere (e.g. homepage cards)
+window.openImageModal = function(src, title, desc) {
+  const modalEl = document.getElementById('imageLightboxModal');
+  if (!modalEl || typeof bootstrap === 'undefined') return;
+
+  const modalTitle = document.getElementById('lightboxModalTitle');
+  const modalImg = document.getElementById('lightboxModalImage');
+  const modalDesc = document.getElementById('lightboxModalDesc');
+
+  if (modalTitle) modalTitle.textContent = title || 'Historical Visual';
+  if (modalImg) {
+    modalImg.src = src || '';
+    modalImg.alt = title || 'Historical Visual Preview';
+  }
+  if (modalDesc) modalDesc.textContent = desc || '';
+
+  const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  bsModal.show();
+};
+
 function escapeHtml(str) {
   if (!str) return '';
   return str

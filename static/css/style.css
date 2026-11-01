@@ -119,10 +119,10 @@ p, li, .card-text {
 /* Hero Section */
 .hero-chola {
   position: relative;
-  background: linear-gradient(rgba(17, 1, 3, 0.78), rgba(46, 5, 10, 0.85)),
+  background: linear-gradient(135deg, rgba(20, 2, 5, 0.88) 0%, rgba(55, 8, 14, 0.82) 50%, rgba(15, 1, 3, 0.92) 100%),
               url('/static/images/thanjavur_temple.svg') center/cover no-repeat;
   border-bottom: 3px solid var(--royal-gold);
-  padding: 5rem 1rem;
+  padding: 4.5rem 1rem 5.5rem;
   overflow: hidden;
 }
 
@@ -134,6 +134,43 @@ p, li, .card-text {
   right: 0;
   height: 60px;
   background: linear-gradient(to top, var(--rich-black), transparent);
+}
+
+.hero-portrait-frame {
+  position: relative;
+  padding: 10px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--royal-gold) 0%, var(--bronze) 50%, var(--royal-red) 100%);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(212, 175, 55, 0.4);
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.hero-portrait-img {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #1f0407;
+  border: 2px solid var(--royal-gold-light);
+  display: block;
+}
+
+.hero-portrait-badge {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 4, 7, 0.95);
+  border: 1px solid var(--royal-gold);
+  color: var(--royal-gold-light);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
 }
 
 .hero-badge {
@@ -152,7 +189,7 @@ p, li, .card-text {
 }
 
 .hero-title {
-  font-size: 3.2rem;
+  font-size: 3rem;
   font-weight: 900;
   color: var(--royal-gold-light);
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(212, 175, 55, 0.4);
@@ -160,10 +197,66 @@ p, li, .card-text {
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
+  font-size: 1.18rem;
   color: var(--cream);
-  max-width: 720px;
-  margin: 1.5rem auto;
+  line-height: 1.6;
+}
+
+/* Front Page Photo Showcase */
+.front-photo-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(212, 175, 55, 0.35);
+  background: #1a0306;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 260px;
+}
+
+.front-photo-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: var(--royal-gold-light);
+  box-shadow: 0 14px 35px rgba(212, 175, 55, 0.35);
+}
+
+.front-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.front-photo-card:hover .front-photo-img {
+  transform: scale(1.1);
+}
+
+.front-photo-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.2rem 1rem 0.8rem;
+  background: linear-gradient(to top, rgba(17, 1, 3, 0.95) 0%, rgba(17, 1, 3, 0.6) 70%, transparent 100%);
+  color: var(--cream);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.front-photo-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  color: var(--royal-gold-light);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.front-photo-desc {
+  font-size: 0.82rem;
+  color: #dfd7be;
+  margin: 0;
 }
 
 /* Custom Buttons */
