@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Historical Image Gallery – Raja Raja Cholan{% endblock %}
+
+{% block content %}
+<div class="container my-5" id="cholaGalleryGrid">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <span class="chola-category-tag">Visual Heritage</span>
+    <h1 class="chola-heading display-5">Historical Image Gallery</h1>
+    <p class="text-secondary max-w-700 mx-auto">
+      Artistic historical portraits, Big Temple architectural perspectives, lost-wax bronze sculptures, and sovereign numismatics of the Chola Empire.
+    </p>
+  </div>
+
+  <!-- Filter Buttons -->
+  <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+    <button type="button" class="gallery-filter-btn active" data-filter="all">All Visuals</button>
+    {% for cat in categories %}
+      <button type="button" class="gallery-filter-btn text-capitalize" data-filter="{{ cat }}">{{ cat }}</button>
+    {% endfor %}
+  </div>
+
+  <!-- Gallery Grid -->
+  <div class="row g-4">
+    {% for item in items %}
+      <div class="col-md-6 col-lg-4 gallery-item" data-category="{{ item.category }}">
+        <div class="gallery-card p-2"
+             data-img="{{ item.image_url }}"
+             data-title="{{ item.title }}"
+             data-desc="{{ item.description }}"
+             data-attribution="{{ item.attribution }}">
+          <div style="height: 240px; overflow: hidden; border-radius: 8px; background: #140204;">
+            <img src="{{ item.image_url }}" alt="{{ item.title }}" class="w-100 h-100 object-fit-cover" loading="lazy">
+          </div>
+          <div class="p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-danger text-warning small">{{ item.category|upper }}</span>
+              <small class="text-secondary"><i class="bi bi-arrows-fullscreen"></i> Expand</small>
+            </div>
+            <h5 class="chola-heading h6 mb-1 text-truncate">{{ item.title }}</h5>
+            <p class="small text-secondary mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              {{ item.description }}
+            </p>
+            <div class="small text-warning" style="font-size: 0.75rem;">
+              <i class="bi bi-c-circle me-1"></i> {{ item.attribution }}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Gallery Lightbox Modal -->
+<div class="modal fade" id="galleryLightboxModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border border-warning">
+      <div class="modal-header border-bottom border-warning">
+        <h5 class="modal-title chola-heading text-warning" id="galleryModalTitle"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-0" style="background: #0d0103;">
+        <img id="galleryModalImage" src="" alt="Gallery Preview" class="img-fluid" style="max-height: 500px; width: auto; object-fit: contain;">
+        <div class="p-4 text-start">
+          <p id="galleryModalDesc" class="text-light mb-3"></p>
+          <div class="small text-warning">
+            <i class="bi bi-shield-check me-1"></i> Attribution / Licensing: <span id="galleryModalAttribution" class="text-secondary"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

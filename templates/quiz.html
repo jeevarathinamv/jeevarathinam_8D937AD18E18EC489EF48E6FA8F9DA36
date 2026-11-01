@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Imperial Quiz – Test Your Chola History Knowledge{% endblock %}
+
+{% block content %}
+<div class="container my-5" id="cholaQuizApp">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <span class="chola-category-tag">Interactive Challenge</span>
+    <h1 class="chola-heading display-5">Raja Raja Cholan Imperial Quiz</h1>
+    <p class="text-secondary max-w-700 mx-auto">
+      Put your historical knowledge of Emperor Raja Raja Cholan, Thanjavur Big Temple, and Chola naval history to the test. Answer multiple choice questions to earn imperial honors!
+    </p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- Quiz Progress Bar -->
+      <div class="d-flex justify-content-between align-items-center mb-2 text-warning small fw-bold">
+        <span>Question <span id="quizCurrentCount">1</span> of <span id="quizTotalCount">8</span></span>
+        <span>Chola Imperial Academy</span>
+      </div>
+      <div class="progress mb-4" style="height: 10px; background-color: #2c050a; border: 1px solid var(--royal-gold);">
+        <div id="quizProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: 0%;"></div>
+      </div>
+
+      <!-- Active Quiz Card -->
+      <div class="quiz-container" id="quizActiveCard">
+        <!-- Question Text Container -->
+        <div id="quizQuestionBox" class="mb-4">
+          <div class="d-flex justify-content-center py-4">
+            <div class="spinner-border text-warning" role="status">
+              <span class="visually-hidden">Loading questions...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Options Container -->
+        <div id="quizOptionsContainer" class="mb-4"></div>
+
+        <!-- Explanation Alert (Revealed after answer submission) -->
+        <div id="quizExplanationBox" class="alert alert-dark border border-warning d-none mb-4" role="alert">
+          <div id="quizExplanationText" class="small"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="d-flex justify-content-end gap-3">
+          <button type="button" id="quizSubmitBtn" class="btn-gold" disabled>
+            <i class="bi bi-check2-circle"></i> Confirm Answer
+          </button>
+          <button type="button" id="quizNextBtn" class="btn-outline-gold d-none">
+            Next Question →
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Card (Hidden initially) -->
+      <div class="quiz-container text-center d-none" id="quizResultCard">
+        <div class="mb-3">
+          <img src="{{ url_for('static', filename='images/chola_emblem.svg') }}" alt="Emblem" style="width: 90px; height: 90px;">
+        </div>
+        <h2 class="chola-heading text-warning mb-2">Quiz Completed!</h2>
+        <p class="text-secondary mb-4">Here is your royal score summary from the Emperor's Archives:</p>
+
+        <div class="display-3 fw-bold text-warning mb-1" id="quizScoreText">0 / 0</div>
+        <div class="h4 text-light mb-4" id="quizScorePercent">0%</div>
+
+        <div class="alert alert-dark border border-warning p-3 mb-4 text-start" id="quizScoreFeedback"></div>
+
+        <div class="d-flex justify-content-center gap-3">
+          <button type="button" id="quizPlayAgainBtn" class="btn-gold">
+            <i class="bi bi-arrow-repeat"></i> Play Again
+          </button>
+          <a href="{{ url_for('history') }}" class="btn-outline-gold">
+            <i class="bi bi-book"></i> Review History
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

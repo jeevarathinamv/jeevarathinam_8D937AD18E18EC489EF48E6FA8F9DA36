@@ -1,75 +1,214 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome - College Sports Equipment Booking System{% endblock %}
+{% block title %}Home – Raja Raja Cholan | Great Tamil Emperor{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero-banner text-center text-white mb-5 shadow-sm">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-dribbble me-2 text-warning"></i> College Sports Hub</h1>
-        <p class="lead max-w-600 mx-auto opacity-90 mb-4">
-            A simple, fast, and automated sports equipment booking portal for college students and faculty.
+<section class="hero-chola text-center">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <span class="hero-badge">
+          <i class="bi bi-star-fill me-1"></i> Golden Epoch of Tamil Civilization • 985 – 1014 CE
+        </span>
+        <h1 class="hero-title mb-3">
+          EMPEROR RAJA RAJA CHOLAN
+        </h1>
+        <h3 class="chola-heading text-warning mb-3" style="font-size: 1.5rem;">
+          அருண்மொழிவர்மன் • சிவபாதசேகரன் • மும்முடிச்சோழன்
+        </h3>
+        <p class="hero-subtitle">
+          Architect of the monumental Thanjavur Brihadeeswarar Temple, supreme commander of the invincible Chola maritime armada, pioneer of democratic village councils, and benevolent unifier of Southern India.
         </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if session.get('user_type') == 'student' %}
-                <a href="{{ url_for('student_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-grid-fill me-2"></i> Go to Dashboard
-                </a>
-            {% elif session.get('user_type') == 'admin' %}
-                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg fw-bold rounded-pill px-4 shadow">
-                    <i class="bi bi-speedometer2 me-2"></i> Admin Control Panel
-                </a>
-            {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg fw-bold text-primary rounded-pill px-4 shadow">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Student / Admin Login
-                </a>
-                <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg fw-bold text-dark rounded-pill px-4 shadow">
-                    <i class="bi bi-person-plus-fill me-2"></i> Student Register
-                </a>
-            {% endif %}
+        <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+          <a href="{{ url_for('history') }}" class="btn-gold">
+            <i class="bi bi-compass"></i> Explore History
+          </a>
+          <a href="{{ url_for('temple') }}" class="btn-outline-gold">
+            <i class="bi bi-bank2"></i> Thanjavur Big Temple
+          </a>
+          <a href="{{ url_for('quiz') }}" class="btn-maroon">
+            <i class="bi bi-patch-question"></i> Take Imperial Quiz
+          </a>
         </div>
+      </div>
     </div>
-</div>
+  </div>
+</section>
 
-<!-- Features Section -->
-<div class="container my-5">
-    <div class="row text-center mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold text-primary">System Features</h2>
-            <p class="text-muted">Designed for smooth inventory management and easy equipment bookings</p>
+<!-- Quote Section with Attribution -->
+<section class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="quote-box">
+        <div class="quote-tamil">{{ quote.tamil }}</div>
+        <p class="quote-trans">“{{ quote.translation }}”</p>
+        <div class="quote-author">
+          — <strong>{{ quote.author }}</strong>, <em>{{ quote.work }}</em>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Navigation Cards to Major Sections -->
+<section class="container my-5">
+  <div class="text-center mb-5">
+    <span class="chola-category-tag">Imperial Gateways</span>
+    <h2 class="chola-heading">Discover Chola Legacy</h2>
+    <p class="text-secondary">Delve into the facets of Emperor Raja Raja Cholan's 30-year golden reign.</p>
+  </div>
+
+  <div class="row g-4">
+    <!-- Life & History -->
+    <div class="col-lg-4 col-md-6">
+      <div class="chola-card">
+        <div class="chola-card-img-wrapper">
+          <img src="{{ url_for('static', filename='images/rajaraja_portrait.svg') }}" alt="Arulmozhivarman" class="chola-card-img">
+        </div>
+        <div class="chola-card-body">
+          <span class="chola-category-tag">Biography</span>
+          <h4 class="chola-heading h5">Life & Ascension</h4>
+          <p class="small text-secondary flex-grow-1">
+            Born as Arulmozhivarman, discover his magnanimity in offering the throne to Uttama Chola and his subsequent peaceful accession in 985 CE.
+          </p>
+          <a href="{{ url_for('history') }}" class="btn btn-outline-warning btn-sm mt-2">
+            Read Timeline <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-primary bg-opacity-10 text-primary mx-auto mb-3">
-                    <i class="bi bi-person-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Student Portal</h5>
-                <p class="text-muted small">Quick registration using Register Number and Department. Browse real-time equipment availability.</p>
-            </div>
+    <!-- Military & Naval Conquests -->
+    <div class="col-lg-4 col-md-6">
+      <div class="chola-card">
+        <div class="chola-card-img-wrapper">
+          <img src="{{ url_for('static', filename='images/chola_navy.svg') }}" alt="Chola Navy" class="chola-card-img">
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-success bg-opacity-10 text-success mx-auto mb-3">
-                    <i class="bi bi-calendar-check-fill fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Instant Booking</h5>
-                <p class="text-muted small">Select required items, pick dates, specify quantities, and track approval status seamlessly.</p>
-            </div>
+        <div class="chola-card-body">
+          <span class="chola-category-tag">Military Armada</span>
+          <h4 class="chola-heading h5">Naval Supremacy</h4>
+          <p class="small text-secondary flex-grow-1">
+            From the triumph at Kandalur Salai to expeditions across Sri Lanka and the Maldives, explore Asia's premier medieval maritime force.
+          </p>
+          <a href="{{ url_for('military') }}" class="btn btn-outline-warning btn-sm mt-2">
+            View Conquests <i class="bi bi-arrow-right ms-1"></i>
+          </a>
         </div>
-
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm card-hover text-center p-4 rounded-4">
-                <div class="icon-box bg-warning bg-opacity-10 text-dark mx-auto mb-3">
-                    <i class="bi bi-shield-check fs-2"></i>
-                </div>
-                <h5 class="fw-bold">Admin Controls</h5>
-                <p class="text-muted small">Approve or reject booking requests, update equipment inventory, and track returned sports gear.</p>
-            </div>
-        </div>
+      </div>
     </div>
-</div>
+
+    <!-- Big Temple Architecture -->
+    <div class="col-lg-4 col-md-6">
+      <div class="chola-card">
+        <div class="chola-card-img-wrapper">
+          <img src="{{ url_for('static', filename='images/thanjavur_temple.svg') }}" alt="Big Temple" class="chola-card-img">
+        </div>
+        <div class="chola-card-body">
+          <span class="chola-category-tag">World Heritage</span>
+          <h4 class="chola-heading h5">Thanjavur Big Temple</h4>
+          <p class="small text-secondary flex-grow-1">
+            Standing 216 feet tall with an 80-ton monolithic cupola, the Brihadeeswarar Temple remains an unmatched engineering and spiritual triumph.
+          </p>
+          <a href="{{ url_for('temple') }}" class="btn btn-outline-warning btn-sm mt-2">
+            Explore Architecture <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kingdom Administration -->
+    <div class="col-lg-4 col-md-6">
+      <div class="chola-card">
+        <div class="chola-card-img-wrapper">
+          <img src="{{ url_for('static', filename='images/administration.svg') }}" alt="Administration" class="chola-card-img">
+        </div>
+        <div class="chola-card-body">
+          <span class="chola-category-tag">Governance</span>
+          <h4 class="chola-heading h5">Chola Kingdom & Cadastre</h4>
+          <p class="small text-secondary flex-grow-1">
+            Imperial land surveys, Kudavolai ballot voting, Valanadu provincial hierarchy, and maritime trade guilds that reached China.
+          </p>
+          <a href="{{ url_for('kingdom') }}" class="btn btn-outline-warning btn-sm mt-2">
+            Explore Kingdom <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cultural Achievements -->
+    <div class="col-lg-4 col-md-6">
+      <div class="chola-card">
+        <div class="chola-card-img-wrapper">
+          <img src="{{ url_for('static', filename='images/nataraja_bronze.svg') }}" alt="Nataraja Bronze" class="chola-card-img">
+        </div>
+        <div class="chola-card-body">
+          <span class="chola-category-tag">Arts & Literature</span>
+          <h4 class="chola-heading h5">Famous Achievements</h4>
+          <p class="small text-secondary flex-grow-1">
+            Recovery of the sacred Thevaram hymns, lost-wax bronze casting, astronomical calendars, and enduring civic endowments.
+          </p>
+          <a href="{{ url_for('achievements') }}" class="btn btn-outline-warning btn-sm mt-2">
+            View Achievements <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Quiz -->
+    <div class="col-lg-4 col-md-6">
+      <div class="chola-card border-warning">
+        <div class="chola-card-img-wrapper">
+          <img src="{{ url_for('static', filename='images/chola_emblem.svg') }}" alt="Quiz" class="chola-card-img">
+        </div>
+        <div class="chola-card-body">
+          <span class="chola-category-tag">Interactive</span>
+          <h4 class="chola-heading h5">Test Your Knowledge</h4>
+          <p class="small text-secondary flex-grow-1">
+            Interactive multiple-choice challenge with instant scoring, historical explanations, and imperial grade evaluation.
+          </p>
+          <a href="{{ url_for('quiz') }}" class="btn btn-warning btn-sm fw-bold mt-2">
+            Start Quiz Now <i class="bi bi-play-circle-fill ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Historical Articles Section -->
+<section class="container my-5 py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+    <div>
+      <span class="chola-category-tag">Imperial Archives</span>
+      <h2 class="chola-heading">Featured Historical Chronicles</h2>
+    </div>
+    <a href="{{ url_for('history') }}" class="btn btn-outline-warning btn-sm">
+      View All Articles <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for article in featured_articles %}
+      <div class="col-lg-6">
+        <div class="chola-card flex-row flex-wrap">
+          <div class="col-md-5 p-0">
+            <img src="{{ article.image_url }}" alt="{{ article.title }}" class="w-100 h-100 object-fit-cover" style="min-height: 200px;">
+          </div>
+          <div class="col-md-7 chola-card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-danger text-warning">{{ article.category|upper }}</span>
+              <small class="text-warning fw-bold">{{ article.era_year }}</small>
+            </div>
+            <h5 class="chola-heading mb-2" style="font-size: 1.15rem;">{{ article.title }}</h5>
+            <p class="small text-secondary flex-grow-1 mb-3">{{ article.summary }}</p>
+            <a href="{{ url_for(article.category if article.category in ['history', 'military', 'temple', 'kingdom', 'achievements'] else 'history') }}" class="text-warning text-decoration-none small fw-bold">
+              Read Detailed Section <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bronzeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff4c2" stop-opacity="0.4" />
+      <stop offset="60%" stop-color="#cd7f32" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#24070a" stop-opacity="0.9" />
+    </radialGradient>
+    <linearGradient id="cholaBronze" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd573" />
+      <stop offset="45%" stop-color="#cd7f32" />
+      <stop offset="85%" stop-color="#733d0e" />
+      <stop offset="100%" stop-color="#3d1d03" />
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="600" fill="#170305" />
+  <circle cx="300" cy="300" r="280" fill="url(#bronzeGlow)" />
+
+  <!-- Flaming Halo (Prabha Mandala) -->
+  <circle cx="300" cy="300" r="210" fill="none" stroke="url(#cholaBronze)" stroke-width="8" />
+  <circle cx="300" cy="300" r="195" fill="none" stroke="#ffe27a" stroke-width="2" opacity="0.6" />
+
+  <!-- Multiple Tongue Flames on the Rim -->
+  <g fill="#d4af37">
+    <!-- Top & Angled Flames -->
+    <path d="M 300 80 Q 290 60 300 45 Q 310 60 300 80 Z" />
+    <path d="M 360 92 Q 365 72 380 62 Q 380 82 360 92 Z" />
+    <path d="M 420 120 Q 435 105 455 105 Q 445 125 420 120 Z" />
+    <path d="M 470 170 Q 495 165 510 175 Q 495 190 470 170 Z" />
+    <path d="M 500 235 Q 525 240 535 258 Q 515 265 500 235 Z" />
+    <path d="M 505 310 Q 530 325 530 345 Q 510 340 505 310 Z" />
+    <path d="M 475 385 Q 495 410 490 430 Q 475 415 475 385 Z" />
+    <path d="M 420 455 Q 430 480 415 500 Q 405 475 420 455 Z" />
+    <path d="M 345 498 Q 345 525 330 540 Q 325 515 345 498 Z" />
+
+    <path d="M 240 92 Q 235 72 220 62 Q 220 82 240 92 Z" />
+    <path d="M 180 120 Q 165 105 145 105 Q 155 125 180 120 Z" />
+    <path d="M 130 170 Q 105 165 90 175 Q 105 190 130 170 Z" />
+    <path d="M 100 235 Q 75 240 65 258 Q 85 265 100 235 Z" />
+    <path d="M 95 310 Q 70 325 70 345 Q 90 340 95 310 Z" />
+    <path d="M 125 385 Q 105 410 110 430 Q 125 415 125 385 Z" />
+    <path d="M 180 455 Q 170 480 185 500 Q 195 475 180 455 Z" />
+    <path d="M 255 498 Q 255 525 270 540 Q 275 515 255 498 Z" />
+  </g>
+
+  <!-- Lotus Pedestal (Padmapitha) -->
+  <rect x="200" y="495" width="200" height="25" rx="5" fill="url(#cholaBronze)" stroke="#ffe27a" />
+  <rect x="175" y="520" width="250" height="30" rx="4" fill="#58111a" stroke="#d4af37" stroke-width="2" />
+
+  <!-- Demon Apasmara (Ignorance) Crushed Underfoot -->
+  <ellipse cx="295" cy="485" rx="45" ry="12" fill="url(#cholaBronze)" />
+  <circle cx="330" cy="480" r="8" fill="url(#cholaBronze)" />
+
+  <!-- Nataraja Body & Posture (Ananda Tandava) -->
+  <!-- Torso & Right Leg Stamped on Demon -->
+  <path d="M 290 270 L 305 380 L 290 475" stroke="url(#cholaBronze)" stroke-width="20" stroke-linecap="round" fill="none" />
+  <!-- Left Leg Lifted across (Bhujangatrasita) -->
+  <path d="M 295 375 Q 260 410 220 380 Q 200 370 175 385" stroke="url(#cholaBronze)" stroke-width="16" stroke-linecap="round" fill="none" />
+
+  <!-- Chest & Head -->
+  <circle cx="295" cy="200" r="22" fill="url(#cholaBronze)" />
+  <!-- Jata Makkuta (Crown of Matted Locks) -->
+  <polygon points="280,185 310,185 305,130 285,130" fill="url(#cholaBronze)" stroke="#ffe27a" />
+  <circle cx="295" cy="125" r="5" fill="#ffe27a" />
+  <!-- Flowing Locks (Jatas) Flying Horizontally -->
+  <path d="M 280 185 Q 200 180 140 210" stroke="url(#cholaBronze)" stroke-width="4" fill="none" />
+  <path d="M 280 195 Q 210 205 150 235" stroke="url(#cholaBronze)" stroke-width="4" fill="none" />
+  <path d="M 310 185 Q 390 180 450 210" stroke="url(#cholaBronze)" stroke-width="4" fill="none" />
+  <path d="M 310 195 Q 380 205 440 235" stroke="url(#cholaBronze)" stroke-width="4" fill="none" />
+
+  <!-- 4 Divine Arms -->
+  <!-- Upper Right Hand holding Damaru (Creation Drum) -->
+  <path d="M 295 240 Q 360 210 395 185" stroke="url(#cholaBronze)" stroke-width="12" stroke-linecap="round" fill="none" />
+  <polygon points="390,175 410,185 390,195 410,175" fill="#ffe27a" />
+  <!-- Upper Left Hand holding Agni (Flame of Dissolution) -->
+  <path d="M 295 240 Q 230 210 195 190" stroke="url(#cholaBronze)" stroke-width="12" stroke-linecap="round" fill="none" />
+  <circle cx="190" cy="185" r="7" fill="#ffe27a" />
+  <!-- Lower Right Hand: Abhaya Mudra (Fear-not Protection) -->
+  <path d="M 295 250 Q 330 270 340 295" stroke="url(#cholaBronze)" stroke-width="12" stroke-linecap="round" fill="none" />
+  <circle cx="345" cy="298" r="8" fill="#ffe27a" />
+  <!-- Lower Left Hand: Gajahasta pointing to lifted foot (Salvation) -->
+  <path d="M 295 260 Q 270 290 220 330" stroke="url(#cholaBronze)" stroke-width="12" stroke-linecap="round" fill="none" />
+
+  <!-- Bottom Inscription -->
+  <text x="300" y="575" fill="#d4af37" font-family="'Cinzel', serif" font-weight="bold" font-size="13" text-anchor="middle" letter-spacing="2">
+    CHOLA BRONZE METALLURGY • ANANDA TANDAVA
+  </text>
+</svg>

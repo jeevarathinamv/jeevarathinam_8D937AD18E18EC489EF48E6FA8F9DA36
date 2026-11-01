@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Thanjavur Big Temple (Brihadeeswarar) – Architectural Wonder{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <span class="chola-category-tag">UNESCO World Heritage Monument</span>
+    <h1 class="chola-heading display-5">Thanjavur Brihadeeswarar Temple</h1>
+    <h3 class="chola-heading text-warning h5">பெருவுடையார் கோயில் • தக்ஷிண மேரு (Daksina Meru)</h3>
+    <p class="text-secondary max-w-700 mx-auto">
+      Commissioned in 1003 CE and consecrated in 1010 CE, this granite marvel is the world's first complete granite temple, towering 216 feet into the Tamil sky.
+    </p>
+  </div>
+
+  <!-- Hero Visual -->
+  <div class="row justify-content-center mb-5">
+    <div class="col-lg-10">
+      <div class="chola-card p-2 text-center">
+        <img src="{{ url_for('static', filename='images/thanjavur_temple.svg') }}" alt="Thanjavur Temple" class="img-fluid rounded" style="max-height: 440px; width: 100%; object-fit: cover;">
+        <div class="p-3">
+          <span class="badge bg-danger text-warning me-2">13 Storey Vimana</span>
+          <span class="badge bg-warning text-dark me-2">80-Ton Monolithic Cupola</span>
+          <span class="badge bg-secondary text-light">130,000+ Tons Granite</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 Architectural Feats Cards -->
+  <div class="row g-4 mb-5">
+
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card p-3 text-center">
+        <i class="bi bi-box-arrow-in-up text-warning display-6 mb-2"></i>
+        <h4 class="chola-heading h6">The 80-Ton Kumbam</h4>
+        <p class="small text-secondary">
+          The crowning monolithic granite cupola weighs roughly 80 metric tons. Engineers rolled it atop the 66-meter Vimana using an inclined earthen ramp extending over 6 kilometers from Sarapallam.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card p-3 text-center">
+        <i class="bi bi-building-fill-check text-warning display-6 mb-2"></i>
+        <h4 class="chola-heading h6">Zero-Mortar Interlocking</h4>
+        <p class="small text-secondary">
+          Built completely without binding cement or mortar. Massive granite blocks were precision cut and dry-fitted using jigsaw puzzle interlocking joints that have withstood 6 major earthquakes.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card p-3 text-center">
+        <i class="bi bi-person-lines-fill text-warning display-6 mb-2"></i>
+        <h4 class="chola-heading h6">Stone Inscription Register</h4>
+        <p class="small text-secondary">
+          Raja Raja Cholan immortalized every worker on temple walls: chief architect Kunjaramallan Rajaraja Perunthachan, sculptors, 400 devadasis, musicians, and treasurers with exact wage allocations.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card p-3 text-center">
+        <i class="bi bi-palette-fill text-warning display-6 mb-2"></i>
+        <h4 class="chola-heading h6">Frescoes & Chola Bronzes</h4>
+        <p class="small text-secondary">
+          The circumambulatory passage contains radiant 11th-century Chola fresco paintings depicting Lord Shiva as Tripurantaka and Raja Raja Cholan receiving blessings from Saint Karuvur Devar.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Deep Dive Articles -->
+  {% if articles %}
+    <div class="row g-4 mb-5">
+      {% for article in articles %}
+        <div class="col-lg-12">
+          <div class="chola-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-warning text-dark">{{ article.era_year }}</span>
+              <span class="text-warning small"><i class="bi bi-bank2 me-1"></i> Temple Inscriptions</span>
+            </div>
+            <h3 class="chola-heading h4 mb-3">{{ article.title }}</h3>
+            <p class="lead text-warning" style="font-size: 1.1rem;">{{ article.summary }}</p>
+            <div class="p-3 bg-dark rounded border border-warning border-opacity-25 text-light">
+              {{ article.content }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Temple Image Gallery Section -->
+  {% if gallery %}
+    <div class="mt-5">
+      <h3 class="chola-heading text-center mb-4">Temple Art & Sculpture Showcase</h3>
+      <div class="row g-4">
+        {% for item in gallery %}
+          <div class="col-md-4">
+            <div class="gallery-card p-2" data-img="{{ item.image_url }}" data-title="{{ item.title }}" data-desc="{{ item.description }}" data-attribution="{{ item.attribution }}">
+              <img src="{{ item.image_url }}" alt="{{ item.title }}" class="w-100 rounded" style="height: 220px; object-fit: cover;">
+              <div class="p-2">
+                <h6 class="chola-heading mb-1 text-truncate">{{ item.title }}</h6>
+                <small class="text-secondary d-block text-truncate">{{ item.description }}</small>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,389 +1,279 @@
+"""
+Raja Raja Cholan - The History of the Great Tamil Emperor
+Flask Application Backend
+"""
+
 import os
-from datetime import datetime, date
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from werkzeug.security import check_password_hash, generate_password_hash
+from database import query_db, execute_db, init_db, is_using_sqlite
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'college_sports_booking_secret_key_123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'raja_raja_cholan_imperial_secret_key_985_1014')
 
-# Admin Hardcoded Credentials
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+# Initialize DB on application startup
+with app.app_context():
+    init_db()
 
-# Database configuration: Default to MySQL URI, fallback/option for SQLite
-MYSQL_URI = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:@localhost/sports_booking_db')
-SQLITE_URI = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'sports_booking.db')
-
-use_sqlite = os.environ.get('USE_SQLITE') == '1'
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLITE_URI if use_sqlite else MYSQL_URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-class Student(db.Model):
-    __tablename__ = 'students'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    register_number = db.Column(db.String(50), unique=True, nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='student', lazy=True)
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-class Equipment(db.Model):
-    __tablename__ = 'equipment'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    total_quantity = db.Column(db.Integer, nullable=False, default=0)
-    available_quantity = db.Column(db.Integer, nullable=False, default=0)
-    description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    bookings = db.relationship('Booking', backref='equipment', lazy=True)
-
-class Booking(db.Model):
-    __tablename__ = 'bookings'
-    id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    equipment_id = db.Column(db.Integer, db.ForeignKey('equipment.id'), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=1)
-    status = db.Column(db.String(20), default='Pending') # Pending, Approved, Rejected, Returned
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-def seed_default_data():
-    if Equipment.query.count() == 0:
-        items = [
-            Equipment(name='Cricket Bat', category='Cricket', total_quantity=15, available_quantity=15, description='English Willow Quality Cricket Bat'),
-            Equipment(name='Cricket Ball', category='Cricket', total_quantity=30, available_quantity=30, description='Standard Red Leather Cricket Ball'),
-            Equipment(name='Football', category='Football', total_quantity=20, available_quantity=20, description='Size 5 Tournament Football'),
-            Equipment(name='Volleyball', category='Volleyball', total_quantity=12, available_quantity=12, description='Official Match Size Volleyball'),
-            Equipment(name='Volleyball Net', category='Volleyball', total_quantity=4, available_quantity=4, description='Durable Nylon Volleyball Net'),
-            Equipment(name='Badminton Racket', category='Badminton', total_quantity=25, available_quantity=25, description='Lightweight Graphite Badminton Racket'),
-            Equipment(name='Shuttlecocks (Box)', category='Badminton', total_quantity=15, available_quantity=15, description='Feather Shuttlecock Box of 10'),
-            Equipment(name='Basketball', category='Basketball', total_quantity=10, available_quantity=10, description='Composite Leather Basketball'),
-        ]
-        db.session.add_all(items)
-        db.session.commit()
-
-# Auth Decorators
-def student_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'student':
-            flash('Please log in as a student to access this page.', 'warning')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
+# Admin authentication decorator
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_type' not in session or session['user_type'] != 'admin':
-            flash('Admin access required.', 'warning')
-            return redirect(url_for('login'))
+        if not session.get('admin_logged_in'):
+            flash('Access restricted. Please log in with admin credentials.', 'warning')
+            return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
+# --- Public Routes ---
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    """Home Page with hero banner, quote, highlights, and quick access."""
+    featured_articles = query_db(
+        "SELECT * FROM articles WHERE is_featured = 1 ORDER BY id ASC LIMIT 4"
+    )
+    gallery_preview = query_db(
+        "SELECT * FROM gallery ORDER BY id ASC LIMIT 4"
+    )
+    quote = {
+        'tamil': 'அருண்மொழிவர்மனின் ஆட்சியில் அறமும் வீரமும் இணைந்த பேரரசின் பொற்காலம் மலர்ந்தது.',
+        'translation': 'In the reign of Arulmozhivarman, a golden epoch blossomed where imperial valor and righteous governance walked hand in hand.',
+        'author': 'Prof. K. A. Nilakanta Sastri',
+        'work': 'The Cholas (1935)'
+    }
+    return render_template(
+        'index.html',
+        featured_articles=featured_articles,
+        gallery_preview=gallery_preview,
+        quote=quote,
+        active_page='home'
+    )
 
-# Student Registration
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+@app.route('/history')
+def history():
+    """Chronological biography and timeline of Raja Raja Cholan."""
+    articles = query_db("SELECT * FROM articles WHERE category = %s ORDER BY id ASC", ('history',))
+    return render_template('history.html', articles=articles, active_page='history')
+
+@app.route('/military')
+def military():
+    """Military expeditions, naval supremacy, and imperial conquests."""
+    articles = query_db("SELECT * FROM articles WHERE category = %s ORDER BY id ASC", ('military',))
+    return render_template('military.html', articles=articles, active_page='military')
+
+@app.route('/temple')
+def temple():
+    """Thanjavur Brihadeeswarar Temple architecture and historical grandeur."""
+    articles = query_db("SELECT * FROM articles WHERE category = %s ORDER BY id ASC", ('temple',))
+    temple_gallery = query_db("SELECT * FROM gallery WHERE category IN ('temple', 'architecture', 'sculptures')")
+    return render_template('temple.html', articles=articles, gallery=temple_gallery, active_page='temple')
+
+@app.route('/kingdom')
+def kingdom():
+    """Chola Empire administration, land surveys, economy, and culture."""
+    articles = query_db("SELECT * FROM articles WHERE category = %s ORDER BY id ASC", ('kingdom',))
+    return render_template('kingdom.html', articles=articles, active_page='kingdom')
+
+@app.route('/achievements')
+def achievements():
+    """Key historical, cultural, and administrative achievements."""
+    articles = query_db("SELECT * FROM articles WHERE category = %s ORDER BY id ASC", ('achievements',))
+    all_articles = query_db("SELECT * FROM articles ORDER BY id ASC")
+    return render_template('achievements.html', articles=articles, all_articles=all_articles, active_page='achievements')
+
+@app.route('/gallery')
+def gallery():
+    """Visual gallery of Raja Raja Cholan era, architecture, and sculptures."""
+    items = query_db("SELECT * FROM gallery ORDER BY id DESC")
+    categories = sorted(list(set(item['category'] for item in items)))
+    return render_template('gallery.html', items=items, categories=categories, active_page='gallery')
+
+@app.route('/quiz')
+def quiz():
+    """Interactive quiz page on Raja Raja Cholan."""
+    return render_template('quiz.html', active_page='quiz')
+
+@app.route('/api/quiz', methods=['GET'])
+def api_quiz():
+    """API endpoint providing quiz questions in JSON format."""
+    questions = query_db("SELECT id, question, option_a, option_b, option_c, option_d, correct_option, explanation FROM quiz_questions ORDER BY id ASC")
+    return jsonify({'status': 'success', 'questions': questions, 'total': len(questions)})
+
+# --- Admin Authentication & Dashboard Routes ---
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Admin login page."""
+    if session.get('admin_logged_in'):
+        return redirect(url_for('admin_dashboard'))
+
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        register_number = request.form.get('register_number', '').strip()
-        department = request.form.get('department', '').strip()
-        email = request.form.get('email', '').strip().lower()
+        username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
 
-        if not name or not register_number or not department or not email or not password:
-            flash('All fields are required.', 'danger')
-            return redirect(url_for('register'))
+        if not username or not password:
+            flash('Username and password are required.', 'danger')
+            return render_template('admin_login.html', active_page='admin')
 
-        existing_student = Student.query.filter(
-            (Student.email == email) | (Student.register_number == register_number)
-        ).first()
+        admin = query_db("SELECT * FROM admins WHERE username = %s", (username,), one=True)
 
-        if existing_student:
-            flash('Student with this Email or Register Number already exists.', 'danger')
-            return redirect(url_for('register'))
-
-        student = Student(
-            name=name,
-            register_number=register_number,
-            department=department,
-            email=email
-        )
-        student.set_password(password)
-        db.session.add(student)
-        db.session.commit()
-
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
-
-    return render_template('register.html')
-
-# Student & Admin Login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        login_type = request.form.get('login_type', 'student')
-
-        if login_type == 'admin':
-            username = request.form.get('username', '').strip()
-            password = request.form.get('password', '')
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                session['user_type'] = 'admin'
-                session['user_name'] = 'Administrator'
-                flash('Logged in successfully as Administrator.', 'success')
-                return redirect(url_for('admin_dashboard'))
-            else:
-                flash('Invalid admin credentials.', 'danger')
-                return redirect(url_for('login'))
+        if admin and check_password_hash(admin['password_hash'], password):
+            session['admin_logged_in'] = True
+            session['admin_id'] = admin['id']
+            session['admin_username'] = admin['username']
+            session['admin_name'] = admin['full_name']
+            flash(f"Welcome, {admin['full_name']}! You are logged in to the Emperor's Archives.", 'success')
+            return redirect(url_for('admin_dashboard'))
         else:
-            email_or_reg = request.form.get('email_or_reg', '').strip()
-            password = request.form.get('password', '')
+            flash('Invalid admin credentials. Please verify your username and password.', 'danger')
 
-            student = Student.query.filter(
-                (Student.email == email_or_reg.lower()) | (Student.register_number == email_or_reg)
-            ).first()
+    return render_template('admin_login.html', active_page='admin')
 
-            if student and student.check_password(password):
-                session['user_type'] = 'student'
-                session['user_id'] = student.id
-                session['user_name'] = student.name
-                flash(f'Welcome back, {student.name}!', 'success')
-                return redirect(url_for('student_dashboard'))
-            else:
-                flash('Invalid credentials. Please check your details and try again.', 'danger')
-                return redirect(url_for('login'))
-
-    return render_template('login.html')
-
-# Logout
-@app.route('/logout')
-def logout():
+@app.route('/admin/logout')
+def admin_logout():
+    """Admin logout."""
     session.clear()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('index'))
+    flash('You have been securely logged out.', 'info')
+    return redirect(url_for('admin_login'))
 
-# Student Dashboard & Equipment Booking
-@app.route('/student/dashboard')
-@student_required
-def student_dashboard():
-    student_id = session.get('user_id')
-    student = Student.query.get(student_id)
-    equipments = Equipment.query.all()
-    my_bookings = Booking.query.filter_by(student_id=student_id).order_by(Booking.created_at.desc()).all()
-    today_str = date.today().isoformat()
-    return render_template('student_dashboard.html', student=student, equipments=equipments, bookings=my_bookings, today=today_str)
-
-@app.route('/student/book', methods=['POST'])
-@student_required
-def book_equipment():
-    student_id = session.get('user_id')
-    equipment_id = request.form.get('equipment_id', type=int)
-    booking_date_str = request.form.get('booking_date', '')
-    quantity = request.form.get('quantity', type=int, default=1)
-
-    if not equipment_id or not booking_date_str or quantity <= 0:
-        flash('Invalid booking details.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    try:
-        booking_date = datetime.strptime(booking_date_str, '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if booking_date < date.today():
-        flash('Booking date cannot be in the past.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    equipment = Equipment.query.get(equipment_id)
-    if not equipment:
-        flash('Equipment not found.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if equipment.available_quantity <= 0:
-        flash(f'Sorry, {equipment.name} is currently out of stock.', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    if quantity > equipment.available_quantity:
-        flash(f'Requested quantity ({quantity}) exceeds available stock ({equipment.available_quantity}).', 'danger')
-        return redirect(url_for('student_dashboard'))
-
-    booking = Booking(
-        student_id=student_id,
-        equipment_id=equipment_id,
-        booking_date=booking_date,
-        quantity=quantity,
-        status='Pending'
-    )
-    db.session.add(booking)
-    db.session.commit()
-
-    flash(f'Booking request submitted for {quantity} x {equipment.name} on {booking_date}. Awaiting Admin approval.', 'success')
-    return redirect(url_for('student_dashboard'))
-
-# Admin Dashboard & Equipment Management
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    equipments = Equipment.query.all()
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    """Admin management dashboard."""
+    articles = query_db("SELECT * FROM articles ORDER BY id DESC")
+    gallery_items = query_db("SELECT * FROM gallery ORDER BY id DESC")
+    quiz_questions = query_db("SELECT * FROM quiz_questions ORDER BY id DESC")
 
-    # Simple statistics
-    total_equipments = len(equipments)
-    total_bookings = len(bookings)
-    pending_count = len([b for b in bookings if b.status == 'Pending'])
-    approved_count = len([b for b in bookings if b.status == 'Approved'])
+    stats = {
+        'total_articles': len(articles),
+        'total_gallery': len(gallery_items),
+        'total_quiz': len(quiz_questions),
+        'database_engine': 'SQLite (Local Sandbox)' if is_using_sqlite() else 'MySQL (XAMPP)'
+    }
 
     return render_template(
         'admin_dashboard.html',
-        equipments=equipments,
-        bookings=bookings,
-        total_equipments=total_equipments,
-        total_bookings=total_bookings,
-        pending_count=pending_count,
-        approved_count=approved_count
+        articles=articles,
+        gallery_items=gallery_items,
+        quiz_questions=quiz_questions,
+        stats=stats,
+        active_page='admin'
     )
 
-@app.route('/admin/equipment/add', methods=['POST'])
-@admin_required
-def add_equipment():
-    name = request.form.get('name', '').strip()
-    category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int, default=0)
-    description = request.form.get('description', '').strip()
+# --- Article Management ---
 
-    if not name or not category or total_quantity <= 0:
-        flash('Name, category, and total quantity (>0) are required.', 'danger')
+@app.route('/admin/article/add', methods=['POST'])
+@admin_required
+def admin_article_add():
+    title = request.form.get('title', '').strip()
+    category = request.form.get('category', '').strip()
+    era_year = request.form.get('era_year', '').strip()
+    summary = request.form.get('summary', '').strip()
+    content = request.form.get('content', '').strip()
+    image_url = request.form.get('image_url', '').strip() or '/static/images/thanjavur_temple.svg'
+    is_featured = 1 if request.form.get('is_featured') else 0
+
+    if not title or not category or not summary or not content:
+        flash('Title, category, summary, and content are required.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-    equipment = Equipment(
-        name=name,
-        category=category,
-        total_quantity=total_quantity,
-        available_quantity=total_quantity,
-        description=description
+    execute_db(
+        "INSERT INTO articles (title, category, era_year, summary, content, image_url, is_featured) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (title, category, era_year, summary, content, image_url, is_featured)
     )
-    db.session.add(equipment)
-    db.session.commit()
-    flash(f'Equipment "{name}" added successfully.', 'success')
+    flash(f'Article "{title}" published successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/equipment/update/<int:equipment_id>', methods=['POST'])
+@app.route('/admin/article/edit/<int:article_id>', methods=['POST'])
 @admin_required
-def update_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    name = request.form.get('name', '').strip()
+def admin_article_edit(article_id):
+    title = request.form.get('title', '').strip()
     category = request.form.get('category', '').strip()
-    total_quantity = request.form.get('total_quantity', type=int)
-    available_quantity = request.form.get('available_quantity', type=int)
+    era_year = request.form.get('era_year', '').strip()
+    summary = request.form.get('summary', '').strip()
+    content = request.form.get('content', '').strip()
+    image_url = request.form.get('image_url', '').strip() or '/static/images/thanjavur_temple.svg'
+    is_featured = 1 if request.form.get('is_featured') else 0
+
+    if not title or not category or not summary or not content:
+        flash('All required fields must be filled.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    execute_db(
+        "UPDATE articles SET title = %s, category = %s, era_year = %s, summary = %s, content = %s, image_url = %s, is_featured = %s WHERE id = %s",
+        (title, category, era_year, summary, content, image_url, is_featured, article_id)
+    )
+    flash(f'Article #{article_id} updated successfully.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/article/delete/<int:article_id>', methods=['POST'])
+@admin_required
+def admin_article_delete(article_id):
+    execute_db("DELETE FROM articles WHERE id = %s", (article_id,))
+    flash(f'Article #{article_id} deleted.', 'info')
+    return redirect(url_for('admin_dashboard'))
+
+# --- Gallery Management ---
+
+@app.route('/admin/gallery/add', methods=['POST'])
+@admin_required
+def admin_gallery_add():
+    title = request.form.get('title', '').strip()
+    category = request.form.get('category', '').strip()
     description = request.form.get('description', '').strip()
+    image_url = request.form.get('image_url', '').strip() or '/static/images/thanjavur_temple.svg'
+    attribution = request.form.get('attribution', '').strip() or 'Historical Archive / Public Domain'
 
-    if name:
-        equipment.name = name
-    if category:
-        equipment.category = category
-    if total_quantity is not None and total_quantity >= 0:
-        equipment.total_quantity = total_quantity
-    if available_quantity is not None and available_quantity >= 0:
-        if available_quantity > equipment.total_quantity:
-            flash('Available quantity cannot exceed total quantity.', 'danger')
-            return redirect(url_for('admin_dashboard'))
-        equipment.available_quantity = available_quantity
-    equipment.description = description
-
-    db.session.commit()
-    flash(f'Equipment "{equipment.name}" updated successfully.', 'success')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/equipment/delete/<int:equipment_id>', methods=['POST'])
-@admin_required
-def delete_equipment(equipment_id):
-    equipment = Equipment.query.get_or_404(equipment_id)
-    db.session.delete(equipment)
-    db.session.commit()
-    flash('Equipment deleted successfully.', 'info')
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/booking/approve/<int:booking_id>', methods=['POST'])
-@admin_required
-def approve_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Pending':
-        flash('Only pending bookings can be approved.', 'warning')
+    if not title or not category or not description:
+        flash('Title, category, and description are required.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-    equipment = booking.equipment
-    if equipment.available_quantity < booking.quantity:
-        flash(f'Insufficient available stock for {equipment.name}. Available: {equipment.available_quantity}, Requested: {booking.quantity}', 'danger')
-        return redirect(url_for('admin_dashboard'))
-
-    # Deduct stock on approval
-    equipment.available_quantity -= booking.quantity
-    booking.status = 'Approved'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} approved successfully.', 'success')
+    execute_db(
+        "INSERT INTO gallery (title, category, description, image_url, attribution) VALUES (%s, %s, %s, %s, %s)",
+        (title, category, description, image_url, attribution)
+    )
+    flash(f'Gallery entry "{title}" added successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/booking/reject/<int:booking_id>', methods=['POST'])
+@app.route('/admin/gallery/delete/<int:gallery_id>', methods=['POST'])
 @admin_required
-def reject_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status not in ['Pending', 'Approved']:
-        flash('Booking status cannot be rejected.', 'warning')
-        return redirect(url_for('admin_dashboard'))
-
-    # If it was approved earlier, return stock
-    if booking.status == 'Approved':
-        booking.equipment.available_quantity += booking.quantity
-
-    booking.status = 'Rejected'
-    db.session.commit()
-
-    flash(f'Booking #{booking.id} rejected.', 'info')
+def admin_gallery_delete(gallery_id):
+    execute_db("DELETE FROM gallery WHERE id = %s", (gallery_id,))
+    flash(f'Gallery item #{gallery_id} deleted.', 'info')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/booking/return/<int:booking_id>', methods=['POST'])
+# --- Quiz Question Management ---
+
+@app.route('/admin/quiz/add', methods=['POST'])
 @admin_required
-def return_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if booking.status != 'Approved':
-        flash('Only approved bookings can be marked as returned.', 'warning')
+def admin_quiz_add():
+    question = request.form.get('question', '').strip()
+    option_a = request.form.get('option_a', '').strip()
+    option_b = request.form.get('option_b', '').strip()
+    option_c = request.form.get('option_c', '').strip()
+    option_d = request.form.get('option_d', '').strip()
+    correct_option = request.form.get('correct_option', '').strip().upper()
+    explanation = request.form.get('explanation', '').strip()
+
+    if not question or not option_a or not option_b or not option_c or not option_d or correct_option not in ('A', 'B', 'C', 'D'):
+        flash('Question, 4 options, and a valid correct option (A, B, C, or D) are required.', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-    # Restock equipment
-    booking.equipment.available_quantity += booking.quantity
-    # Prevent available quantity from exceeding total quantity
-    if booking.equipment.available_quantity > booking.equipment.total_quantity:
-        booking.equipment.available_quantity = booking.equipment.total_quantity
+    execute_db(
+        "INSERT INTO quiz_questions (question, option_a, option_b, option_c, option_d, correct_option, explanation) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (question, option_a, option_b, option_c, option_d, correct_option, explanation)
+    )
+    flash('New quiz question added successfully.', 'success')
+    return redirect(url_for('admin_dashboard'))
 
-    booking.status = 'Returned'
-    db.session.commit()
-
-    flash(f'Equipment for Booking #{booking.id} marked as Returned. Stock updated (+{booking.quantity}).', 'success')
+@app.route('/admin/quiz/delete/<int:question_id>', methods=['POST'])
+@admin_required
+def admin_quiz_delete(question_id):
+    execute_db("DELETE FROM quiz_questions WHERE id = %s", (question_id,))
+    flash(f'Quiz question #{question_id} deleted.', 'info')
     return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        seed_default_data()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)

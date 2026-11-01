@@ -1,106 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}College Sports Equipment Booking System{% endblock %}</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Raja Raja Cholan – The History of the Great Tamil Emperor{% endblock %}</title>
+
+  <!-- Google Fonts: Cinzel & Cinzel Decorative for Imperial Inscriptions, Noto Serif Tamil -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cinzel+Decorative:wght@700&family=Noto+Serif+Tamil:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Custom Historical Theme Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="d-flex flex-column min-vh-100 bg-light">
+<body>
 
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-primary shadow-sm sticky-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-bold" href="{{ url_for('index') }}">
-                <i class="bi bi-trophy-fill me-2 fs-4 text-warning"></i>
-                <span>College Sports Hub</span>
+  <!-- Top Imperial Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-chola sticky-top">
+    <div class="container-fluid px-lg-5">
+      <a class="navbar-brand" href="{{ url_for('index') }}">
+        <img src="{{ url_for('static', filename='images/chola_emblem.svg') }}" alt="Chola Royal Tiger Emblem" class="brand-emblem">
+        <span>RAJA RAJA CHOLAN</span>
+      </a>
+
+      <button class="navbar-toggler border-warning" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCholaNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarCholaNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">
+              <i class="bi bi-house-door me-1"></i> Home
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-row navbar-nav ms-auto align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link fw-medium" href="{{ url_for('index') }}"><i class="bi bi-house-door-fill me-1"></i> Home</a>
-                    </li>
-                    {% if session.get('user_type') == 'student' %}
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ url_for('student_dashboard') }}"><i class="bi bi-grid-fill me-1"></i> Student Dashboard</a>
-                        </li>
-                        <li class="nav-item ms-lg-2">
-                            <span class="navbar-text text-white bg-white bg-opacity-20 px-3 py-1 rounded-pill border border-white border-opacity-25 me-2">
-                                <i class="bi bi-person-fill me-1"></i> {{ session.get('user_name') }}
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm rounded-pill px-3 ms-lg-1" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
-                        </li>
-                    {% elif session.get('user_type') == 'admin' %}
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-speedometer2 me-1"></i> Admin Dashboard</a>
-                        </li>
-                        <li class="nav-item ms-lg-2">
-                            <span class="navbar-text text-white bg-white bg-opacity-20 px-3 py-1 rounded-pill border border-white border-opacity-25 me-2">
-                                <i class="bi bi-shield-lock-fill me-1"></i> Administrator
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm rounded-pill px-3 ms-lg-1" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item ms-lg-2">
-                            <a class="btn btn-light btn-sm text-primary fw-semibold rounded-pill px-3 me-2" href="{{ url_for('login') }}"><i class="bi bi-box-arrow-in-right me-1"></i> Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-warning btn-sm fw-semibold rounded-pill px-3 text-dark" href="{{ url_for('register') }}"><i class="bi bi-person-plus-fill me-1"></i> Register</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Flash Messages -->
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-3" role="alert">
-                        <i class="bi
-                            {% if category == 'success' %}bi-check-circle-fill text-success
-                            {% elif category == 'danger' %}bi-exclamation-triangle-fill text-danger
-                            {% elif category == 'warning' %}bi-exclamation-circle-fill text-warning
-                            {% else %}bi-info-circle-fill text-info{% endif %} me-2"></i>
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'history' %}active{% endif %}" href="{{ url_for('history') }}">
+              <i class="bi bi-hourglass-split me-1"></i> History
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'military' %}active{% endif %}" href="{{ url_for('military') }}">
+              <i class="bi bi-shield-shaded me-1"></i> Military
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'temple' %}active{% endif %}" href="{{ url_for('temple') }}">
+              <i class="bi bi-bank me-1"></i> Big Temple
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'kingdom' %}active{% endif %}" href="{{ url_for('kingdom') }}">
+              <i class="bi bi-compass me-1"></i> Chola Kingdom
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'achievements' %}active{% endif %}" href="{{ url_for('achievements') }}">
+              <i class="bi bi-award me-1"></i> Achievements
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'gallery' %}active{% endif %}" href="{{ url_for('gallery') }}">
+              <i class="bi bi-images me-1"></i> Gallery
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'quiz' %}active{% endif %}" href="{{ url_for('quiz') }}">
+              <i class="bi bi-question-circle me-1"></i> Quiz
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2">
+            {% if session.get('admin_logged_in') %}
+              <a class="btn btn-warning btn-sm fw-bold px-3 py-1" href="{{ url_for('admin_dashboard') }}">
+                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+              </a>
+            {% else %}
+              <a class="btn-admin-nav" href="{{ url_for('admin_login') }}">
+                <i class="bi bi-lock me-1"></i> Admin Login
+              </a>
             {% endif %}
-        {% endwith %}
+          </li>
+        </ul>
+      </div>
     </div>
+  </nav>
 
-    <!-- Main Body Content -->
-    <main class="flex-grow-1">
-        {% block content %}{% endblock %}
-    </main>
+  <!-- Flash Alerts -->
+  <div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show alert-chola" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4 mt-5 border-top border-secondary">
-        <div class="container">
-            <p class="mb-1 fw-medium"><i class="bi bi-trophy text-warning me-1"></i> College Sports Equipment Booking System</p>
-            <p class="small text-white-50 mb-0">MCA Mini Project Demo &bull; Built with Flask, Bootstrap 5 & MySQL</p>
+  <!-- Main Content Block -->
+  <main class="flex-grow-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Royal Footer Section -->
+  <footer class="footer-chola">
+    <div class="container">
+      <div class="row g-4 mb-4">
+
+        <!-- About Column -->
+        <div class="col-lg-4 col-md-6">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <img src="{{ url_for('static', filename='images/chola_emblem.svg') }}" alt="Emblem" style="width: 48px; height: 48px;">
+            <h5 class="footer-heading mb-0">Raja Raja Cholan</h5>
+          </div>
+          <p class="small text-secondary mb-3">
+            Dedicated to chronicling the golden age of the Imperial Cholas, the architectural triumph of the Thanjavur Big Temple, and the maritime supremacy of Emperor Arulmozhivarman.
+          </p>
+          <div>
+            <a href="https://www.youtube.com/@TamilHistoricalHeritage" target="_blank" rel="noopener noreferrer" class="btn-youtube">
+              <i class="bi bi-youtube fs-5"></i>
+              <span>Subscribe YouTube Channel</span>
+            </a>
+          </div>
         </div>
-    </footer>
 
-    <!-- Bootstrap 5 Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    {% block scripts %}{% endblock %}
+        <!-- Historical Quick Navigation -->
+        <div class="col-lg-2 col-md-6">
+          <h5 class="footer-heading">Chronicles</h5>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('history') }}"><i class="bi bi-chevron-right me-1 text-warning"></i> Life Timeline</a></li>
+            <li><a href="{{ url_for('military') }}"><i class="bi bi-chevron-right me-1 text-warning"></i> Military Navy</a></li>
+            <li><a href="{{ url_for('temple') }}"><i class="bi bi-chevron-right me-1 text-warning"></i> Big Temple</a></li>
+            <li><a href="{{ url_for('kingdom') }}"><i class="bi bi-chevron-right me-1 text-warning"></i> Administration</a></li>
+            <li><a href="{{ url_for('achievements') }}"><i class="bi bi-chevron-right me-1 text-warning"></i> Inventions</a></li>
+          </ul>
+        </div>
+
+        <!-- Historical Sources & References -->
+        <div class="col-lg-3 col-md-6">
+          <h5 class="footer-heading">References & Sources</h5>
+          <ul class="footer-links small text-secondary">
+            <li>• Nilakanta Sastri, K. A. <em>The Cōḷas</em>, University of Madras (1935).</li>
+            <li>• South Indian Inscriptions (SII), Archaeological Survey of India (ASI).</li>
+            <li>• Epigraphia Carnatica & Thanjavur Brihadisvara Stone Epigraphs.</li>
+            <li>• Kalki Krishnamurthy, <em>Ponniyin Selvan</em> Historical References.</li>
+          </ul>
+        </div>
+
+        <!-- Contact & Admin Info -->
+        <div class="col-lg-3 col-md-6">
+          <h5 class="footer-heading">Historical Archive</h5>
+          <p class="small text-secondary mb-2">
+            <i class="bi bi-geo-alt-fill text-warning me-2"></i> Brihadeeswarar Temple Complex, Thanjavur, Tamil Nadu 613007
+          </p>
+          <p class="small text-secondary mb-2">
+            <i class="bi bi-envelope-fill text-warning me-2"></i> archives@choladynasty.org
+          </p>
+          <p class="small text-secondary mb-3">
+            <i class="bi bi-mortarboard-fill text-warning me-2"></i> MCA Academic Mini Project Demo
+          </p>
+          <a href="{{ url_for('admin_login') }}" class="btn btn-outline-warning btn-sm">
+            <i class="bi bi-shield-lock me-1"></i> Admin Portal
+          </a>
+        </div>
+
+      </div>
+
+      <hr class="border-secondary opacity-25 my-4">
+
+      <div class="row align-items-center small text-secondary">
+        <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+          © {{ 2025 }} <strong>Raja Raja Cholan Heritage Portal</strong>. Developed for Academic MCA Demonstration.
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <span class="text-warning">Original Historical Content & Vector Artwork</span> • All Rights Reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom JS Application -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

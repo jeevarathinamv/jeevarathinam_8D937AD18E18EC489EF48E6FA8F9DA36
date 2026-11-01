@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Chola Kingdom – Administration, Economy & Culture{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <span class="chola-category-tag">Imperial Statecraft</span>
+    <h1 class="chola-heading display-5">The Chola Kingdom</h1>
+    <p class="text-secondary max-w-700 mx-auto">
+      An intricate empire founded on democratic grassroots village councils, rigorous metric land surveys, global merchant guilds, and an agrarian economic engine.
+    </p>
+  </div>
+
+  <!-- Administration Infographic SVG -->
+  <div class="row justify-content-center mb-5">
+    <div class="col-lg-10">
+      <div class="chola-card p-2 text-center">
+        <img src="{{ url_for('static', filename='images/administration.svg') }}" alt="Chola Administration Hierarchy" class="img-fluid rounded" style="max-height: 450px; width: 100%; object-fit: contain; background: #200609;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Pillars of Chola Empire -->
+  <div class="row g-4 mb-5">
+
+    <!-- 1. Village Democracy (Kudavolai) -->
+    <div class="col-md-6 col-lg-4">
+      <div class="chola-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-person-check-fill text-warning fs-3"></i>
+          <h4 class="chola-heading h6 mb-0">Kudavolai Ballot System</h4>
+        </div>
+        <p class="small text-secondary flex-grow-1">
+          Inscriptions from Uttaramerur and Thanjavur detail the democratic election of <em>Variyam</em> (executive committees). Palm-leaf ballots were dropped into a pot (Kudam) and drawn by a young child, ensuring total neutrality.
+        </p>
+        <span class="badge bg-danger text-warning">Democratic Village Assemblies</span>
+      </div>
+    </div>
+
+    <!-- 2. Land Survey & Cadastre -->
+    <div class="col-md-6 col-lg-4">
+      <div class="chola-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-rulers text-warning fs-3"></i>
+          <h4 class="chola-heading h6 mb-0">Ulagalantha Metric Survey</h4>
+        </div>
+        <p class="small text-secondary flex-grow-1">
+          In 1000 CE, Raja Raja dispatched his surveying commissions to map and grade every inch of land based on soil fertility, water source access, and crop yield, codifying standard measuring units (Veli, Ma).
+        </p>
+        <span class="badge bg-warning text-dark fw-bold">Fair Agrarian Taxation</span>
+      </div>
+    </div>
+
+    <!-- 3. Global Maritime Merchant Guilds -->
+    <div class="col-md-6 col-lg-4">
+      <div class="chola-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-coin text-warning fs-3"></i>
+          <h4 class="chola-heading h6 mb-0">Anjuvannam & Ainnurruvar</h4>
+        </div>
+        <p class="small text-secondary flex-grow-1">
+          Powerful merchant guilds (Manigramam, Nanadesi, and Ayyavole 500) conducted maritime commerce spanning China, Srivijaya (Sumatra), Arabia, and Rome, trading spices, silk, camphor, and fine iron.
+        </p>
+        <span class="badge bg-dark border border-warning text-warning">International Commerce</span>
+      </div>
+    </div>
+
+    <!-- 4. Water Architecture & Canal Grids -->
+    <div class="col-md-6 col-lg-4">
+      <div class="chola-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-droplet-half text-warning fs-3"></i>
+          <h4 class="chola-heading h6 mb-0">Kallanai Legacy & Canal Networks</h4>
+        </div>
+        <p class="small text-secondary flex-grow-1">
+          Building upon ancient Grand Anicut (Kallanai), Raja Raja engineered massive branching canals along the Cauvery delta, ensuring twin harvest surpluses that insulated the kingdom against famine.
+        </p>
+        <span class="badge bg-dark border border-warning text-warning">Cauvery Hydraulic Network</span>
+      </div>
+    </div>
+
+    <!-- 5. Religious Harmony & Inclusivity -->
+    <div class="col-md-6 col-lg-4">
+      <div class="chola-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-peace text-warning fs-3"></i>
+          <h4 class="chola-heading h6 mb-0">Chudamani Vihara Endowment</h4>
+        </div>
+        <p class="small text-secondary flex-grow-1">
+          Though an ardent devotee of Lord Shiva (Sivapadasekhara), Raja Raja demonstrated supreme religious tolerance by granting the revenue of Anaimangalam village to the Buddhist Chudamani Vihara in Nagapattinam.
+        </p>
+        <span class="badge bg-danger text-warning">Imperial Ecumenism</span>
+      </div>
+    </div>
+
+    <!-- 6. Literature & Performing Arts -->
+    <div class="col-md-6 col-lg-4">
+      <div class="chola-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <i class="bi bi-music-note-beamed text-warning fs-3"></i>
+          <h4 class="chola-heading h6 mb-0">Bharatanatyam & Odhuvars</h4>
+        </div>
+        <p class="small text-secondary flex-grow-1">
+          Over 400 classical dancers (Tali-cheri Pendugal) and dozens of Tamil Odhuvars (Shaivite hymn singers) were supported with land endowments and houses surrounding the Peruvudaiyar Kovil.
+        </p>
+        <span class="badge bg-warning text-dark fw-bold">Classical Arts Patronage</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Deep Dive Articles -->
+  {% if articles %}
+    <div class="row g-4">
+      {% for article in articles %}
+        <div class="col-lg-12">
+          <div class="chola-card p-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="badge bg-warning text-dark">{{ article.era_year }}</span>
+              <span class="text-secondary small"><i class="bi bi-journal-text me-1"></i> Kingdom Registry</span>
+            </div>
+            <h3 class="chola-heading h4 mb-3">{{ article.title }}</h3>
+            <p class="text-warning">{{ article.summary }}</p>
+            <div class="p-3 bg-dark rounded border border-warning border-opacity-25 text-light">
+              {{ article.content }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

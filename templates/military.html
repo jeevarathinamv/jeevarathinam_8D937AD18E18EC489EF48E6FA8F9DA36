@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Military Achievements & Naval Supremacy – Raja Raja Cholan{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <span class="chola-category-tag">Imperial Armada & Army</span>
+    <h1 class="chola-heading display-5">Military Might & Naval Supremacy</h1>
+    <p class="text-secondary max-w-700 mx-auto">
+      How Raja Raja Cholan transformed a regional kingdom into the dominant maritime empire of the Indian Ocean, orchestrating lightning amphibious landings and standing garrisons.
+    </p>
+  </div>
+
+  <!-- Hero Illustration Banner -->
+  <div class="row justify-content-center mb-5">
+    <div class="col-lg-10">
+      <div class="chola-card p-2">
+        <img src="{{ url_for('static', filename='images/chola_navy.svg') }}" alt="Chola Naval Fleet" class="img-fluid rounded" style="max-height: 400px; width: 100%; object-fit: cover;">
+        <div class="p-3 text-center">
+          <small class="text-warning">
+            <i class="bi bi-info-circle me-1"></i> Original Architectural Reconstruction: Multi-oared Chola war galleys navigating the Bay of Bengal with imperial Tiger standard.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Military Campaigns -->
+  <div class="row g-4 mb-5">
+
+    <!-- 1. Kandalur Salai Triumph -->
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card">
+        <div class="chola-card-body">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-water text-warning fs-4"></i>
+            <span class="badge bg-danger">Naval Clash</span>
+          </div>
+          <h4 class="chola-heading h6">Kandalur Salai (988 CE)</h4>
+          <p class="small text-secondary flex-grow-1">
+            Celebrated as <em>Kandalur Salai Kalamarutha</em> in royal inscriptions. Raja Raja's armada routed the Chera naval fleet at Vizhinjam harbor, dismantling Western coastal resistance.
+          </p>
+          <span class="text-warning small fw-bold"><i class="bi bi-shield-check me-1"></i> Sea Lanes Secured</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Sri Lanka Expedition -->
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card">
+        <div class="chola-card-body">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-flag-fill text-warning fs-4"></i>
+            <span class="badge bg-danger">Invasion</span>
+          </div>
+          <h4 class="chola-heading h6">Mummudi Chola Mandalam (993 CE)</h4>
+          <p class="small text-secondary flex-grow-1">
+            Chola naval forces crossed Palk Strait to capture Anuradhapura, establishing Polonnaruwa (renamed Jananathamangalam) as the provincial capital and building the Shiva Devale.
+          </p>
+          <span class="text-warning small fw-bold"><i class="bi bi-geo-alt-fill me-1"></i> Polonnaruwa Garrison</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Gangavadi & Nolambavadi Campaigns -->
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card">
+        <div class="chola-card-body">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-map-fill text-warning fs-4"></i>
+            <span class="badge bg-danger">Deccan Conquest</span>
+          </div>
+          <h4 class="chola-heading h6">Western Chalukya Frontiers</h4>
+          <p class="small text-secondary flex-grow-1">
+            Decisive land expeditions annexed Nolambapadi, Gangavadi, and Tadigaipadi (modern Karnataka), setting up fortified border posts against Chalukya King Satyashraya.
+          </p>
+          <span class="text-warning small fw-bold"><i class="bi bi-check-circle me-1"></i> Tungabhadra Boundary</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Maldives (Old 12,000 Islands) -->
+    <div class="col-md-6 col-lg-3">
+      <div class="chola-card">
+        <div class="chola-card-body">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-globe-central-south text-warning fs-4"></i>
+            <span class="badge bg-danger">Oceanic Annexation</span>
+          </div>
+          <h4 class="chola-heading h6">Munnir Pazhantivu (1014 CE)</h4>
+          <p class="small text-secondary flex-grow-1">
+            His final victorious naval campaign incorporated the Maldives archipelago ("twelve thousand ancient islands of the sea"), cementing total control over Indian Ocean trade routes.
+          </p>
+          <span class="text-warning small fw-bold"><i class="bi bi-compass-fill me-1"></i> Maldivian Waters</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Deep Dive Articles -->
+  {% if articles %}
+    <div class="row g-4">
+      {% for article in articles %}
+        <div class="col-lg-6">
+          <div class="chola-card p-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="badge bg-warning text-dark">{{ article.era_year }}</span>
+              <span class="text-secondary small"><i class="bi bi-shield me-1"></i> Military Record</span>
+            </div>
+            <h3 class="chola-heading h5 mb-3">{{ article.title }}</h3>
+            <p class="text-secondary mb-3">{{ article.summary }}</p>
+            <div class="p-3 bg-dark rounded border border-warning border-opacity-25 text-light small">
+              {{ article.content }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
