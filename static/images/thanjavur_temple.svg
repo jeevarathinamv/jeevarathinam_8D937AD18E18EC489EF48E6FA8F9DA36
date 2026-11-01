@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2c0005" />
+      <stop offset="50%" stop-color="#58111a" />
+      <stop offset="100%" stop-color="#d4af37" />
+    </linearGradient>
+    <linearGradient id="stoneGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8c5825" />
+      <stop offset="50%" stop-color="#cd7f32" />
+      <stop offset="100%" stop-color="#5a3311" />
+    </linearGradient>
+    <linearGradient id="goldCap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe27a" />
+      <stop offset="50%" stop-color="#d4af37" />
+      <stop offset="100%" stop-color="#997814" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Sky & Ambiance -->
+  <rect width="800" height="600" fill="url(#skyGrad)" />
+  <circle cx="400" cy="180" r="140" fill="#fffdd0" opacity="0.15" filter="url(#glow)" />
+
+  <!-- Distant Clouds & Stars -->
+  <g fill="#ffe27a" opacity="0.3">
+    <circle cx="100" cy="80" r="2" />
+    <circle cx="160" cy="120" r="1.5" />
+    <circle cx="230" cy="70" r="2.5" />
+    <circle cx="580" cy="90" r="2" />
+    <circle cx="690" cy="130" r="1.5" />
+    <circle cx="720" cy="60" r="2" />
+  </g>
+
+  <!-- Granite Courtyard Ground -->
+  <rect x="0" y="500" width="800" height="100" fill="#241207" />
+  <rect x="0" y="490" width="800" height="15" fill="#58111a" opacity="0.8" />
+  <line x1="0" y1="505" x2="800" y2="505" stroke="#d4af37" stroke-width="2" />
+
+  <!-- Brihadeeswarar Temple Vimana (Pyramidal Tower) -->
+  <!-- Base Sanctuary (Garbhagriha) -->
+  <rect x="250" y="420" width="300" height="75" fill="url(#stoneGrad)" stroke="#1a0902" stroke-width="3" />
+  <!-- Pillars on Base -->
+  <g fill="#ffe27a" opacity="0.7">
+    <rect x="270" y="430" width="12" height="65" />
+    <rect x="310" y="430" width="12" height="65" />
+    <rect x="350" y="430" width="12" height="65" />
+    <rect x="390" y="430" width="12" height="65" />
+    <rect x="430" y="430" width="12" height="65" />
+    <rect x="470" y="430" width="12" height="65" />
+    <rect x="510" y="430" width="12" height="65" />
+  </g>
+
+  <!-- Tiered Vimana (13 storeys representation) -->
+  <polygon points="260,420 540,420 530,395 270,395" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="270,395 530,395 520,370 280,370" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="280,370 520,370 510,345 290,345" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="290,345 510,345 500,320 300,320" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="300,320 500,320 490,295 310,295" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="310,295 490,295 480,270 320,270" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="320,270 480,270 470,245 330,245" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="330,245 470,245 460,220 340,220" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="340,220 460,220 450,195 350,195" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="350,195 450,195 440,170 360,170" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="360,170 440,170 430,145 370,145" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="370,145 430,145 422,120 378,120" fill="url(#stoneGrad)" stroke="#1a0902" />
+  <polygon points="378,120 422,120 415,95 385,95" fill="url(#stoneGrad)" stroke="#1a0902" />
+
+  <!-- 80-Ton Monolithic Kumbam & Golden Kalasam -->
+  <!-- Rounded Granite Capstone (80 tons) -->
+  <ellipse cx="400" cy="85" rx="30" ry="16" fill="url(#stoneGrad)" stroke="#d4af37" stroke-width="2" />
+  <!-- Four Sacred Nandi Bulls at the Corners -->
+  <circle cx="375" cy="90" r="5" fill="#ffe27a" />
+  <circle cx="425" cy="90" r="5" fill="#ffe27a" />
+  <!-- Golden Finial / Stupi / Kalasam -->
+  <path d="M 395 72 L 405 72 L 402 45 L 400 35 L 398 45 Z" fill="url(#goldCap)" filter="url(#glow)" />
+  <circle cx="400" cy="34" r="4" fill="#ffffff" />
+
+  <!-- Mandapa & Pillared Hall on the Left -->
+  <rect x="80" y="440" width="170" height="55" fill="url(#stoneGrad)" opacity="0.9" />
+  <polygon points="70,440 260,440 240,425 90,425" fill="#5a3311" />
+  <!-- Colonnade Pillars -->
+  <g fill="#ffe27a" opacity="0.5">
+    <rect x="95" y="445" width="8" height="50" />
+    <rect x="125" y="445" width="8" height="50" />
+    <rect x="155" y="445" width="8" height="50" />
+    <rect x="185" y="445" width="8" height="50" />
+    <rect x="215" y="445" width="8" height="50" />
+  </g>
+
+  <!-- Giant Monolithic Nandi Mandapam on Courtyard Right -->
+  <rect x="580" y="435" width="140" height="60" fill="url(#stoneGrad)" />
+  <polygon points="570,435 730,435 710,418 590,418" fill="#58111a" />
+  <!-- Monolithic Nandi Silhouette -->
+  <ellipse cx="650" cy="460" rx="35" ry="20" fill="#1a0902" />
+  <circle cx="625" cy="448" r="14" fill="#1a0902" />
+  <polygon points="620,440 615,430 626,437" fill="#1a0902" />
+  <!-- Bell Garland on Nandi -->
+  <path d="M 622 455 Q 635 465 645 455" stroke="#d4af37" stroke-width="2" fill="none" />
+
+  <!-- Inscriptions Band Across Bottom -->
+  <g fill="#d4af37" font-family="'Cinzel', serif" font-size="12" letter-spacing="3" text-anchor="middle">
+    <text x="400" y="535">THANJAVUR PERUVUDAIYAR KOVIL • 1010 CE</text>
+    <text x="400" y="555" font-size="9" opacity="0.8">CONSECRATED BY EMPEROR ARULMOZHIVARMAN RAJA RAJA CHOLAN I</text>
+  </g>
+</svg>

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Biography & Timeline – Raja Raja Cholan{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <span class="chola-category-tag">Imperial Biography</span>
+    <h1 class="chola-heading display-5">Chronicles of Raja Raja Cholan</h1>
+    <p class="text-secondary max-w-700 mx-auto">
+      From his illustrious birth in Tirukoilur to the golden epoch of coronation and the serene final days of a monarch who reshaped Southern Asian history.
+    </p>
+  </div>
+
+  <!-- Colorful Timeline -->
+  <div class="timeline">
+
+    <!-- 1. Birth and Childhood -->
+    <div class="timeline-item left">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <span class="timeline-year">947 CE</span>
+        <h4 class="chola-heading h5">Birth & Royal Lineage</h4>
+        <p class="small text-secondary mb-2">
+          Born on the auspicious day of Sadhayam star in the Tamil month of Aippasi at Tirukoilur, he was named <strong>Arulmozhivarman</strong> ("He whose words are graced by benevolence"). He was the third child of King Parantaka Sundara Chola and Queen Vanavan Mahadevi.
+        </p>
+        <span class="badge bg-dark border border-warning text-warning">Malayaman & Chola Lineage</span>
+      </div>
+    </div>
+
+    <!-- 2. Family Background & Upbringing -->
+    <div class="timeline-item right">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <span class="timeline-year">947 – 969 CE</span>
+        <h4 class="chola-heading h5">Family & Mentorship of Kundavai</h4>
+        <p class="small text-secondary mb-2">
+          Growing alongside his elder brother Aditya Karikalan and elder sister Princess Kundavai Pirattiyar, Arulmozhi was mentored in statecraft, classical Tamil epics, Vedic philosophy, and warfare tactics. Kundavai remained his lifelong advisor and royal confidante.
+        </p>
+        <span class="badge bg-dark border border-warning text-warning">Aditya Karikalan • Kundavai</span>
+      </div>
+    </div>
+
+    <!-- 3. Succession Crisis & Magnanimity -->
+    <div class="timeline-item left">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <span class="timeline-year">969 – 985 CE</span>
+        <h4 class="chola-heading h5">Selfless Magnanimity to Uttama Chola</h4>
+        <p class="small text-secondary mb-2">
+          Following the tragic assassination of Aditya Karikalan, popular clamor demanded that prince Arulmozhivarman ascend the throne. However, to maintain family harmony and avoid dynastic discord, Arulmozhi magnanimously insisted that his paternal uncle Uttama Chola reign first.
+        </p>
+        <span class="badge bg-danger text-light">Unprecedented Statecraft</span>
+      </div>
+    </div>
+
+    <!-- 4. Royal Coronation as Emperor -->
+    <div class="timeline-item right">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <span class="timeline-year">985 CE</span>
+        <h4 class="chola-heading h5">Coronation as Rajakesari Arulmozhivarman</h4>
+        <p class="small text-secondary mb-2">
+          Following Uttama Chola's death in 985 CE, Arulmozhivarman ascended the imperial throne under the regnal title <em>Rajakesari</em>. Soon recognized for his boundless achievements, he assumed the everlasting title <strong>Raja Raja</strong> ("King of Kings").
+        </p>
+        <span class="badge bg-warning text-dark fw-bold">Imperial Accession</span>
+      </div>
+    </div>
+
+    <!-- 5. Era of Monumental Achievements -->
+    <div class="timeline-item left">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <span class="timeline-year">985 – 1010 CE</span>
+        <h4 class="chola-heading h5">Golden Epoch of Governance & Architecture</h4>
+        <p class="small text-secondary mb-2">
+          During his 30-year reign, Raja Raja implemented imperial land surveys, organized standing maritime fleets, salvaged the sacred Saivite Thevaram hymns, and culminated his devotion with the construction of the Thanjavur Big Temple (Peruvudaiyar Kovil).
+        </p>
+        <span class="badge bg-dark border border-warning text-warning">Peruvudaiyar Kovil • Land Cadastre</span>
+      </div>
+    </div>
+
+    <!-- 6. Co-regency & Final Years -->
+    <div class="timeline-item right">
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <span class="timeline-year">1012 – 1014 CE</span>
+        <h4 class="chola-heading h5">Co-Regency with Rajendra & Final Rest</h4>
+        <p class="small text-secondary mb-2">
+          In 1012 CE, Raja Raja appointed his battle-hardened son Rajendra Chola I as co-regent, ensuring an effortless transfer of power. The great emperor breathed his last in 1014 CE. His sacred memorial (Palli-padai) at Udayalur near Kumbakonam remains a place of reverence.
+        </p>
+        <span class="badge bg-dark border border-warning text-warning">Udayalur Memorial • Rajendra I</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Database Historical Articles on Biography -->
+  {% if articles %}
+    <div class="mt-5 pt-4">
+      <h3 class="chola-heading text-center mb-4">Detailed Inscriptions & Historical Records</h3>
+      <div class="row g-4 justify-content-center">
+        {% for article in articles %}
+          <div class="col-lg-8">
+            <div class="chola-card p-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="chola-category-tag">{{ article.era_year }}</span>
+                <span class="text-warning small"><i class="bi bi-clock-history me-1"></i> Recorded Epigraph</span>
+              </div>
+              <h3 class="chola-heading h4 mb-3">{{ article.title }}</h3>
+              <p class="text-secondary mb-3">{{ article.summary }}</p>
+              <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 text-light">
+                {{ article.content }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

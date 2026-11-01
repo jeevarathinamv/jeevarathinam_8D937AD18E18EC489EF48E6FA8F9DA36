@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a192f" />
+      <stop offset="50%" stop-color="#172a45" />
+      <stop offset="100%" stop-color="#020c1b" />
+    </linearGradient>
+    <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4a2511" />
+      <stop offset="50%" stop-color="#7c431d" />
+      <stop offset="100%" stop-color="#3d1b09" />
+    </linearGradient>
+    <linearGradient id="sailGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff4b8" />
+      <stop offset="60%" stop-color="#d4af37" />
+      <stop offset="100%" stop-color="#8c5825" />
+    </linearGradient>
+  </defs>
+
+  <!-- Night Sky & Bay of Bengal Sea -->
+  <rect width="800" height="350" fill="#08101e" />
+  <circle cx="680" cy="90" r="45" fill="#fffdd0" opacity="0.8" />
+  <circle cx="680" cy="90" r="55" fill="#ffe27a" opacity="0.2" />
+
+  <!-- Ocean Waves -->
+  <rect y="350" width="800" height="250" fill="url(#oceanGrad)" />
+  <path d="M 0 350 Q 100 370 200 350 T 400 350 T 600 350 T 800 350 L 800 600 L 0 600 Z" fill="#0c203b" opacity="0.7" />
+  <path d="M 0 380 Q 80 400 160 380 T 320 380 T 480 380 T 640 380 T 800 380 L 800 600 L 0 600 Z" fill="#07172c" />
+
+  <!-- Main Chola Imperial Warship (Dharani Flagship) -->
+  <!-- Hull -->
+  <path d="M 160 380 C 220 440, 520 440, 620 360 L 590 350 C 490 410, 240 400, 180 360 Z" fill="url(#woodGrad)" stroke="#d4af37" stroke-width="2" />
+  <!-- Bow Dragon/Yali figurehead -->
+  <path d="M 160 380 C 145 365, 140 345, 148 335 C 155 325, 170 335, 168 355 Z" fill="#d4af37" />
+
+  <!-- Outrigger Oars in Motion -->
+  <g stroke="#cd7f32" stroke-width="3" opacity="0.8">
+    <line x1="240" y1="395" x2="210" y2="430" />
+    <line x1="280" y1="398" x2="250" y2="435" />
+    <line x1="320" y1="400" x2="290" y2="440" />
+    <line x1="360" y1="400" x2="330" y2="440" />
+    <line x1="400" y1="400" x2="370" y2="440" />
+    <line x1="440" y1="398" x2="410" y2="438" />
+    <line x1="480" y1="395" x2="450" y2="435" />
+    <line x1="520" y1="390" x2="490" y2="430" />
+  </g>
+
+  <!-- Main Mast & Rigging -->
+  <line x1="370" y1="380" x2="370" y2="120" stroke="#cd7f32" stroke-width="6" />
+  <line x1="370" y1="120" x2="240" y2="380" stroke="#d4af37" stroke-width="1.5" opacity="0.6" />
+  <line x1="370" y1="120" x2="520" y2="380" stroke="#d4af37" stroke-width="1.5" opacity="0.6" />
+  <!-- Cross Yardarm -->
+  <line x1="270" y1="150" x2="480" y2="150" stroke="#4a2511" stroke-width="5" />
+
+  <!-- Billowing Main Sail (With Chola Tiger Symbol) -->
+  <path d="M 275 155 C 320 185, 430 185, 475 155 L 455 310 C 400 330, 340 330, 295 310 Z" fill="url(#sailGrad)" stroke="#58111a" stroke-width="2" />
+  <!-- Tiger Emblem Silhouette on Main Sail -->
+  <ellipse cx="375" cy="235" rx="35" ry="22" fill="#58111a" />
+  <circle cx="350" cy="225" r="15" fill="#58111a" />
+  <path d="M 395 235 Q 425 210 415 250" stroke="#58111a" stroke-width="7" fill="none" stroke-linecap="round" />
+
+  <!-- Fore Mast & Secondary Sail -->
+  <line x1="220" y1="375" x2="220" y2="180" stroke="#cd7f32" stroke-width="4" />
+  <line x1="160" y1="200" x2="270" y2="200" stroke="#4a2511" stroke-width="4" />
+  <path d="M 165 205 C 190 225, 245 225, 265 205 L 255 320 C 235 330, 195 330, 175 320 Z" fill="url(#sailGrad)" opacity="0.9" />
+
+  <!-- Chola Imperial Royal Tiger Flag at Mast Top -->
+  <polygon points="370,120 440,135 370,150" fill="#8b0000" stroke="#d4af37" stroke-width="2" />
+  <circle cx="395" cy="135" r="5" fill="#ffe27a" />
+
+  <!-- Secondary Warships on Horizon (Armada) -->
+  <g opacity="0.5">
+    <path d="M 60 340 C 90 360, 160 360, 180 335 Z" fill="#2c1407" />
+    <line x1="120" y1="340" x2="120" y2="240" stroke="#333" stroke-width="2" />
+    <path d="M 95 250 C 110 260, 135 260, 145 250 L 140 315 L 100 315 Z" fill="#d4af37" />
+
+    <path d="M 640 330 C 665 345, 720 345, 740 325 Z" fill="#2c1407" />
+    <line x1="690" y1="330" x2="690" y2="250" stroke="#333" stroke-width="2" />
+    <path d="M 670 260 C 685 270, 705 270, 715 260 L 710 310 L 675 310 Z" fill="#d4af37" />
+  </g>
+
+  <!-- Inscription Text -->
+  <rect x="150" y="525" width="500" height="45" rx="6" fill="#58111a" stroke="#d4af37" stroke-width="2" />
+  <text x="400" y="553" fill="#ffe27a" font-family="'Cinzel', serif" font-weight="bold" font-size="15" text-anchor="middle" letter-spacing="2">
+    CHOLA MARITIME ARMADA • THIRAIKADALODIYUM
+  </text>
+</svg>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login – Emperor's Archives{% endblock %}
+
+{% block content %}
+<div class="container my-5 py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="chola-card p-4 p-md-5">
+
+        <div class="text-center mb-4">
+          <img src="{{ url_for('static', filename='images/chola_emblem.svg') }}" alt="Emblem" style="width: 70px; height: 70px;" class="mb-3">
+          <h2 class="chola-heading h4 mb-1">Emperor's Archives</h2>
+          <p class="small text-secondary">Historical Content Management Portal</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin_login') }}">
+          <div class="mb-3">
+            <label for="username" class="form-label text-warning small fw-bold">Admin Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-warning">
+                <i class="bi bi-person-fill"></i>
+              </span>
+              <input type="text" class="form-control bg-dark text-light border-secondary" id="username" name="username" placeholder="Enter admin username" required autofocus>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="password" class="form-label text-warning small fw-bold">Admin Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-warning">
+                <i class="bi bi-key-fill"></i>
+              </span>
+              <input type="password" class="form-control bg-dark text-light border-secondary" id="password" name="password" placeholder="Enter password" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-gold w-100 justify-content-center">
+            <i class="bi bi-box-arrow-in-right"></i> Authenticate & Login
+          </button>
+        </form>
+
+        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 text-center">
+          <span class="small text-secondary">
+            Default credentials for testing: <strong class="text-warning">admin</strong> / <strong class="text-warning">admin123</strong>
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

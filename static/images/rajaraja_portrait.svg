@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="aura" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#ffe27a" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#d4af37" stop-opacity="0.4" />
+      <stop offset="85%" stop-color="#58111a" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#1a0407" />
+    </radialGradient>
+    <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff4b8" />
+      <stop offset="40%" stop-color="#d4af37" />
+      <stop offset="80%" stop-color="#a37e1b" />
+      <stop offset="100%" stop-color="#5c4309" />
+    </linearGradient>
+    <linearGradient id="silkMaroon" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7a1420" />
+      <stop offset="50%" stop-color="#58111a" />
+      <stop offset="100%" stop-color="#2a0006" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Medallion -->
+  <rect width="600" height="600" fill="#140204" />
+  <circle cx="300" cy="300" r="280" fill="url(#aura)" stroke="#d4af37" stroke-width="6" />
+  <circle cx="300" cy="300" r="260" fill="none" stroke="#cd7f32" stroke-width="2" stroke-dasharray="6,4" />
+
+  <!-- Emperor Silhouette & Royal Regalia -->
+  <!-- Imperial Halo (Prabha) -->
+  <circle cx="300" cy="220" r="130" fill="none" stroke="#d4af37" stroke-width="4" opacity="0.6" />
+  <circle cx="300" cy="220" r="120" fill="#ffe27a" opacity="0.12" />
+
+  <!-- Royal Robes (Maroon Silk with Gold Borders) -->
+  <path d="M 170 540 C 180 430, 220 370, 300 370 C 380 370, 420 430, 430 540 Z" fill="url(#silkMaroon)" stroke="#d4af37" stroke-width="3" />
+  <path d="M 220 540 L 250 375 L 350 375 L 380 540 Z" fill="#420a11" />
+  <!-- Gold Kasavu Angavastram (Stole) -->
+  <path d="M 230 375 Q 300 450 370 375 Q 350 490 250 490 Z" fill="url(#goldPlate)" />
+
+  <!-- Imperial Pearl Necklaces (Muthuharam) -->
+  <path d="M 250 340 Q 300 400 350 340" fill="none" stroke="#fffdd0" stroke-width="6" stroke-dasharray="2,6" />
+  <path d="M 235 360 Q 300 430 365 360" fill="none" stroke="#fffdd0" stroke-width="7" stroke-dasharray="2,7" />
+  <!-- Ruby Royal Medallion (Padakkam) -->
+  <circle cx="300" cy="420" r="16" fill="#8b0000" stroke="#d4af37" stroke-width="3" />
+  <circle cx="300" cy="420" r="8" fill="#ffe27a" />
+
+  <!-- Face and Beard Profile / Form -->
+  <path d="M 250 250 C 250 330, 350 330, 350 250 C 350 190, 250 190, 250 250 Z" fill="#c48a56" />
+  <!-- Royal Beard & Mustache -->
+  <path d="M 260 270 Q 300 295 340 270 Q 330 335 300 345 Q 270 335 260 270 Z" fill="#1b120c" />
+  <!-- Noble Nose & Brow -->
+  <path d="M 296 220 L 304 250 L 295 256" stroke="#8c5825" stroke-width="3" fill="none" stroke-linecap="round" />
+  <!-- Expressive Eyes -->
+  <ellipse cx="275" cy="225" rx="10" ry="5" fill="#ffffff" />
+  <circle cx="275" cy="225" r="4" fill="#111111" />
+  <ellipse cx="325" cy="225" rx="10" ry="5" fill="#ffffff" />
+  <circle cx="325" cy="225" r="4" fill="#111111" />
+  <!-- Sacred Vibhuti & Kumkum (Thiruneeru) -->
+  <line x1="280" y1="195" x2="320" y2="195" stroke="#ffffff" stroke-width="2.5" />
+  <line x1="282" y1="200" x2="318" y2="200" stroke="#ffffff" stroke-width="2.5" />
+  <line x1="284" y1="205" x2="316" y2="205" stroke="#ffffff" stroke-width="2.5" />
+  <circle cx="300" cy="200" r="3" fill="#8b0000" />
+
+  <!-- Kundala Ear Ornaments -->
+  <circle cx="240" cy="255" r="9" fill="url(#goldPlate)" stroke="#58111a" stroke-width="2" />
+  <circle cx="360" cy="255" r="9" fill="url(#goldPlate)" stroke="#58111a" stroke-width="2" />
+
+  <!-- Imperial Makuta Crown (Chola Golden Kireedam) -->
+  <path d="M 245 190 L 355 190 L 340 90 L 300 60 L 260 90 Z" fill="url(#goldPlate)" stroke="#58111a" stroke-width="3" />
+  <!-- Crown Jewel Insets -->
+  <rect x="255" y="170" width="90" height="15" fill="#8b0000" rx="3" />
+  <circle cx="270" cy="177" r="4" fill="#fffdd0" />
+  <circle cx="300" cy="177" r="5" fill="#4effb8" />
+  <circle cx="330" cy="177" r="4" fill="#fffdd0" />
+  <!-- Crown Finial Lotus Crest -->
+  <circle cx="300" cy="55" r="8" fill="#ffe27a" />
+  <path d="M 290 120 Q 300 85 310 120 Z" fill="#8b0000" />
+
+  <!-- Banner / Name Inscription -->
+  <rect x="120" y="520" width="360" height="50" rx="8" fill="#58111a" stroke="#d4af37" stroke-width="3" />
+  <text x="300" y="552" fill="#d4af37" font-family="'Cinzel', serif" font-weight="bold" font-size="19" text-anchor="middle" letter-spacing="2">
+    RAJA RAJA CHOLAN I
+  </text>
+  <text x="300" y="565" fill="#ffe27a" font-family="sans-serif" font-size="9" text-anchor="middle" letter-spacing="3">
+    ARULMOZHIVARMAN • 985 – 1014 CE
+  </text>
+</svg>

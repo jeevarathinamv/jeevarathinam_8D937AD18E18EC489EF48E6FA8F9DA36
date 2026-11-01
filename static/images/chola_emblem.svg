@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="coinGrad" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#fff5b8" />
+      <stop offset="40%" stop-color="#d4af37" />
+      <stop offset="80%" stop-color="#997814" />
+      <stop offset="100%" stop-color="#4a3604" />
+    </radialGradient>
+  </defs>
+
+  <rect width="600" height="600" fill="#140204" />
+
+  <!-- Outer Bronze Seal Rim -->
+  <circle cx="300" cy="300" r="270" fill="url(#coinGrad)" stroke="#58111a" stroke-width="12" />
+  <circle cx="300" cy="300" r="240" fill="#3b080f" stroke="#ffe27a" stroke-width="4" stroke-dasharray="10,6" />
+
+  <!-- Central Chola Royal Tiger (Seated, ferocious, right facing) -->
+  <g fill="#d4af37">
+    <!-- Body -->
+    <ellipse cx="300" cy="330" rx="60" ry="35" />
+    <!-- Chest & Forelegs -->
+    <path d="M 330 330 L 350 410 L 330 410 L 315 350 Z" />
+    <path d="M 350 330 L 370 410 L 352 410 L 335 350 Z" />
+    <!-- Hindquarters & Paw -->
+    <ellipse cx="260" cy="350" rx="35" ry="25" />
+    <path d="M 250 360 L 250 410 L 230 410 L 235 365 Z" />
+    <!-- Tiger Tail Curved Upwards -->
+    <path d="M 230 340 Q 200 280 230 250 Q 240 240 245 255 Q 220 285 240 335 Z" />
+    <!-- Tiger Head & Open Jaws -->
+    <circle cx="370" cy="280" r="28" />
+    <!-- Snout & Ears -->
+    <polygon points="360,260 365,240 375,255" />
+    <polygon points="380,260 385,240 395,255" />
+    <path d="M 380 275 L 415 285 L 390 295 L 410 305 L 380 300 Z" fill="#ffe27a" />
+    <circle cx="375" cy="275" r="4" fill="#58111a" />
+  </g>
+
+  <!-- Flanking Twin Fish of the Pandyas (Chola Overlordship) -->
+  <g fill="#ffe27a" stroke="#d4af37" stroke-width="2">
+    <!-- Left Fish -->
+    <ellipse cx="180" cy="310" rx="12" ry="35" transform="rotate(-15 180 310)" />
+    <polygon points="175,345 165,365 190,360" />
+    <!-- Right Fish -->
+    <ellipse cx="420" cy="310" rx="12" ry="35" transform="rotate(15 420 310)" />
+    <polygon points="425,345 410,360 435,365" />
+  </g>
+
+  <!-- Bow of the Cheras at Base (Subjugated emblem) -->
+  <path d="M 230 435 Q 300 460 370 435" stroke="#ffe27a" stroke-width="5" fill="none" />
+  <line x1="230" y1="435" x2="370" y2="435" stroke="#d4af37" stroke-width="2" />
+
+  <!-- Royal Parasol (Chhatra) and Twin Chamaras (Fly-whisks) at Top -->
+  <!-- Central Umbrella -->
+  <path d="M 260 210 Q 300 170 340 210 Z" fill="url(#coinGrad)" stroke="#58111a" stroke-width="2" />
+  <line x1="300" y1="210" x2="300" y2="245" stroke="#ffe27a" stroke-width="4" />
+  <!-- Left & Right Chamaras -->
+  <path d="M 215 240 Q 230 205 210 185" stroke="#ffe27a" stroke-width="4" fill="none" stroke-linecap="round" />
+  <path d="M 385 240 Q 370 205 390 185" stroke="#ffe27a" stroke-width="4" fill="none" stroke-linecap="round" />
+
+  <!-- Grantha Script Legend in Rim Circle -->
+  <text x="300" y="145" fill="#ffe27a" font-family="'Cinzel', serif" font-weight="bold" font-size="16" text-anchor="middle" letter-spacing="3">
+    SRI RAJA RAJA CHOLA
+  </text>
+  <text x="300" y="490" fill="#d4af37" font-family="'Cinzel', serif" font-size="13" text-anchor="middle" letter-spacing="2">
+    IMPERIAL TIGER SEAL • SOVEREIGN EMBLEM
+  </text>
+</svg>
